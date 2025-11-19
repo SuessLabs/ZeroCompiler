@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <Company>Xeno Innovations, Inc.</Company>
+    <Authors>Damian Suess</Authors>
+    <Copyright>Copyright © Xeno Innovations, Inc. 2025</Copyright>
+    <!--<Description></Description>-->
+    <!--<Product>Zero Compiler</Product>-->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- HotReload Bug: https://github.com/dotnet/sdk/issues/36666#issuecomment-1814835637 -->
+    <EnableSourceControlManagerQueries>true</EnableSourceControlManagerQueries>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>
