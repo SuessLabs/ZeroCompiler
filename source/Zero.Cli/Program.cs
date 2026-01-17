@@ -2,34 +2,36 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 
 namespace Zero.Cli;
 
 internal class Program
 {
-  public static void Main(string[] args)
+  public static int Main(string[] args)
   {
     Console.WriteLine("Zero Compiler v{0}", Zero.Version);
 
-    if (!ParseCommands(args))
+    if (args.Length == 0 || args.Contains("-h") || args.Contains("--help"))
+    {
       PrintUsage();
+      return 0;
+    }
+
+    var inputPath = args[0];
+    var errCode = CompileCode(inputPath, "test.exe");
+
+    return errCode;
   }
 
-  private static void CompileCode(string v)
+  private static int CompileCode(string inputPath, string outputPath)
   {
-  }
+    var check = SanitizeInput(inputPath, outputPath);
+    if (check != 0)
+      return check;
 
-  private static bool ParseCommands(string[] args)
-  {
-    if (args.Length == 0 || args.Length > 1)
-      return false;
-
-    if (args[0] == "-h" || args[0] == "--help")
-      return false;
-
-    CompileCode(args[0]);
-
-    return true;
+    var ret = CompileCode(inputPath, outputPath);
+    return ret;
   }
 
   private static void PrintUsage()
@@ -45,7 +47,18 @@ internal class Program
       Commands:
         -h|--help
 
-      Copyright 2001-2026 Xeno Innovations, Inc.
+      Copyright 2003-2026 Xeno Innovations, Inc.
       """);
+  }
+
+  private static int SanitizeInput(string inputPath, string outputFile)
+  {
+    if (!File.Exists(inputPath))
+    {
+      Console.Error.WriteLine($"Error: File not found: {inputPath}");
+      return 2;
+    }
+
+    return 0;
   }
 }
