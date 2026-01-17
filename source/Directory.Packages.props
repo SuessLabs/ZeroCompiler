@@ -18,6 +18,7 @@
     <PackageVersion Include="Prism.DryIoc.Maui" Version="9.0.537" />
     <PackageVersion Include="Prism.Events" Version="9.0.537" />
     <PackageVersion Include="Prism.Maui" Version="9.0.537" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.2" />
   </ItemGroup>
   <!-- 2nd Party packages -->
   <ItemGroup>
