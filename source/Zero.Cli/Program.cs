@@ -19,7 +19,12 @@ internal class Program
     }
 
     var inputPath = args[0];
-    var errCode = CompileCode(inputPath, inputPath + ".exe");
+
+    // Auto-gen output name for now
+    var outputPath = Path.GetFileNameWithoutExtension(inputPath);
+    outputPath += ".exe";
+
+    var errCode = CompileCode(inputPath, outputPath);
 
     return errCode;
   }
@@ -40,10 +45,10 @@ internal class Program
   {
     Console.WriteLine(
       """
-      Usage: zero [App-Code (.z, .zero)]
-      usage: zero [Commands]
+      Usage: zero [code (.z, .zasm, .zsrc, .zero)]
+      usage: zero [commands]
 
-      App-Code:
+      Code:
         Source code of application
 
       Commands:
