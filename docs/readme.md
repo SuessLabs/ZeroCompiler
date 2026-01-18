@@ -6,7 +6,7 @@ Copyright 2026 Xeno Innovations, Inc.
 
 ## About
 
-The Zero programming language has its inceptions in 2003 and is aimed to be a simple, fast, and efficient programming language created by Damian Suess. At the time of writing, C/C++, Visual Basic, and Java were the key programmang languages for creating a compiled application. Marriaged with the C-like style, the simplicity of VB, and the heart of assembly, the Zero compiler language was concieved.
+The Zero programming language has its inceptions in 2001 and is aimed to be a simple, fast, and efficient programming language created by Damian Suess. At the time of writing, C/C++ and Visual Basic were the key programmang languages (besides, Java) for creating a compiled application. Marriaged with the C-like style, the simplicity of VB, and the heart of assembly, the Zero compiler language was concieved.
 
 This repository is a rewrite of the engine based on the original designs.
 
@@ -14,7 +14,37 @@ This repository is a rewrite of the engine based on the original designs.
 
 Future iterations will be self-hosted instead of written in C# and is designed to be cross-platform.
 
-## Samples
+### File Types
+
+When compiling a single `.zsrc` file, the code can use compiler directives in the code so that they don't need to be passed in via command line. In the future a `.zprj` project file will contain these directives so that code is more reusable.
+
+* zsrc - source code
+* zasm - assembly source code
+* zinc - Include / header file
+* zprj - Multi-file zero project (_coming soon_)
+
+## Sample Zero Assembly
+
+When written in assembly format, the training semicolns can be omitted.
+
+File: `test.zasm`
+
+```asm
+// Type of application to build
+#zero ASM PE CLI;
+#entry start;
+
+; Minimal demo: sets EAX=42 and returns.
+start:
+  mov eax, 42;
+  cmp eax, 42;
+  jz done;
+  mov eax, 1;
+done:
+  ret;
+```
+
+## Sample Zero Code
 
 ### Console Application
 
