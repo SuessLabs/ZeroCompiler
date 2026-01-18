@@ -5,6 +5,14 @@
     <AssemblyTitle>Zero</AssemblyTitle>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
+    <VersionSuffix>-alpha1</VersionSuffix>
+    <Version>$(VersionPrefix)$(VersionSuffix)</Version>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Zero.Tests\Zero.Tests.csproj" />
   </ItemGroup>
