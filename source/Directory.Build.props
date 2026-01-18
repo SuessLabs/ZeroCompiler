@@ -23,6 +23,8 @@
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 
     <BaseOutputPath>../../output/$(MSBuildProjectName)</BaseOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
     <Deterministic>true</Deterministic>
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- Excludes all satellite assemblies -->

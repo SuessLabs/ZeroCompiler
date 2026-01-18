@@ -1,4 +1,4 @@
-; Minimal demo: sets EAX=42 and returns.
+; Zero v0.1 Minimal demo: sets EAX=42 and returns.
 start:
   mov eax, 42
   cmp eax, 42
