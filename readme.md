@@ -9,3 +9,14 @@ The compiler supports PE (portable exectuable) file formats for GUI, CLI, and li
 The Zero programming language has its inceptions in 2001 and is aimed to be a simple, fast, and efficient programming language created by Damian Suess. At the time of writing, C/C++ and Visual Basic were the key programmang languages (besides, Java) for creating a compiled application. Marriaged with the C-like style, the simplicity of VB, and the heart of assembly, the Zero compiler language was concieved.
 
 This is the next generation of the Zero Compiler Project.
+
+## File Types
+
+The following file extensions are suggested for source code.
+
+| Ext | Description |
+|-|-|
+| `.z`, `.zero` | Zero source code file (_`.zsrc`_) |
+| `.zasm` | Zero assembly code file |
+| `.zsrc` | Zero source code file |
+| `.zinc` | Include definitions |

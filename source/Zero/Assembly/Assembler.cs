@@ -70,6 +70,7 @@ public class Assembler
           continue;
       }
 
+      line = line.Trim();
       var parsed = ParseLine(line, i + 1);
       parsed.Offset = _offset;
       parsed.Size = EstimateSize(parsed);
@@ -100,8 +101,61 @@ public class Assembler
     return ops.Count * unitSize;
   }
 
+  /// <summary>Basic size estimation for two-pass assembly.</summary>
+  /// <param name="ln">Assembly line.</param>
+  /// <returns>Size.</returns>
+  private static int EstimateSize(AsmLine ln)
+  {
+    switch (ln.Mnemonic)
+    {
+      case Mnemonic.NOP:
+      case Mnemonic.RET:
+        return 1;
+
+      case Mnemonic.INT:
+        return 2;  // CD ib
+
+      case Mnemonic.DB:
+        return CountDataBytes(ln.Operands, 1);
+
+      case Mnemonic.DW:
+        return CountDataBytes(ln.Operands, 2);
+
+      case Mnemonic.DD:
+        return CountDataBytes(ln.Operands, 4);
+
+      case Mnemonic.MOV: // MOV r32, imm32 => B8+r + imm32
+        return 5;
+
+      case Mnemonic.PUSH:
+        if (ln.Operands.Count != 1)
+          throw new AssemblerException($"Line {ln.LineNumber}: PUSH expects 1 operand");
+        return IsRegister32(ln.Operands[0]) ? 1 : 5; // reg or imm32
+
+      case Mnemonic.POP:
+        return 1; // POP r32
+
+      case Mnemonic.ADD:
+      case Mnemonic.SUB:
+      case Mnemonic.CMP:
+        // We emit 81 /ext r + imm32
+        return 6; // opcode + ModRM + imm32
+
+      case Mnemonic.JMP:
+      case Mnemonic.CALL:
+        return 5; // E9/E8 + rel32
+
+      case Mnemonic.JZ:
+      case Mnemonic.JNZ:
+        return 6; // 0F 84/85 + rel32
+
+      default:
+        throw new AssemblerException($"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
+    }
+  }
+
   private static bool IsRegister32(string s) =>
-    Reg32.ContainsKey(s.Trim().ToUpperInvariant());
+      Reg32.ContainsKey(s.Trim().ToUpperInvariant());
 
   private static bool IsValidLabel(string line)
   {
@@ -143,6 +197,39 @@ public class Assembler
     {
       throw new AssemblerException($"Line {lineNumber}: Invalid number '{s}'");
     }
+  }
+
+  /// <summary>Parse the line number, assembly mnemonic, and any following data.</summary>
+  /// <param name="line">Source code line.</param>
+  /// <param name="lineNum">Source line number.</param>
+  /// <returns>Assembly line parsed.</returns>
+  private static AsmLine ParseLine(string line, int lineNum)
+  {
+    // Split mnemonic and operands (space or tab characters)
+    var firstSpace = line.IndexOfAny([SpaceChar, TabChar]);
+
+    string mnemonic, rest;
+    if (firstSpace < 0)
+    {
+      // Whole line is the mnemonic
+      mnemonic = line;
+      rest = string.Empty;
+    }
+    else
+    {
+      mnemonic = line[..firstSpace];
+      rest = line[(firstSpace + 1)..];
+    }
+
+    mnemonic = mnemonic.Trim().ToUpperInvariant();
+    var ops = SplitOperands(rest);
+
+    return new AsmLine
+    {
+      LineNumber = lineNum,
+      Mnemonic = mnemonic,
+      Operands = ops,
+    };
   }
 
   /// <summary>Parse line's operands after the mnemonic.</summary>
@@ -346,92 +433,6 @@ public class Assembler
       default:
         throw new AssemblerException($"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
     }
-  }
-
-  /// <summary>Basic size estimation for two-pass assembly.</summary>
-  /// <param name="ln">Assembly line.</param>
-  /// <returns>Size.</returns>
-  private int EstimateSize(AsmLine ln)
-  {
-    switch (ln.Mnemonic)
-    {
-      case Mnemonic.NOP:
-      case Mnemonic.RET:
-        return 1;
-
-      case Mnemonic.INT:
-        return 2;  // CD ib
-
-      case Mnemonic.DB:
-        return CountDataBytes(ln.Operands, 1);
-
-      case Mnemonic.DW:
-        return CountDataBytes(ln.Operands, 2);
-
-      case Mnemonic.DD:
-        return CountDataBytes(ln.Operands, 4);
-
-      case Mnemonic.MOV: // MOV r32, imm32 => B8+r + imm32
-        return 5;
-
-      case Mnemonic.PUSH:
-        if (ln.Operands.Count != 1)
-          throw new AssemblerException($"Line {ln.LineNumber}: PUSH expects 1 operand");
-        return IsRegister32(ln.Operands[0]) ? 1 : 5; // reg or imm32
-
-      case Mnemonic.POP:
-        return 1; // POP r32
-
-      case Mnemonic.ADD:
-      case Mnemonic.SUB:
-      case Mnemonic.CMP:
-        // We emit 81 /ext r + imm32
-        return 6; // opcode + ModRM + imm32
-
-      case Mnemonic.JMP:
-      case Mnemonic.CALL:
-        return 5; // E9/E8 + rel32
-
-      case Mnemonic.JZ:
-      case Mnemonic.JNZ:
-        return 6; // 0F 84/85 + rel32
-
-      default:
-        throw new AssemblerException($"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
-    }
-  }
-
-  /// <summary>Parse the line number, assembly mnemonic, and any following data.</summary>
-  /// <param name="line">Source code line.</param>
-  /// <param name="lineNum">Source line number.</param>
-  /// <returns>Assembly line parsed.</returns>
-  private AsmLine ParseLine(string line, int lineNum)
-  {
-    // Split mnemonic and operands (space or tab characters)
-    var firstSpace = line.IndexOfAny([SpaceChar, TabChar]);
-
-    string mnemonic, rest;
-    if (firstSpace < 0)
-    {
-      // Whole line is the mnemonic
-      mnemonic = line;
-      rest = string.Empty;
-    }
-    else
-    {
-      mnemonic = line[..firstSpace];
-      rest = line[(firstSpace + 1)..];
-    }
-
-    mnemonic = mnemonic.Trim().ToUpperInvariant();
-    var ops = SplitOperands(rest);
-
-    return new AsmLine
-    {
-      LineNumber = lineNum,
-      Mnemonic = mnemonic,
-      Operands = ops,
-    };
   }
 
   private int ResolveLabel(string label, int line)
