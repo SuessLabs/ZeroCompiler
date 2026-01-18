@@ -19,7 +19,7 @@ internal class Program
     }
 
     var inputPath = args[0];
-    var errCode = CompileCode(inputPath, "test.exe");
+    var errCode = CompileCode(inputPath, inputPath + ".exe");
 
     return errCode;
   }
@@ -30,8 +30,10 @@ internal class Program
     if (check != 0)
       return check;
 
-    var ret = CompileCode(inputPath, outputPath);
-    return ret;
+    var zero = new Zero();
+    var ret = zero.Compile(inputPath, outputPath, SourceType.Assembly);
+
+    return (int)ret;
   }
 
   private static void PrintUsage()
