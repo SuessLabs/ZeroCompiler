@@ -8,6 +8,8 @@ using Zero.Exceptions;
 
 namespace Zero.Assembly;
 
+/// <summary>Zero Assembly Language Assembler.</summary>
+/// <remarks>r: register, m: memory address, imm: immediate (i.e. a value).</remarks>
 public class Assembler
 {
   private const char ColonChar = ':';
@@ -17,6 +19,7 @@ public class Assembler
   private const char SpaceChar = ' ';
   private const char TabChar = '\t';
 
+  /// <summary>32-bit registers.</summary>
   private static readonly Dictionary<string, int> Reg32 = new(StringComparer.OrdinalIgnoreCase)
   {
     ["EAX"] = 0,
@@ -81,7 +84,7 @@ public class Assembler
     {
       // Maintain the exact offset for accurate rel32
       while (output.Count < ln.Offset)
-        output.Add(0xCC); // Shoudn't happen
+        output.Add(0xCC); // Shouldn't happen
 
       EmitLine(output, ln);
     }
@@ -97,7 +100,8 @@ public class Assembler
     return ops.Count * unitSize;
   }
 
-  private static bool IsRegister32(string s) => Reg32.ContainsKey(s.Trim().ToUpperInvariant());
+  private static bool IsRegister32(string s) =>
+    Reg32.ContainsKey(s.Trim().ToUpperInvariant());
 
   private static bool IsValidLabel(string line)
   {
@@ -231,21 +235,114 @@ public class Assembler
 
         int r = Reg32[dst.ToUpperInvariant()];
         int imm = ParseInt(src, ln.LineNumber);
-
         bytes.Add((byte)(0xB8 + r));
         bytes.AddRange(BitConverter.GetBytes(imm));
         break;
       }
-
       case Mnemonic.PUSH:
+      {
+        if (ln.Operands.Count != 1)
+          throw new AssemblerException($"Line {ln.LineNumber}: PUSH expects 1 operand");
+
+        var op = ln.Operands[0];
+        if (IsRegister32(op))
+        {
+          int r = Reg32[op.ToUpperInvariant()];
+          bytes.Add((byte)(0x50 + r));
+        }
+        else
+        {
+          int imm = ParseInt(op, ln.LineNumber);
+          bytes.Add(0x68);
+          bytes.AddRange(BitConverter.GetBytes(imm));
+        }
+
+        break;
+      }
       case Mnemonic.POP:
+      {
+        if (ln.Operands.Count != 1)
+          throw new AssemblerException($"Line {ln.LineNumber}: POP expects 1 operand");
+
+        var op = ln.Operands[0];
+        if (!IsRegister32(op))
+          throw new AssemblerException($"Line {ln.LineNumber}: POP supports only r32");
+
+        int r = Reg32[op.ToUpperInvariant()];
+        bytes.Add((byte)(0x58 + r));
+        break;
+      }
       case Mnemonic.ADD:
       case Mnemonic.SUB:
       case Mnemonic.CMP:
+      {
+        if (ln.Operands.Count != 2)
+          throw new AssemblerException($"Line {ln.LineNumber}: {ln.Mnemonic} expects 2 operands");
+
+        // Zero v0.1 (2003) spec says to swap these.. keeping traditional ASM below
+        var dst = ln.Operands[0];
+        var src = ln.Operands[1];
+        if (!IsRegister32(dst))
+          throw new AssemblerException($"Line {ln.LineNumber}: {ln.Mnemonic} supports r32, imm32");
+
+        int r = Reg32[dst.ToUpperInvariant()];
+        int imm = ParseInt(src, ln.LineNumber);
+
+        // 0x81 /ext r + imm32 (mod=11, rm=r)
+        bytes.Add(0x81);
+        byte ext = ln.Mnemonic switch
+        {
+          Mnemonic.ADD => 0,
+          Mnemonic.SUB => 5,
+          Mnemonic.CMP => 7,
+          _ => throw new InvalidOperationException()
+        };
+
+        bytes.Add(ModRM(0b0011, ext, (byte)r));
+        bytes.AddRange(BitConverter.GetBytes(imm));
+        break;
+      }
       case Mnemonic.JMP:
+      {
+        if (ln.Operands.Count != 1)
+          throw new AssemblerException($"Line {ln.LineNumber}: JMP expects 1 operand");
+
+        int target = ResolveLabel(ln.Operands[0], ln.LineNumber);
+        int next = ln.Offset + 5;
+        int rel32 = target - next; // relative location
+
+        bytes.Add(0xE9);
+        bytes.AddRange(BitConverter.GetBytes(rel32));
+        break;
+      }
       case Mnemonic.CALL:
+      {
+        if (ln.Operands.Count != 1)
+          throw new AssemblerException($"Line {ln.LineNumber}: CALL expects 1 operand");
+
+        int target = ResolveLabel(ln.Operands[0], ln.LineNumber);
+        int next = ln.Offset + 5;
+        int rel32 = target - next;
+
+        bytes.Add(0xE8);
+        bytes.AddRange(BitConverter.GetBytes(rel32));
+        break;
+      }
       case Mnemonic.JZ:
       case Mnemonic.JNZ:
+      {
+        if (ln.Operands.Count != 1)
+          throw new AssemblerException($"Line {ln.LineNumber}: {ln.Mnemonic} expects 1 operand");
+
+        int target = ResolveLabel(ln.Operands[0], ln.LineNumber);
+        int next = ln.Offset + 6;
+        int rel32 = target - next;
+
+        bytes.Add(0x0F);
+        bytes.Add(ln.Mnemonic == "JZ" ? (byte)0x84 : (byte)0x85);
+        bytes.AddRange(BitConverter.GetBytes(rel32));
+        break;
+      }
       default:
         throw new AssemblerException($"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
     }

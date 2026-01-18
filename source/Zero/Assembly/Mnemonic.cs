@@ -4,7 +4,12 @@
 namespace Zero.Assembly;
 
 /// <summary>List of x86 instruction mnemonic.</summary>
-/// <remarks>r: register, m: memory address, imm: immediate (i.e. a value).</remarks>
+/// <remarks>
+///   r: register, m: memory address, imm: immediate (i.e. a value).
+///   References:
+///     * http://unixwiz.net/techtips/x86-jumps.html
+///     * https://en.wikipedia.org/wiki/List_of_x86_instructions
+/// </remarks>
 public class Mnemonic
 {
   /// <summary>Add with carry</summary>
@@ -38,8 +43,13 @@ public class Mnemonic
   /// <summary>Call to interrupt (0xCC, 0xCD).</summary>
   public const string INT = "INT";
 
+  /// <summary>Jump (0xE9...0xEB, 0xFF/4, 0xFF/5).</summary>
   public const string JMP = "JMP";
+
+  /// <summary>Jump if not zero; flags: ZF=0 (0x75) same as JNE.</summary>
   public const string JNZ = "JNZ";
+
+  /// <summary>Jump if zero; flags: ZF=1 (0x74) same as JE jump if equal.</summary>
   public const string JZ = "JZ";
 
   /// <summary>Move r32, imm32 (0xA0...0xA3, 0x8C, 0x8E).</summary>
@@ -57,11 +67,30 @@ public class Mnemonic
   /// <summary>No operation (	0x90).</summary>
   public const string NOP = "NOP";
 
+  /// <summary>Pop data from stack (0x07, 0x17, 0x1F, 0x58...0x5F, 0x8F/0).</summary>
+  /// <remarks><![CDATA[r/m/sreg = *SP++;]]></remarks>
   public const string POP = "POP";
+
+  /// <summary>Pop FLAGS register from stack (0x9D).</summary>
+  /// <remarks><![CDATA[FLAGS = *SP++;]]></remarks>
+  public const string POPF = "POPF";
+
+  /// <summary>Push data onto stack (0x06, 0x0E, 0x16, 0x1E, 0x50...0x57, 0xFF/6).</summary>
+  /// <remarks><![CDATA[*--SP = r/m/sreg;]]></remarks>
   public const string PUSH = "PUSH";
+
+  /// <summary>Push FLAGS onto stack (0x9C).</summary>
+  /// <remarks><![CDATA[*--SP = FLAGS;]]></remarks>
+  public const string PUSHF = "PUSHF";
 
   /// <summary>Return from procedure.</summary>
   public const string RET = "RET";
 
+  /// <summary>Subtraction (0x28...0x2D, 0x80...0x81/5, 0x83/5).</summary>
+  /// <remarks><![CDATA[(1) r -= r/m/imm; (2) m -= r/imm;]]></remarks>
   public const string SUB = "SUB";
+
+  /// <summary>Exclusive OR (0x30...0x35, 0x80...0x81/6, 0x83/6).</summary>
+  /// <remarks><![CDATA[(1) r ^+= r/m/imm; (2) m ^= r/imm;]]></remarks>
+  public const string XOR = "XOR";
 }
