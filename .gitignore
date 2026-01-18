@@ -1,5 +1,10 @@
-# Copyright 2023 Xeno Innovations, Inc
-# Template for C#
+# Copyright 2025 Xeno Innovations, Inc
+# Generic Template
+
+# Binary and Executables
+*.exe
+*.dll
+*.o
 
 # Generic Visual Studio files
 *.bak
@@ -21,6 +26,12 @@
 *.sln.docstates
 *.autorecover
 *.coverage
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
 
 # SQLite datbases
 *.db3
@@ -77,5 +88,4 @@ TestResult.xml
 ## USER DEFINED
 /[Dd]ocs/*.csv
 /[Dd]ocs/backup
-/[Tt]ests
 /[Tt]ools

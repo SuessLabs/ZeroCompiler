@@ -1,9 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyTitle>Zero</AssemblyTitle>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
+    <VersionSuffix>-alpha1</VersionSuffix>
+    <Version>$(VersionPrefix)$(VersionSuffix)</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Zero.Tests\Zero.Tests.csproj" />
+  </ItemGroup>
 
 </Project>
