@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Zero.Assembly;
+using Zero.Exceptions;
 
 namespace Zero;
 
@@ -18,27 +19,33 @@ public class Zero
   public const string Version = "0.0.1";
   private const string ObjExt = ".obj";
 
+  private static ErrorCode _lastError = ErrorCode.None;
   private string? _inputPath;
   private string? _outputPath;
 
-  public static byte[]? CompileAsm(string[] source, bool createObjFile = false)
+  public static byte[]? CompileAsm(string[] source)
   {
-    var assembler = new Assembler();
-    var byteCode = assembler.Assemble(source);
+    ErrorCode errorCode = ErrorCode.None;
+    byte[]? exeBytes = null;
 
-    if (byteCode is null)
-      return null;
-
-    if (createObjFile)
+    try
     {
-      //var objFile = Path.GetFileNameWithoutExtension(_inputPath);
-      //objFile += ObjExt;
-      //File.WriteAllBytes(objFile, code)
+      var assembler = new Assembler();
+      ////assembler.HasObjectFiles = false; // for linking & debugging
+      exeBytes = assembler.Assemble(source);
+    }
+    catch (AssemblerException ex)
+    {
+      Console.Error.WriteLine($"Assembly error: {ex.Message}");
+      errorCode = ErrorCode.AssemblyError;
+    }
+    catch (Exception ex)
+    {
+      Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+      errorCode = ErrorCode.UnexpectedError;
     }
 
-    var pe = new PeWriter();
-    var exeBytes = pe.BuildPe32Executable(byteCode);
-
+    _lastError = errorCode;
     return exeBytes;
   }
 
@@ -66,6 +73,7 @@ public class Zero
     }
     else
     {
+      _lastError = ErrorCode.NotImplemented;
       throw new NotImplementedException();
     }
 
