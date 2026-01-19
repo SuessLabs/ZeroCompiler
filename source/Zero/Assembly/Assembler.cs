@@ -120,16 +120,11 @@ public class Assembler
         return 1;
 
       case Mnemonic.INT:
-        return 2;  // CD ib
+        return 2;
 
-      case Mnemonic.DB:
-        return CountDataBytes(ln.Operands, 1);
-
-      case Mnemonic.DW:
-        return CountDataBytes(ln.Operands, 2);
-
-      case Mnemonic.DD:
-        return CountDataBytes(ln.Operands, 4);
+      case Mnemonic.DB: return CountDataBytes(ln.Operands, 1);
+      case Mnemonic.DW: return CountDataBytes(ln.Operands, 2);
+      case Mnemonic.DD: return CountDataBytes(ln.Operands, 4);
 
       case Mnemonic.MOV: // MOV r32, imm32 => B8+r + imm32
         return 5;
@@ -140,21 +135,47 @@ public class Assembler
         return IsRegister(ln.Operands[0]) ? 1 : 5; // reg or imm32
 
       case Mnemonic.POP:
-        return 1; // POP r32
+        return 1;
 
       case Mnemonic.ADD:
       case Mnemonic.SUB:
       case Mnemonic.CMP:
+      case Mnemonic.AND:
+      case Mnemonic.OR:
+      case Mnemonic.XOR:
         // We emit 81 /ext r + imm32
-        return 6; // opcode + ModRM + imm32
+        // 6:  opcode + ModRM + imm32
+        // imm32 form: 81 /ext r + imm32 (6 bytes)
+        // reg-reg form: 2 bytes (op + ModRM); estimate worst-case
+        return (ln.Operands.Count == 2 && IsRegister(ln.Operands[1])) ? 2 : 6;
 
-      case Mnemonic.JMP:
+      case Mnemonic.TEST:
+        // TEST r32, r32 => 2 bytes; TEST r32, imm32 => 6 bytes
+        return (ln.Operands.Count == 2 && IsRegister(ln.Operands[1])) ? 2 : 6;
+
+      case Mnemonic.LEA:
+        // 8D /r + [ModRM] + optional SIB + disp32
+        // Estimate worst-case with disp32 + SIB: 7 bytes
+        return 7;
+
       case Mnemonic.CALL:
-        return 5; // E9/E8 + rel32
+        // CALL label => 5; CALL [abs32] => FF 15 + disp32 => 6
+        if (ln.Operands.Count != 1)
+          throw new AssemblerException($"Line {ln.LineNumber}: CALL expects 1 operand");
+        return IsMemoryAbsolute(ln.Operands[0]) ? 6 : 5;
+
+        // Jump to label (label:)
+      case Mnemonic.JMP:
+        return 5;
 
       case Mnemonic.JZ:
       case Mnemonic.JNZ:
         return 6; // 0F 84/85 + rel32
+
+      // Short jumps  (.mylabel:)
+      case Mnemonic.JZ8:
+      case Mnemonic.JNZ8:
+        return 2; // 74/75 + rel8
 
       default:
         throw new AssemblerException($"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
@@ -667,9 +688,9 @@ public class Assembler
         bytes.AddRange(BitConverter.GetBytes(rel32));
         break;
       }
-      /*
-      case "JZ8":
-      case "JNZ8":
+
+      case Mnemonic.JZ8:
+      case Mnemonic.JNZ8:
       {
         if (ln.Operands.Count != 1)
           throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: {ln.Mnemonic} expects 1 operand");
@@ -682,10 +703,11 @@ public class Assembler
           throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: short jump out of range ({rel8})");
 
         bytes.Add(ln.Mnemonic == "JZ8" ? (byte)0x74 : (byte)0x75);
-        bytes.Add((sbyte)rel8);
+        ////bytes.Add((sbyte)rel8);
+        bytes.Add((byte)rel8);
         break;
       }
-      */
+
       default:
         throw new AssemblerException(ErrorCode.UnknownSymbol, $"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
     }

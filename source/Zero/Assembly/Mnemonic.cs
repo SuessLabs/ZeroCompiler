@@ -53,8 +53,14 @@ public class Mnemonic
   /// <summary>Jump if not zero; flags: ZF=0 (0x75) same as JNE.</summary>
   public const string JNZ = "JNZ";
 
+  /// <summary>Short jump if not zero (.mylabel:).</summary>
+  public const string JNZ8 = "JNZ8";
+
   /// <summary>Jump if zero; flags: ZF=1 (0x74) same as JE jump if equal.</summary>
   public const string JZ = "JZ";
+
+  /// <summary>Short jump if zero (.mylabel:).</summary>
+  public const string JZ8 = "JZ8";
 
   /// <summary>	Load Effective Address (0x8D).</summary>
   public const string LEA = "LEA";
