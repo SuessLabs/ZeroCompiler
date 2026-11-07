@@ -16,4 +16,22 @@ public class AssemblerTests
 
     Assert.IsNotNull(bytes);
   }
+
+  [TestMethod]
+  public void CompileImportTableTest()
+  {
+    var lines = TestData.AsmData.ImportTable1.Split(Environment.NewLine);
+    var bytes = Zero.CompileAsm(lines);
+
+    Assert.IsNotNull(bytes);
+  }
+
+  [TestMethod]
+  public void CompileImportLeaJZ8Test()
+  {
+    var lines = TestData.AsmData.ImportTableShortJumps.Split(Environment.NewLine);
+    var bytes = Zero.CompileAsm(lines);
+
+    Assert.IsNotNull(bytes);
+  }
 }

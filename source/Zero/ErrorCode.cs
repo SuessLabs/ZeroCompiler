@@ -8,6 +8,14 @@ public enum ErrorCode
   None = 0,
   InvalidCommandLineArguments,
   SourceFileNotFound,
+
   AssemblyError,
   UnexpectedError,
+
+  NotImplemented,
+  SyntaxErrorImport,
+
+  /// <summary>Unknown mnemonic or symbol.</summary>
+  UnknownSymbol,
+  SyntaxError,
 }

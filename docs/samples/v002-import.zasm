@@ -1,0 +1,6 @@
+; Zero v0.0.2 Minimal demo: sets EAX=42 and returns.
+IMPORT kernel32.dll, ExitProcess
+
+start:
+  push 0                  ; Exit code
+  call [IAT_ExitProcess]
