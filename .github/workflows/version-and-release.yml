@@ -1,0 +1,96 @@
+name: Version merged pull requests
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [develop, master]
+
+permissions:
+  contents: write
+
+# Do not use a concurrency group: GitHub can replace pending runs, losing a bump.
+# The version script uses retrying fast-forward pushes to handle competing merges.
+jobs:
+  version-and-release:
+    if: github.event.pull_request.merged == true
+    runs-on: windows-2025
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      GH_TOKEN: ${{ secrets.VERSION_TOKEN || github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      # Use PowerShell and Git directly; no JavaScript-based checkout action.
+      - name: Check out the merged base branch
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          if ($env:TARGET_BRANCH -notin @('develop', 'master')) { throw 'Unsupported target branch.' }
+          $credentials = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("x-access-token:$env:GH_TOKEN"))
+          $authorization = "AUTHORIZATION: basic $credentials"
+          Write-Output "::add-mask::$credentials"
+          Write-Output "::add-mask::$authorization"
+          $env:GIT_CONFIG_COUNT = '1'
+          $env:GIT_CONFIG_KEY_0 = "http.$env:GITHUB_SERVER_URL/.extraheader"
+          $env:GIT_CONFIG_VALUE_0 = $authorization
+          @('GIT_CONFIG_COUNT=1', "GIT_CONFIG_KEY_0=$env:GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0=$authorization") |
+            Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          git init .
+          git remote add origin "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY.git"
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --tags
+          git switch --detach "refs/remotes/origin/$env:TARGET_BRANCH"
+
+      - name: Test version automation
+        run: ./.github/scripts/test-version.ps1
+
+      - name: Increment and commit the shared version
+        id: version
+        run: ./.github/scripts/update-version.ps1
+
+      - name: Install .NET 10 SDK
+        if: env.TARGET_BRANCH == 'master'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = Join-Path $env:RUNNER_TEMP 'dotnet-install.ps1'
+          $installDirectory = Join-Path $env:RUNNER_TEMP 'zero-dotnet'
+          Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $installer
+          # The installer calls exit, so run it in a separate PowerShell process.
+          & (Join-Path $PSHOME 'pwsh.exe') -NoProfile -File $installer -Channel 10.0 -InstallDir $installDirectory -NoPath
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "DOTNET_ROOT=$installDirectory" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $installDirectory | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Build native release
+        if: env.TARGET_BRANCH == 'master'
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: ./build.ps1 -Version $env:RELEASE_VERSION
+
+      - name: Test release
+        if: env.TARGET_BRANCH == 'master'
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: dotnet test source/Zero.Tests/Zero.Tests.csproj --configuration Release --no-build --no-restore "-p:Version=$env:RELEASE_VERSION"
+
+      - name: Package and publish GitHub Release
+        if: env.TARGET_BRANCH == 'master'
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archive = "zero-$env:RELEASE_TAG-win-x64.zip"
+          Compress-Archive -Path publish/* -DestinationPath $archive -Force
+          gh release view $env:RELEASE_TAG --json tagName 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG $archive --clobber
+          } else {
+            gh release create $env:RELEASE_TAG $archive --verify-tag --generate-notes --title "Zero Compiler $env:RELEASE_TAG"
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
