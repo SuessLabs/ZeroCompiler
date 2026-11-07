@@ -16,4 +16,8 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="../../docs/samples/hello-console.zasm" Link="samples/hello-console.zasm" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

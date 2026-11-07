@@ -5,5 +5,14 @@ using System;
 
 namespace Zero.Exceptions;
 
-public class AssemblerException(string message)
-  : Exception(message);
+public class AssemblerException : Exception
+{
+  public AssemblerException(string message) : base(message)
+  {
+  }
+
+  public AssemblerException(ErrorCode errCode, string message)
+    : base($"Error {errCode}: {message}")
+  {
+  }
+}

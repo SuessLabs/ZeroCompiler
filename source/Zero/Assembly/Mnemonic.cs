@@ -12,11 +12,15 @@ namespace Zero.Assembly;
 /// </remarks>
 public class Mnemonic
 {
-  /// <summary>Add with carry</summary>
+  /// <summary>Add with carry (0x10...0x15, 0x80...0x81/2, 0x83/2).</summary>
   public const string ADC = "ADC";
 
   /// <summary>Add (0x00...0x05, 0x80/0...0x81/0, 0x83/0).</summary>
+  /// <remarks><![CDATA[(1) r += r/m/imm; (2) m += r/imm]]></remarks>
   public const string ADD = "ADD";
+
+  /// <summary>Logical AND (0x20...0x25, 0x80...0x81/4, 0x83/4).</summary>
+  public const string AND = "AND";
 
   /// <summary>Call procedure (0x9A, 0xE8, 0xFF/2, 0xFF/3).</summary>
   public const string CALL = "CALL";
@@ -49,8 +53,17 @@ public class Mnemonic
   /// <summary>Jump if not zero; flags: ZF=0 (0x75) same as JNE.</summary>
   public const string JNZ = "JNZ";
 
+  /// <summary>Short jump if not zero (.mylabel:).</summary>
+  public const string JNZ8 = "JNZ8";
+
   /// <summary>Jump if zero; flags: ZF=1 (0x74) same as JE jump if equal.</summary>
   public const string JZ = "JZ";
+
+  /// <summary>Short jump if zero (.mylabel:).</summary>
+  public const string JZ8 = "JZ8";
+
+  /// <summary>	Load Effective Address (0x8D).</summary>
+  public const string LEA = "LEA";
 
   /// <summary>Move r32, imm32 (0xA0...0xA3, 0x8C, 0x8E).</summary>
   public const string MOV = "MOV";
@@ -61,11 +74,18 @@ public class Mnemonic
   /// <summary>Move word from string to string (0xA5).</summary>
   public const string MOVSW = "MOVSW";
 
-  /// <summary>Unsigned multiply(0xF7/4, 0xF6/4).</summary>
+  /// <summary>Unsigned multiply (0xF7/4, 0xF6/4).</summary>
   public const string MUL = "MUL";
 
   /// <summary>No operation (	0x90).</summary>
   public const string NOP = "NOP";
+
+  /// <summary>Negate the operand, logical NOT (0xF6/2...0xF7/2).</summary>
+  /// <remarks><![CDATA[r/m ^= -1]]></remarks>
+  public const string NOT = "NOT";
+
+  /// <summary>Logical OR (0x08...0x0D, 0x80...0x81/1, 0x83/1).</summary>
+  public const string OR = "OR";
 
   /// <summary>Pop data from stack (0x07, 0x17, 0x1F, 0x58...0x5F, 0x8F/0).</summary>
   /// <remarks><![CDATA[r/m/sreg = *SP++;]]></remarks>
@@ -86,9 +106,17 @@ public class Mnemonic
   /// <summary>Return from procedure.</summary>
   public const string RET = "RET";
 
+  /// <summary>Subtraction with borrow (0x18...0x1D, 0x80...0x81/3, 0x83/3).</summary>
+  /// <remarks><![CDATA[r -= (r/m/imm+CF);]]></remarks>
+  public const string SBB = "SBB";
+
   /// <summary>Subtraction (0x28...0x2D, 0x80...0x81/5, 0x83/5).</summary>
   /// <remarks><![CDATA[(1) r -= r/m/imm; (2) m -= r/imm;]]></remarks>
   public const string SUB = "SUB";
+
+  /// <summary>Logical compare 'AND' (0x84, 0x85, 0xA8, 0xA9, 0xF6/0, 0xF7/0).</summary>
+  /// <remarks><![CDATA[(1) r & r/m/imm; (2) m & r/imm;]]></remarks>
+  public const string TEST = "TEST";
 
   /// <summary>Exclusive OR (0x30...0x35, 0x80...0x81/6, 0x83/6).</summary>
   /// <remarks><![CDATA[(1) r ^+= r/m/imm; (2) m ^= r/imm;]]></remarks>

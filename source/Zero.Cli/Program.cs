@@ -19,10 +19,13 @@ internal class Program
     }
 
     var inputPath = args[0];
+    if (!File.Exists(inputPath))
+    {
+      Console.Error.WriteLine($"Error: file not found: {inputPath}");
+      return (int)ErrorCode.SourceFileNotFound;
+    }
 
-    // Auto-gen output name for now
-    var outputPath = Path.GetFileNameWithoutExtension(inputPath);
-    outputPath += ".exe";
+    var outputPath = args.Length > 1 ? args[1] : Path.ChangeExtension(inputPath, ".exe");
 
     var errCode = CompileCode(inputPath, outputPath);
 

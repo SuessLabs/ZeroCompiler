@@ -71,6 +71,7 @@ bld/
 # NUnit
 *.VisualState.xml
 TestResult.xml
+[Tt]est[Rr]esults/
 
 # Installer Folder
 /installer/*.exe

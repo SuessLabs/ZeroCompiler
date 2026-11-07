@@ -1,0 +1,40 @@
+; Windows x86 console application: prints "Hello from Zero!" and a newline.
+; From the repository root, compile and run:
+;   .\output\Zero.Cli\Debug\zcc.exe docs\samples\hello-console.zasm output\hello-console.exe
+;   .\output\hello-console.exe
+
+#IMPORT kernel32.dll, GetStdHandle, WriteFile, ExitProcess
+
+start:
+  push 0                  ; Writable stack storage for the bytes-written count.
+  lea esi, [esp]
+
+  push 0xFFFFFFF5          ; STD_OUTPUT_HANDLE (-11 as a 32-bit value).
+  call [IAT_GetStdHandle]
+  push eax
+  pop edi                 ; Save the standard-output handle.
+
+  ; CALL pushes the address of the following bytes, then skips over them.
+  ; DB currently accepts numeric bytes, so this is ASCII "Hello from Zero!\r\n".
+  call print_message
+message:
+  db 72, 101, 108, 108, 111, 32, 102, 114, 111, 109, 32, 90, 101, 114, 111, 33, 13, 10
+
+print_message:
+  pop edx                 ; Address of the message, supplied by CALL.
+  ; Win32 arguments are pushed right to left. WriteFile also supports redirection.
+  push 0                  ; lpOverlapped = NULL.
+  push esi                ; lpNumberOfBytesWritten.
+  push 18                 ; Message length in bytes, including CR/LF.
+  push edx                ; lpBuffer.
+  push edi                ; hFile = standard output.
+  call [IAT_WriteFile]
+  test eax, eax
+  jz failed
+
+  push 0
+  call [IAT_ExitProcess]
+
+failed:
+  push 1
+  call [IAT_ExitProcess]
