@@ -22,10 +22,10 @@ the Windows x86 assembly sample, and run the resulting executable:
 
 ```powershell
 # Compile Zero Assembly (ZASM)
-./zcc.exe hello-console.zasm hello-console.exe
+./build.bat
 
-# Run it
-.\output\hello-console.exe
+# From the publish folder:
+./zcc.exe samples/hello-console.zasm
 ```
 
 ## File Types

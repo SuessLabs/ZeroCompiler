@@ -22,6 +22,14 @@ if ($LASTEXITCODE -ne 0) {
 
 # Native AOT compilation happens during publish, rather than dotnet build.
 $cliProject = Join-Path $PSScriptRoot 'source/Zero.Cli/Zero.Cli.csproj'
-$publishDirectory = Join-Path $PSScriptRoot "output/zcc/$Runtime"
+$publishDirectory = Join-Path $PSScriptRoot 'publish'
 dotnet publish $cliProject --configuration $Configuration --runtime $Runtime --self-contained true --output $publishDirectory --disable-build-servers --maxcpucount:1 "-p:OptimizationPreference=$OptimizationPreference"
-exit $LASTEXITCODE
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+$samplesDirectory = Join-Path $PSScriptRoot 'docs/samples'
+$publishedSamplesDirectory = Join-Path $publishDirectory 'samples'
+New-Item -ItemType Directory -Path $publishedSamplesDirectory -Force | Out-Null
+Get-ChildItem -LiteralPath $samplesDirectory | Copy-Item -Destination $publishedSamplesDirectory -Recurse -Force
+exit 0

@@ -1,7 +1,7 @@
 ; Windows x86 console application: prints "Hello from Zero!" and a newline.
-; From the repository root, compile and run:
-;   .\output\zcc\win-x64\zcc.exe docs\samples\hello-console.zasm output\hello-console.exe
-;   .\output\hello-console.exe
+; From the published folder, compile and run:
+;   .\zcc.exe samples\hello-console.zasm hello-console.exe
+;   .\hello-console.exe
 
 #IMPORT kernel32.dll, GetStdHandle, WriteFile, ExitProcess
 

@@ -3,7 +3,8 @@
 ## Building the Native compiler
 
 Run `.\build.bat` (or `.\build.ps1`) to build the solution and publish a
-self-contained Native AOT compiler to `output\zcc\win-x64\zcc.exe`.
+self-contained Native AOT compiler to `publish\zcc.exe`, with the contents of
+`docs\samples` copied into `publish\samples`.
 This requires the .NET 10 SDK and Visual Studio's **Desktop development with C++**
 workload, including the Windows SDK. The published executable runs without an
 installed .NET runtime.
@@ -18,6 +19,8 @@ Use `.\build.bat -OptimizationPreference Speed` to favor execution speed over
 size, or `-Runtime win-arm64` when building for Windows ARM64 with the corresponding
 native toolchain. `-Configuration Debug` keeps debug symbols and stack traces.
 Size and maximum execution speed are competing optimization goals.
+Each build replaces the published compiler for the selected runtime in the same
+`publish` folder.
 
 ## Running Samples
 
@@ -29,10 +32,11 @@ the Windows x86 assembly sample, and run the resulting executable:
 
 ```powershell
 # Compile Zero Assembly (ZASM)
-./zcc.exe hello-console.zasm hello-console.exe
+.\build.bat
+.\publish\zcc.exe publish\samples\hello-console.zasm publish\hello-console.exe
 
 # Run it
-.\output\hello-console.exe
+.\publish\hello-console.exe
 ```
 
 The program prints `Hello from Zero!` followed by a newline and exits with code 0
