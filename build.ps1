@@ -7,15 +7,22 @@ param (
     [string]$Runtime = 'win-x64',
 
     [ValidateSet('Size', 'Speed')]
-    [string]$OptimizationPreference = 'Size'
+    [string]$OptimizationPreference = 'Size',
+
+    [ValidateNotNullOrEmpty()]
+    [string]$Version
 )
 
 $ErrorActionPreference = 'Stop'
 
 $solution = Join-Path $PSScriptRoot 'source/Zero.slnx'
+$versionArguments = @()
+if ($PSBoundParameters.ContainsKey('Version')) {
+    $versionArguments += "-p:Version=$Version"
+}
 
 # Use a single MSBuild worker and avoid depending on existing build servers.
-dotnet build $solution --configuration $Configuration --disable-build-servers --maxcpucount:1
+dotnet build $solution --configuration $Configuration --disable-build-servers --maxcpucount:1 @versionArguments
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
@@ -23,7 +30,7 @@ if ($LASTEXITCODE -ne 0) {
 # Native AOT compilation happens during publish, rather than dotnet build.
 $cliProject = Join-Path $PSScriptRoot 'source/Zero.Cli/Zero.Cli.csproj'
 $publishDirectory = Join-Path $PSScriptRoot 'publish'
-dotnet publish $cliProject --configuration $Configuration --runtime $Runtime --self-contained true --output $publishDirectory --disable-build-servers --maxcpucount:1 "-p:OptimizationPreference=$OptimizationPreference"
+dotnet publish $cliProject --configuration $Configuration --runtime $Runtime --self-contained true --output $publishDirectory --disable-build-servers --maxcpucount:1 "-p:OptimizationPreference=$OptimizationPreference" @versionArguments
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using Zero.Assembly;
 using Zero.Exceptions;
 
@@ -16,7 +17,8 @@ public enum SourceType
 
 public class Zero
 {
-  public const string Version = "0.0.2";
+  public static string Version { get; } = typeof(Zero).Assembly
+    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
   private const string ObjExt = ".obj";
 
   private static ErrorCode _lastError = ErrorCode.None;

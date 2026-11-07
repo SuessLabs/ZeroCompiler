@@ -22,6 +22,29 @@ Size and maximum execution speed are competing optimization goals.
 Each build replaces the published compiler for the selected runtime in the same
 `publish` folder.
 
+## Build version
+
+The shared defaults in `source/Directory.Build.props` are `VersionPrefix=0.0.2`
+and `VersionSuffix=alpha1`, producing `0.0.2-alpha1` for every project. The SDK
+derives numeric assembly/file versions and the informational version from these
+properties. `Zero.Version` and the CLI banner read the library's generated
+informational version, including commit metadata when the SDK supplies it.
+
+CI/CD can supply a complete version without modifying source files:
+
+```powershell
+.\build.bat -Version 0.0.3-ci.123
+
+# Or publish a stable release:
+.\build.ps1 -Version 0.0.3
+```
+
+The build script passes the version to both solution build and native publish.
+Direct `dotnet` commands can use `-p:Version=0.0.3-ci.123`, or
+`-p:VersionPrefix=0.0.3 -p:VersionSuffix=ci.123`. Pass the same properties when
+building, testing, and publishing in separate CI steps. The public `Zero.Version`
+member is now a static property rather than a compile-time constant.
+
 ## Running Samples
 
 
