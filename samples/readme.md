@@ -14,6 +14,7 @@ From the `publish` folder, compile and run a sample:
 | Sample | Behavior |
 | --- | --- |
 | `hello-console.zasm` | Prints `Hello from Zero!` using Windows console output. |
+| `hello-concat.zasm` | Prints `Hello` and `Zero Assembly!` on separate lines, then joins them with a space and prints `Hello Zero Assembly!`. |
 | `v002-hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
 | `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
@@ -28,6 +29,17 @@ above create their executables inside `samples`. To choose another output path:
 
 Omit `run` to compile without executing. Compilation failures prevent execution,
 including when an executable from an earlier successful build already exists.
+
+Run the string-concatenation sample with:
+
+```powershell
+.\zcc.exe run samples\hello-concat.zasm
+```
+
+It uses `strcpy` and `strcat` from Windows' system `msvcrt.dll` to build the final
+string in a writable 64-byte stack buffer. `puts` prints each line, and `exit`
+flushes output. The joined string is constructed at runtime from the two source
+strings and a space; its fixed contents require 21 bytes including the final zero.
 
 The arithmetic sample produces:
 
