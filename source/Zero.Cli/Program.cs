@@ -2,6 +2,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 
 namespace Zero.Cli;
@@ -18,57 +20,69 @@ internal class Program
       return 0;
     }
 
-    var inputPath = args[0];
+    var run = string.Equals(args[0], "run", StringComparison.OrdinalIgnoreCase);
+    var inputIndex = run ? 1 : 0;
+    var argumentCount = args.Length - inputIndex;
+
+    if (argumentCount < 1 || argumentCount > 2)
+    {
+      Console.Error.WriteLine("Error: expected a source file and an optional output file.");
+      PrintUsage();
+      return (int)ErrorCode.InvalidCommandLineArguments;
+    }
+
+    var inputPath = args[inputIndex];
     if (!File.Exists(inputPath))
     {
       Console.Error.WriteLine($"Error: file not found: {inputPath}");
       return (int)ErrorCode.SourceFileNotFound;
     }
 
-    var outputPath = args.Length > 1 ? args[1] : Path.ChangeExtension(inputPath, ".exe");
+    var outputPath = argumentCount == 2 ? args[inputIndex + 1] : Path.ChangeExtension(inputPath, ".exe");
+    try
+    {
+      var compiler = new Zero();
+      var result = compiler.Compile(inputPath, outputPath, SourceType.Assembly);
+      if (result != ErrorCode.None || !run)
+        return (int)result;
 
-    var errCode = CompileCode(inputPath, outputPath);
+      // Resolve relative output paths explicitly; inherit the caller's console and directory.
+      using var process = Process.Start(new ProcessStartInfo(Path.GetFullPath(outputPath))
+      {
+        UseShellExecute = false,
+      });
 
-    return errCode;
-  }
+      if (process is null)
+        throw new InvalidOperationException("The executable could not be started.");
 
-  private static int CompileCode(string inputPath, string outputPath)
-  {
-    var check = SanitizeInput(inputPath, outputPath);
-    if (check != 0)
-      return check;
-
-    var zero = new Zero();
-    var ret = zero.Compile(inputPath, outputPath, SourceType.Assembly);
-
-    return (int)ret;
+      process.WaitForExit();
+      return process.ExitCode;
+    }
+    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or
+                              ArgumentException or NotSupportedException or
+                              Win32Exception or InvalidOperationException)
+    {
+      Console.Error.WriteLine($"Error: {ex.Message}");
+      return (int)ErrorCode.UnexpectedError;
+    }
   }
 
   private static void PrintUsage()
   {
     Console.WriteLine(
       """
-      Usage: zero [code (.z, .zasm, .zsrc, .zero)]
-      usage: zero [commands]
+      Usage: zcc <source> [output.exe]
+             zcc run <source> [output.exe]
 
-      Code:
-        Source code of application
+      Compile Zero assembly source (.zasm). The output defaults to the source
+      path with an .exe extension. Use run to compile and execute the program.
+      Execution waits for the program to exit and returns its exit code.
 
       Commands:
-        -h|--help
+        -h|--help    Show this help.
 
       Copyright 2003-2026 Xeno Innovations, Inc.
       """);
   }
 
-  private static int SanitizeInput(string inputPath, string outputFile)
-  {
-    if (!File.Exists(inputPath))
-    {
-      Console.Error.WriteLine($"Error: File not found: {inputPath}");
-      return 2;
-    }
-
-    return 0;
-  }
 }

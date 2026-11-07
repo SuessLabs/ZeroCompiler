@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Zero\Zero.csproj" />
+    <InternalsVisibleTo Include="Zero.Tests" />
   </ItemGroup>
 
 </Project>

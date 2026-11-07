@@ -25,8 +25,12 @@ the Windows x86 assembly sample, and run the resulting executable:
 ./build.bat
 
 # From the publish folder:
-./zcc.exe samples/hello-console.zasm
+./zcc.exe run samples/hello-console.zasm
 ```
+
+Use `zcc run <source> [output.exe]` to compile and execute, or omit `run` to
+compile only. The generated executable defaults to the source path with an
+`.exe` extension. The run command waits for the program and returns its exit code.
 
 ## File Types
 

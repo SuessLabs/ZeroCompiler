@@ -6,18 +6,28 @@ samples into `publish\samples` alongside the native compiler.
 From the `publish` folder, compile and run a sample:
 
 ```powershell
-.\zcc.exe samples\hello-messagebox.zasm
-.\hello-msgbox.exe
+.\zcc.exe run samples\v002-hello-msgbox.zasm
 
-.\zcc.exe samples\integer-math.zasm
-.\integer-math.exe
+.\zcc.exe run samples\v002-integer-math.zasm
 ```
 
 | Sample | Behavior |
 | --- | --- |
 | `hello-console.zasm` | Prints `Hello from Zero!` using Windows console output. |
-| `hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
-| `integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
+| `v002-hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
+| `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
+
+`zcc run <source> [output.exe]` builds the source, then runs the executable in the
+current terminal and waits for it to exit. It returns the program's exit code.
+The output defaults to the source path with an `.exe` extension, so the examples
+above create their executables inside `samples`. To choose another output path:
+
+```powershell
+.\zcc.exe run samples\hello-console.zasm hello-console.exe
+```
+
+Omit `run` to compile without executing. Compilation failures prevent execution,
+including when an executable from an earlier successful build already exists.
 
 The arithmetic sample produces:
 

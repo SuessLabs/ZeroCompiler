@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Zero\Zero.csproj" />
+    <ProjectReference Include="..\Zero.Cli\Zero.Cli.csproj" />
   </ItemGroup>
 
   <ItemGroup>
