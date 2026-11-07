@@ -54,10 +54,6 @@ public class PeWriter
     BitConverter.GetBytes((uint)DosHeaderSize).CopyTo(dos, 0x3C);
     bw.Write(dos);
 
-    // e_lfanew at 0x3C (DWORD) -> 0x80
-    BitConverter.GetBytes((uint)DosHeaderSize).CopyTo(dos, 0x3C);
-    bw.Write(dos);
-
     // --- PE Signature ---
     bw.Write(Encoding.ASCII.GetBytes("PE\0\0"));
 
@@ -121,6 +117,7 @@ public class PeWriter
     bw.Write((uint)0x00001000);       // SizeOfStackCommit (4KB)
     bw.Write((uint)0x00100000);       // SizeOfHeapReserve (1MB)
     bw.Write((uint)0x00001000);       // SizeOfHeapCommit (4KB)
+    bw.Write((uint)0);                // LoaderFlags (reserved)
     bw.Write((uint)16);               // NumberOfRvaAndSizes
 
     // --- Data Directories (16 * 8 bytes) all zero ---
@@ -289,6 +286,16 @@ public class PeWriter
     var thunkBlob = new BlobBuilder();
     var iatBlob = new BlobBuilder();
 
+    // Assign bases before recording any RVAs in descriptors or thunk entries.
+    int descriptorSize = (imports.Count + 1) * 20;
+    int thunkSize = 0;
+    foreach (var req in imports)
+      thunkSize += (req.Functions.Count + 1) * 4;
+
+    thunkBlob.OffsetBase = descriptorSize;
+    iatBlob.OffsetBase = descriptorSize + thunkSize;
+    nameBlob.OffsetBase = descriptorSize + (2 * thunkSize);
+
     // Helper to add DLL name and return RVA
     uint AddDllName(string dll)
     {
@@ -301,6 +308,10 @@ public class PeWriter
     // Helper to add Hint/Name and return RVA
     uint AddHintName(string func)
     {
+      // IMAGE_IMPORT_BY_NAME starts on a two-byte boundary.
+      if ((nameBlob.Position & 1) != 0)
+        nameBlob.AddBytes(new byte[] { 0 });
+
       int ofs = nameBlob.Position;
       nameBlob.AddWord(0);         // Hint=0
       nameBlob.AddAsciiZ(func);
