@@ -1,6 +1,6 @@
 ; Windows x86 application: display a MessageBox containing "Hello Zero!".
 ; From the published folder:
-;   .\zcc.exe run samples\v002-hello-msgbox.zasm
+;   .\zero.exe run samples\hello-msgbox.zasm
 
 #IMPORT user32.dll, MessageBoxA
 #IMPORT kernel32.dll, ExitProcess
@@ -8,6 +8,7 @@
 start:
   ; CALL skips the inline data and pushes its address onto the stack.
   call message_ready
+
 message:
   ; Null-terminated ASCII: "Hello Zero!"
   db 72, 101, 108, 108, 111, 32, 90, 101, 114, 111, 33, 0
@@ -15,6 +16,7 @@ message:
 message_ready:
   pop esi                 ; Pointer to the message text.
   call caption_ready
+
 caption:
   ; Null-terminated ASCII: "Zero"
   db 90, 101, 114, 111, 0

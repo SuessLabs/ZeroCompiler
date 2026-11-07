@@ -6,7 +6,7 @@ samples into `publish\samples` alongside the native compiler.
 From the `publish` folder, compile and run a sample:
 
 ```powershell
-.\zcc.exe run samples\v002-hello-msgbox.zasm
+.\zcc.exe run samples\hello-msgbox.zasm
 
 .\zcc.exe run samples\v002-integer-math.zasm
 ```
@@ -16,7 +16,7 @@ From the `publish` folder, compile and run a sample:
 | `hello-console.zasm` | Prints `Hello from Zero!` using Windows console output. |
 | `hello-concat.zasm` | Prints `Hello` and `Zero Assembly!` on separate lines, then joins them with a space and prints `Hello Zero Assembly!`. |
 | `hello-db-vars.zasm` | Declares a named string with `message db 'Hello, World!', 0x0A, 0` and prints it. |
-| `v002-hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
+| `hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
 | `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
 `zcc run <source> [output.exe]` builds the source, then runs the executable in the

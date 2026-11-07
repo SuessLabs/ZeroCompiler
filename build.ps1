@@ -27,6 +27,12 @@ if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }
 
+# Validate all sources with the managed compiler before the slower native publish.
+& (Join-Path $PSScriptRoot 'validate-samples.ps1') -Configuration $Configuration
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+
 # Native AOT compilation happens during publish, rather than dotnet build.
 $cliProject = Join-Path $PSScriptRoot 'source/Zero.Cli/Zero.Cli.csproj'
 $publishDirectory = Join-Path $PSScriptRoot 'publish'

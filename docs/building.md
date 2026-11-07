@@ -26,6 +26,36 @@ Size and maximum execution speed are competing optimization goals.
 Each build replaces the published compiler for the selected runtime in the same
 `publish` folder.
 
+## Sample validation
+
+Every `build.ps1` / `build.bat` run compiles all `.zasm` files under `samples`,
+including subfolders, after building the solution and before Native AOT publishing.
+The build fails if any sample fails. Generated sample executables go to
+`output\samples\Release` (or `Debug`), preserving subfolder paths. Samples are
+compiled without launching them, so MessageBox samples require no interaction.
+
+After building the solution, run the validator separately with:
+
+```powershell
+.\validate-samples.ps1
+.\validate-samples.ps1 -Configuration Debug
+```
+
+The validator reports every failing file and returns a nonzero exit code on
+failure. `-SamplesDirectory`, `-OutputDirectory`, and `-CompilerPath` can override
+the defaults; the compiler path must point to the managed `zcc.dll`.
+
+Unit tests also discover and compile every sample automatically. Sources are
+embedded in the test assembly during build, so renamed/deleted samples do not
+linger in discovery and new samples need no manually maintained test list:
+
+```powershell
+dotnet test source/Zero.Tests/Zero.Tests.csproj --configuration Release
+```
+
+These compilation tests run on any OS supported by .NET. Existing console-output
+tests still execute selected samples on Windows to check their behavior.
+
 ## Build version
 
 The numeric version in `source/Directory.Build.props` uses

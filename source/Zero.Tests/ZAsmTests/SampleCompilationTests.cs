@@ -1,0 +1,54 @@
+// Copyright Xeno Innovations, Inc. 2026
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection.PortableExecutable;
+using Zero.Assembly;
+
+namespace Zero.Tests.ZAsmTests;
+
+[TestClass]
+public sealed class SampleCompilationTests
+{
+  private const string ResourcePrefix = "Samples/";
+
+  public static IEnumerable<object[]> GetSamples()
+  {
+    var resources = typeof(SampleCompilationTests).Assembly.GetManifestResourceNames();
+    Array.Sort(resources, StringComparer.Ordinal);
+    bool found = false;
+
+    foreach (var resource in resources)
+    {
+      if (!resource.StartsWith(ResourcePrefix, StringComparison.Ordinal))
+        continue;
+
+      found = true;
+      yield return [resource[ResourcePrefix.Length..]];
+    }
+
+    if (!found)
+      throw new InvalidOperationException("No .zasm samples were included in the test assembly.");
+  }
+
+  [TestMethod]
+  [DynamicData(nameof(GetSamples))]
+  public void EverySampleCompilesToAnExecutable(string sampleName)
+  {
+    // Embed sources at build time so removed/renamed output files cannot enter
+    // discovery, and new samples (including subfolders) need no manual test list.
+    using var source = typeof(SampleCompilationTests).Assembly.GetManifestResourceStream(ResourcePrefix + sampleName);
+    Assert.IsNotNull(source, $"Missing sample: {sampleName}");
+    using var reader = new StreamReader(source);
+    var bytes = new Assembler().Assemble(reader.ReadToEnd().Split('\n'));
+    Assert.IsNotNull(bytes, $"Compilation failed: {sampleName}");
+    Assert.IsTrue(bytes.Length > 0, $"Empty executable: {sampleName}");
+
+    using var executable = new PEReader(new MemoryStream(bytes));
+    Assert.IsNotNull(executable.PEHeaders.PEHeader, $"Invalid PE header: {sampleName}");
+    Assert.IsTrue(executable.PEHeaders.PEHeader.AddressOfEntryPoint > 0, $"Missing entry point: {sampleName}");
+    Assert.IsTrue(executable.PEHeaders.SectionHeaders.Length > 0, $"Missing sections: {sampleName}");
+  }
+}
