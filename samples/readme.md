@@ -15,6 +15,7 @@ From the `publish` folder, compile and run a sample:
 | --- | --- |
 | `hello-console.zasm` | Prints `Hello from Zero!` using Windows console output. |
 | `hello-concat.zasm` | Prints `Hello` and `Zero Assembly!` on separate lines, then joins them with a space and prints `Hello Zero Assembly!`. |
+| `hello-db-vars.zasm` | Declares a named string with `message db 'Hello, World!', 0x0A, 0` and prints it. |
 | `v002-hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
 | `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
@@ -59,3 +60,28 @@ These applications target Windows x86. The compiler currently writes the console
 subsystem for all executables, so the MessageBox sample can also open a console
 window when launched from Explorer. Run console samples from an existing terminal
 to keep their output visible.
+
+## Named byte declarations
+
+```asm
+message db 'Hello, World!', 0x0A, 0
+```
+
+`message` names the address of these bytes. `push message` passes that address;
+`mov eax, message` or `lea eax, [message]` can also load it. A colon is optional
+for byte declarations: `message: db 'Hello, World!', 0x0A, 0` works too.
+
+Quoted strings emit UTF-8 bytes and can use single or double quotes. Commas,
+semicolons, and colons inside a string are ordinary text. Double a matching quote
+to include it, as in `'It''s Zero'`. Backslashes are literal; use numeric bytes
+such as `0x0A` for a newline and `0` for a terminating zero. No ending zero is
+added automatically.
+
+Data is currently stored inline with the code in the read-only `.text` section.
+When declarations come before instructions, use `jmp start` to skip the data, as
+shown in `hello-db-vars.zasm`. These names identify stored bytes; they do not yet
+provide writable variables or separate data sections.
+
+```powershell
+.\zcc.exe run samples\hello-db-vars.zasm
+```

@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using Zero.Core;
 using Zero.Exceptions;
+using Zero.Parsing;
 
 namespace Zero.Assembly;
 
@@ -91,8 +93,16 @@ public class Assembler
     var pe = new PeWriter();
     var plan = pe.PlanLayout(codeSize, Imports);
 
-    // Pass 2: Emit code, now that extern symbols (IAT_*) have absolute addresses
-    var codeBytes = EmitBytes(plan.ExternSymbolMap);
+    // Address operands need virtual addresses; jumps still use section offsets.
+    var symbols = new Dictionary<string, uint>(plan.ExternSymbolMap, StringComparer.OrdinalIgnoreCase);
+    foreach (var (label, offset) in _labels)
+    {
+      if (!symbols.TryAdd(label, plan.ImageBase + plan.TextRva + (uint)offset))
+        throw new AssemblerException($"Label '{label}' conflicts with an imported symbol");
+    }
+
+    // Pass 2: Emit code with resolved addresses for local and imported symbols.
+    var codeBytes = EmitBytes(symbols);
 
     ////if (HasObjectFile)
     ////{
@@ -108,6 +118,23 @@ public class Assembler
   private static int CountDataBytes(List<string> ops, int unitSize) =>
       ops.Count * unitSize;
 
+  private static byte[] GetDefinedBytes(AsmLine line)
+  {
+    if (line.Operands.Count == 0)
+      throw new AssemblerException($"Line {line.LineNumber}: DB expects at least one operand");
+
+    var bytes = new List<byte>();
+    foreach (var operand in line.Operands)
+    {
+      if (operand[0] is '\'' or '"')
+        bytes.AddRange(Encoding.UTF8.GetBytes(AssemblySyntax.ReadString(operand, line.LineNumber)));
+      else
+        bytes.Add((byte)(ParseInt(operand, line.LineNumber) & 0xFF));
+    }
+
+    return bytes.ToArray();
+  }
+
   /// <summary>Basic size estimation for two-pass assembly.</summary>
   /// <param name="ln">Assembly line.</param>
   /// <returns>Size.</returns>
@@ -122,7 +149,7 @@ public class Assembler
       case Mnemonic.INT:
         return 2;
 
-      case Mnemonic.DB: return CountDataBytes(ln.Operands, 1);
+      case Mnemonic.DB: return GetDefinedBytes(ln).Length;
       case Mnemonic.DW: return CountDataBytes(ln.Operands, 2);
       case Mnemonic.DD: return CountDataBytes(ln.Operands, 4);
 
@@ -154,14 +181,24 @@ public class Assembler
         return (ln.Operands.Count == 2 && IsRegister(ln.Operands[1])) ? 2 : 6;
 
       case Mnemonic.LEA:
-        // 8D /r + [ModRM] + optional SIB + disp32
-        // Estimate worst-case with disp32 + SIB: 7 bytes
-        return 7;
+      {
+        if (ln.Operands.Count != 2 || !IsMemory(ln.Operands[1]))
+          throw new AssemblerException($"Line {ln.LineNumber}: LEA expects a register and [mem]");
+
+        // Only ESP addressing needs a SIB byte. Exact sizes keep labels aligned
+        // and avoid inserting an executable 0xCC byte after LEA [symbol].
+        var inner = ln.Operands[1].Trim()[1..^1].Trim();
+        int plus = inner.IndexOf('+');
+        var memoryBase = (plus < 0 ? inner : inner[..plus]).Trim();
+
+        return memoryBase.Equals("ESP", StringComparison.OrdinalIgnoreCase) ? 7 : 6;
+      }
 
       case Mnemonic.CALL:
         // CALL label => 5; CALL [abs32] => FF 15 + disp32 => 6
         if (ln.Operands.Count != 1)
           throw new AssemblerException($"Line {ln.LineNumber}: CALL expects 1 operand");
+
         return IsMemoryAbsolute(ln.Operands[0]) ? 6 : 5;
 
         // Jump to label (label:)
@@ -271,7 +308,7 @@ public class Assembler
     }
 
     mnemonic = mnemonic.Trim().ToUpperInvariant();
-    var ops = SplitOperands(rest);
+    var ops = AssemblySyntax.SplitOperands(rest, lineNum);
 
     return new AsmLine
     {
@@ -289,33 +326,22 @@ public class Assembler
   private static byte SIB(byte scale, byte index, byte bBase) =>
     (byte)((scale << 6) | ((index & 7) << 3) | (bBase & 7));
 
-  /// <summary>Parse line's operands after the mnemonic.</summary>
-  /// <param name="s">Source code.</param>
-  /// <returns>Parsed data.</returns>
-  private static List<string> SplitOperands(string s)
-  {
-    var list = new List<string>();
-    if (string.IsNullOrWhiteSpace(s))
-      return list;
-
-    var parts = s.Split(CommaChar);
-    foreach (var p in parts)
-    {
-      var t = p.Trim();
-      if (!string.IsNullOrEmpty(t))
-        list.Add(t);
-    }
-
-    return list;
-  }
-
   /// <summary>Strip comment from source code line.</summary>
   /// <param name="line">Source code line.</param>
   /// <returns>Line without code comment.</returns>
-  private static string StripComment(string line)
+  private static string StripComment(string line, int lineNumber)
   {
-    var idx = line.IndexOf(CommentLine1);
+    var idx = AssemblySyntax.FindUnquoted(line, CommentLine1, lineNumber);
     return idx >= 0 ? line[..idx] : line;
+  }
+
+  private void RegisterLabel(string label, int lineNumber)
+  {
+    if (!IsValidLabel(label) || IsRegister(label))
+      throw new AssemblerException($"Line {lineNumber}: Invalid label '{label}'");
+
+    if (!_labels.TryAdd(label, _offset))
+      throw new AssemblerException($"Line {lineNumber}: Duplicate label '{label}'");
   }
 
   /// <summary>Pass 1) Parse and Size. Parse, Collect labels, imports and compute size.</summary>
@@ -333,24 +359,18 @@ public class Assembler
     for (int i = 0; i < source.Length; i++)
     {
       var raw = source[i];
-      var line = StripComment(raw);
+      var line = StripComment(raw, i + 1);
 
       if (string.IsNullOrWhiteSpace(line))
         continue;
 
       // Labels: can be on their own line or prefixed before instruction
-      int colon = line.IndexOf(ColonChar);
+      int colon = AssemblySyntax.FindUnquoted(line, ColonChar, i + 1);
       if (colon >= 0)
       {
         var label = line[..colon].Trim();
 
-        if (!IsValidLabel(label))
-          throw new AssemblerException($"Invalid label '{label}' at line {i + 1}");
-
-        if (_labels.ContainsKey(label))
-          throw new AssemblerException($"Duplicate label '{label}' at line {i + 1}");
-
-        _labels[label] = _offset;
+        RegisterLabel(label, i + 1);
         line = line[(colon + 1)..].Trim();
 
         if (string.IsNullOrEmpty(line))
@@ -359,6 +379,22 @@ public class Assembler
 
       // Clean up line for ez-parsing
       line = line.Trim();
+
+      // A byte declaration can name its data without a colon: message db 'Hi', 0.
+      int firstSpace = line.IndexOfAny([SpaceChar, TabChar]);
+      if (firstSpace >= 0)
+      {
+        var declaration = line[(firstSpace + 1)..].TrimStart();
+        int directiveEnd = declaration.IndexOfAny([SpaceChar, TabChar]);
+        var directive = directiveEnd < 0 ? declaration : declaration[..directiveEnd];
+
+        if (directive.Equals(Mnemonic.DB, StringComparison.OrdinalIgnoreCase))
+        {
+          RegisterLabel(line[..firstSpace], i + 1);
+          line = declaration;
+        }
+      }
+
       var parsed = ParseLine(line, i + 1);
 
       // .idata importing externals
@@ -430,12 +466,7 @@ public class Assembler
 
       // Define byte
       case Mnemonic.DB:
-        foreach (var op in ln.Operands)
-        {
-          var v = ParseInt(op, ln.LineNumber);
-          bytes.Add((byte)(v & 0xFF));
-        }
-
+        bytes.AddRange(GetDefinedBytes(ln));
         break;
 
       case Mnemonic.DW:
@@ -817,7 +848,7 @@ public class Assembler
     return ResolveValue(inner, ln, externs);
   }
 
-  /// <summary>Get numeric value, label offset, or extern symbol offset.</summary>
+  /// <summary>Get a numeric value or the virtual address of a local/imported symbol.</summary>
   /// <param name="token">Input operand.</param>
   /// <param name="ln"><see cref="AsmLine"/>.</param>
   /// <param name="externs">Known externs.</param>
@@ -827,19 +858,15 @@ public class Assembler
   {
     token = token.Trim();
 
+    // Look up symbols before numbers so names ending in 'h' (such as path) work.
+    if (externs.TryGetValue(token, out var addr))
+      return unchecked((int)addr);
+
     // Immediate number (decimal, hex only)
     if (char.IsDigit(token[0]) ||
         token.StartsWith(HexPrefix, StringComparison.OrdinalIgnoreCase) ||
         token.EndsWith(HexSuffix, StringComparison.OrdinalIgnoreCase))
       return ParseInt(token, ln.LineNumber);
-
-    // Label (code offset)
-    if (_labels.TryGetValue(token, out var offset))
-      return offset;
-
-    // Extern symbol (i.e., IAT_ExitProcess)
-    if (externs != null && externs.TryGetValue(token, out var addr))
-      return unchecked((int)addr);
 
     throw new AssemblerException(ErrorCode.UnknownSymbol, $"Line {ln.LineNumber}: Unknown symbol or value '{token}'");
   }

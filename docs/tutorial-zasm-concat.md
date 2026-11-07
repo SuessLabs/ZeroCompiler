@@ -80,7 +80,7 @@ success. The joined sentence is built while the program runs.
 From the repository root, after building the compiler:
 
 ```powershell
-.\publish\zcc.exe run samples\hello-concat.zasm
+./zero.exe run samples/hello-concat.zasm
 ```
 
 Output:
