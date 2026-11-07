@@ -27,11 +27,16 @@ The Zero compiler project assembly language support.
 
 EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI
 
-### Directives
+### Data Directives
 
-* `db <byte>[, ...]` (supports decimal or 0x..)
-* `dw <word>[, ...]`
-* `dd <dword>[, ...]`
+Data Directives are used to allocate data of varying widths.
+
+| Directive | Full Name | Size in Bytes | Use Case | Sample |
+|-|-|-|-|-|
+| `db` | Define Byte        | 1 byte (8-bit) | Characters, strings, etc. | `db <byte>[, ...]` (supports decimal or 0x..)
+| `dw` | Define Word        | 2 | 16-bit integers, memory offsets, Unicode/UTF-16 characters | `dw <word>[, ...]` |
+| `dd` | Define Double Word | 4 | 32-bit integers, single-precision floats, memory addresses | `dd <dword>[, ...]` |
+| `dq` | Define Quad Word   | 8 | 64-bit pointers, 64-bit integers, double-precision floats | `` |
 
 ## Other
 

@@ -21,6 +21,7 @@ source/
     Assembly/       Assembler, parsed lines, directives, and import requests
     Core/           Shared utility functions
     Diagnostics/    Error codes and assembler exceptions
+    Parsing/        Quote-aware operand and string parsing
     Formats/
       Pe/           PE writer, layout, imports, and binary structures
     Targets/

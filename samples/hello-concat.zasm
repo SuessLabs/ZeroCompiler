@@ -1,0 +1,73 @@
+; Windows x86 console application: print two strings, then concatenate them.
+; From the published folder:
+;   .\zcc.exe run samples\hello-concat.zasm
+; Expected output:
+;   Hello
+;   Zero Assembly!
+;   Hello Zero Assembly!
+
+#IMPORT msvcrt.dll, puts, strcpy, strcat, exit
+
+start:
+  ; Reserve a writable stack buffer. The joined text needs 21 bytes including
+  ; the terminating zero; 64 bytes is sufficient for these fixed strings.
+  sub esp, 64
+  lea esi, [esp]          ; ESI = destination buffer.
+
+  ; CALL skips inline data and supplies its address as the return address.
+  call hello_ready
+
+hello_text:
+  ; Null-terminated ASCII: "Hello".
+  db 72, 101, 108, 108, 111, 0
+
+hello_ready:
+  pop edi                ; EDI = first string.
+  call second_ready
+
+second_text:
+  ; Null-terminated ASCII: "Zero Assembly!".
+  db 90, 101, 114, 111, 32, 65, 115, 115, 101, 109, 98, 108, 121, 33, 0
+
+second_ready:
+  pop ebx                ; EBX = second string.
+
+  ; puts prints a string and adds a newline.
+  push edi
+  call [IAT_puts]
+  add esp, 4             ; The caller cleans up cdecl arguments.
+
+  push ebx
+  call [IAT_puts]
+  add esp, 4
+
+  ; strcpy(buffer, first): initialize the buffer with "Hello" and its zero.
+  push edi
+  push esi
+  call [IAT_strcpy]
+  add esp, 8
+
+  call space_ready
+space_text:
+  db 32, 0               ; Null-terminated ASCII space.
+
+space_ready:
+  pop eax
+  ; strcat(buffer, " "): replace the old zero with a space and a new zero.
+  push eax
+  push esi
+  call [IAT_strcat]
+  add esp, 8
+
+  ; strcat(buffer, second): build "Hello Zero Assembly!" at runtime.
+  push ebx
+  push esi
+  call [IAT_strcat]
+  add esp, 8
+
+  push esi
+  call [IAT_puts]
+  add esp, 4
+
+  push 0
+  call [IAT_exit]         ; Flush console output and terminate with code 0.

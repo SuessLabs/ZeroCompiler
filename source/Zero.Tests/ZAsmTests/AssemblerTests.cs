@@ -12,6 +12,8 @@ public class AssemblerTests
 {
   [TestMethod]
   [DataRow("hello-console.zasm", "Hello from Zero!\r\n")]
+  [DataRow("hello-db-vars.zasm", "Hello, World!\r\n")]
+  [DataRow("hello-concat.zasm", "Hello\r\nZero Assembly!\r\nHello Zero Assembly!\r\n")]
   [DataRow("v002-integer-math.zasm", "7 + 5 = 12\r\n6 * 7 = 42\r\n")]
   public void ConsoleSamplePrintsExpectedOutput(string sampleName, string expectedOutput)
   {

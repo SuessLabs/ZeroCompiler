@@ -20,7 +20,7 @@ When compiling a single `.zsrc` file, the code can use compiler directives in th
 
 * zsrc - source code
 * zasm - assembly source code
-* zinc - Include / header file
+* zinc - Include / header file (zinc, zh)
 * zprj - Multi-file zero project (_coming soon_)
 
 ## Sample Zero Assembly
