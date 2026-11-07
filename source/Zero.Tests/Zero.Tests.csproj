@@ -18,8 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../samples/**/*.zasm" Link="samples/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <EmbeddedResource Include="../../samples/**/*.zasm" LogicalName="Samples/%(RecursiveDir)%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="../../samples/**/*.zasm"
+                      Link="Samples/%(RecursiveDir)%(Filename)%(Extension)"
+                      LogicalName="Samples/%(RecursiveDir)%(Filename)%(Extension)"
+                      TargetPath="samples/%(RecursiveDir)%(Filename)%(Extension)"
+                      CopyToOutputDirectory="PreserveNewest"
+                      WithCulture="false" />
   </ItemGroup>
 
 </Project>
