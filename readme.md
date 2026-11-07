@@ -10,6 +10,32 @@ The Zero programming language has its inceptions in 2001 and is aimed to be a si
 
 This is the next generation of the Zero Compiler Project.
 
+## Project layout
+
+The solution keeps the compiler library, command-line application, and tests in
+three projects. The library groups existing implementation files by responsibility:
+
+```text
+source/
+  Zero/
+    Assembly/       Assembler, parsed lines, directives, and import requests
+    Core/           Shared utility functions
+    Diagnostics/    Error codes and assembler exceptions
+    Formats/
+      Pe/           PE writer, layout, imports, and binary structures
+    Targets/
+      X86/          x86 mnemonic and opcode definitions
+    Zero.cs         Public compiler entry point
+  Zero.Cli/         Arguments, console output, and program execution
+  Zero.Tests/       Compiler and CLI tests
+```
+
+Public namespaces remain unchanged for compatibility. This is an organizational
+step: `Assembler` still coordinates parsing, x86 encoding, and PE output. Future
+work can extract shared parsing and target-specific encoding into separate
+components. New formats and architectures can be added under `Formats` and
+`Targets` when their implementations begin.
+
 ## Contributing
 
 * [Building Zero](docs/building.md)
