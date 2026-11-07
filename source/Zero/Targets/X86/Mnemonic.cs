@@ -65,7 +65,7 @@ public class Mnemonic
   /// <summary>	Load Effective Address (0x8D).</summary>
   public const string LEA = "LEA";
 
-  /// <summary>Move r32, imm32 (0xA0...0xA3, 0x8C, 0x8E).</summary>
+  /// <summary>Move r32, imm32 (B8+r) or load r32, [mem] (8B /r).</summary>
   public const string MOV = "MOV";
 
   /// <summary>Move byte from string to string (0xA4).</summary>
@@ -103,7 +103,7 @@ public class Mnemonic
   /// <remarks><![CDATA[*--SP = FLAGS;]]></remarks>
   public const string PUSHF = "PUSHF";
 
-  /// <summary>Return from procedure.</summary>
+  /// <summary>Return from procedure, optionally removing an unsigned 16-bit byte count from the stack.</summary>
   public const string RET = "RET";
 
   /// <summary>Subtraction with borrow (0x18...0x1D, 0x80...0x81/3, 0x83/3).</summary>

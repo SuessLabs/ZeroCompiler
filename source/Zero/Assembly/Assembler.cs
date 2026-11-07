@@ -131,6 +131,32 @@ public class Assembler
     return bytes.ToArray();
   }
 
+  private static bool IsRegister32(string token) => token.Trim().ToUpperInvariant() is
+    Register.EAX or Register.ECX or Register.EDX or Register.EBX or
+    Register.ESP or Register.EBP or Register.ESI or Register.EDI;
+
+  private static int MemoryInstructionSize(string operand, int lineNumber)
+  {
+    if (!IsMemory(operand))
+      throw new AssemblerException($"Line {lineNumber}: Expected [mem]");
+
+    var inner = operand.Trim()[1..^1].Trim();
+    int plus = inner.IndexOf(Constants.PlusChar);
+    var memoryBase = (plus < 0 ? inner : inner[..plus]).Trim();
+    return memoryBase.Equals(Register.ESP, StringComparison.OrdinalIgnoreCase) ? 7 : 6;
+  }
+
+  private static ushort ReturnStackBytes(AsmLine line)
+  {
+    if (line.Operands.Count > 1)
+      throw new AssemblerException($"Line {line.LineNumber}: RET expects zero or one operand");
+
+    int bytes = line.Operands.Count == 0 ? 0 : ParseInt(line.Operands[0], line.LineNumber);
+    if (bytes < 0 || bytes > ushort.MaxValue)
+      throw new AssemblerException($"Line {line.LineNumber}: RET stack size must be between 0 and 65535");
+    return (ushort)bytes;
+  }
+
   /// <summary>Basic size estimation for two-pass assembly.</summary>
   /// <param name="ln">Assembly line.</param>
   /// <returns>Size.</returns>
@@ -139,8 +165,11 @@ public class Assembler
     switch (ln.Mnemonic)
     {
       case Mnemonic.NOP:
-      case Mnemonic.RET:
         return 1;
+
+      case Mnemonic.RET:
+        _ = ReturnStackBytes(ln);
+        return ln.Operands.Count == 0 ? 1 : 3;
 
       case Mnemonic.INT:
         return 2;
@@ -149,8 +178,10 @@ public class Assembler
       case Mnemonic.DW: return CountDataBytes(ln.Operands, 2);
       case Mnemonic.DD: return CountDataBytes(ln.Operands, 4);
 
-      case Mnemonic.MOV: // MOV r32, imm32 => B8+r + imm32
-        return 5;
+      case Mnemonic.MOV:
+        if (ln.Operands.Count != 2 || !IsRegister32(ln.Operands[0]))
+          throw new AssemblerException($"Line {ln.LineNumber}: MOV expects r32, imm32 or r32, [mem]");
+        return IsMemory(ln.Operands[1]) ? MemoryInstructionSize(ln.Operands[1], ln.LineNumber) : 5;
 
       case Mnemonic.PUSH:
         if (ln.Operands.Count != 1)
@@ -181,13 +212,7 @@ public class Assembler
         if (ln.Operands.Count != 2 || !IsMemory(ln.Operands[1]))
           throw new AssemblerException($"Line {ln.LineNumber}: LEA expects a register and [mem]");
 
-        // Only ESP addressing needs a SIB byte. Exact sizes keep labels aligned
-        // and avoid inserting an executable 0xCC byte after LEA [symbol].
-        var inner = ln.Operands[1].Trim()[1..^1].Trim();
-        int plus = inner.IndexOf(Constants.PlusChar);
-        var memoryBase = (plus < 0 ? inner : inner[..plus]).Trim();
-
-        return memoryBase.Equals(Register.ESP, StringComparison.OrdinalIgnoreCase) ? 7 : 6;
+        return MemoryInstructionSize(ln.Operands[1], ln.LineNumber);
       }
 
       case Mnemonic.CALL:
@@ -449,7 +474,16 @@ public class Assembler
     switch (ln.Mnemonic)
     {
       case Mnemonic.NOP: bytes.Add(0x90); break;
-      case Mnemonic.RET: bytes.Add(0xC3); break;
+      case Mnemonic.RET:
+        if (ln.Operands.Count == 0)
+          bytes.Add(0xC3);
+        else
+        {
+          bytes.Add(0xC2);
+          bytes.AddRange(BitConverter.GetBytes(ReturnStackBytes(ln)));
+        }
+
+        break;
 
       // Call to interrupt (0xCC, 0xCD)
       case Mnemonic.INT:
@@ -484,7 +518,7 @@ public class Assembler
 
         break;
 
-      // MOV r32, imm32; MOV DEST, SRC;
+      // MOV r32, imm32 or MOV r32, [mem].
       case Mnemonic.MOV:
       {
         if (ln.Operands.Count != 2)
@@ -494,10 +528,16 @@ public class Assembler
         var dst = ln.Operands[0];
         var src = ln.Operands[1];
 
-        if (!IsRegister(dst))
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: MOV supports only r32, imm32");
+        if (!IsRegister32(dst))
+          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: MOV destination must be a 32-bit register");
 
         int r = Registers[dst.ToUpperInvariant()];
+        if (IsMemory(src))
+        {
+          EmitMemoryInstruction(bytes, 0x8B, r, src, ln, externs);
+          break;
+        }
+
         int imm = ResolveValue(src, ln, externs); // allow labels or numbers
 
         bytes.Add((byte)(0xB8 + r));
@@ -634,33 +674,7 @@ public class Assembler
 
         int rd = Registers[dst.ToUpperInvariant()];
 
-        ParseMemory(src, ln, externs, out bool hasBase, out int baseReg, out int disp32, out bool needsSib);
-
-        bytes.Add(0x8D); // LEA
-
-        if (!hasBase)
-        {
-          // [disp32] => mod=00, rm=101 + disp32
-          bytes.Add(ModRM(0b00, (byte)rd, 0b101));
-          bytes.AddRange(BitConverter.GetBytes(disp32));
-        }
-        else
-        {
-          // use mod=10 (disp32) to keep it simple
-          ////if (baseReg == 4) // ESP needs SIB
-          if (baseReg == Registers[Register.ESP])
-          {
-            bytes.Add(ModRM(0b10, (byte)rd, 0b100));
-            bytes.Add(ScaleIndexBase(0, 0b100, 0b100)); // scale=1, index=none(100), base=ESP(100)
-            bytes.AddRange(BitConverter.GetBytes(disp32));
-          }
-          else
-          {
-            bytes.Add(ModRM(0b10, (byte)rd, (byte)baseReg));
-            bytes.AddRange(BitConverter.GetBytes(disp32));
-          }
-        }
-
+        EmitMemoryInstruction(bytes, 0x8D, rd, src, ln, externs);
         break;
       }
       case Mnemonic.CALL:
@@ -742,6 +756,24 @@ public class Assembler
     }
   }
 
+  private void EmitMemoryInstruction(List<byte> bytes, byte opcode, int register, string operand,
+                                    AsmLine line, IReadOnlyDictionary<string, uint> symbols)
+  {
+    ParseMemory(operand, line, symbols, out bool hasBase, out int baseReg, out int displacement, out bool needsSib);
+    bytes.Add(opcode);
+    if (!hasBase)
+      bytes.Add(ModRM(0b00, (byte)register, 0b101));
+    else if (needsSib)
+    {
+      bytes.Add(ModRM(0b10, (byte)register, 0b100));
+      bytes.Add(ScaleIndexBase(0, 0b100, 0b100));
+    }
+    else
+      bytes.Add(ModRM(0b10, (byte)register, (byte)baseReg));
+
+    bytes.AddRange(BitConverter.GetBytes(displacement));
+  }
+
   private void ParseMemory(string s, AsmLine ln, IReadOnlyDictionary<string, uint> externs,
                            out bool hasBase, out int baseReg, out int disp32, out bool needsSib)
   {
@@ -763,7 +795,7 @@ public class Assembler
     {
       var left = inner[..plusIdx].Trim();
       var right = inner[(plusIdx + 1)..].Trim();
-      if (!IsRegister(left))
+      if (!IsRegister32(left))
         throw new AssemblerException($"Line {ln.LineNumber}: Unsupported memory base '{left}'");
 
       hasBase = true;
@@ -776,6 +808,9 @@ public class Assembler
     // plain reg OR disp32/symbol
     if (IsRegister(inner))
     {
+      if (!IsRegister32(inner))
+        throw new AssemblerException($"Line {ln.LineNumber}: Memory addressing requires a 32-bit register");
+
       hasBase = true;
       baseReg = Registers[inner.ToUpperInvariant()];
       disp32 = 0;
