@@ -11,6 +11,33 @@ namespace Zero.Tests.ZAsmTests;
 public class AssemblerTests
 {
   [TestMethod]
+  public void CompileBasicTest()
+  {
+    var lines = TestData.AsmData.MovCmpJz.Split(Environment.NewLine);
+    var bytes = Zero.CompileAsm(lines);
+
+    Assert.IsNotNull(bytes);
+  }
+
+  [TestMethod]
+  public void CompileImportLeaJZ8Test()
+  {
+    var lines = TestData.AsmData.ImportTableShortJumps.Split(Environment.NewLine);
+    var bytes = Zero.CompileAsm(lines);
+
+    Assert.IsNotNull(bytes);
+  }
+
+  [TestMethod]
+  public void CompileImportTableTest()
+  {
+    var lines = TestData.AsmData.ImportTable1.Split(Environment.NewLine);
+    var bytes = Zero.CompileAsm(lines);
+
+    Assert.IsNotNull(bytes);
+  }
+
+  [TestMethod]
   [DataRow("hello-console.zasm", "Hello from Zero!\r\n")]
   [DataRow("hello-db-vars.zasm", "Hello, World!\r\n")]
   [DataRow("hello-concat.zasm", "Hello\r\nZero Assembly!\r\nHello Zero Assembly!\r\n")]
@@ -50,32 +77,5 @@ public class AssemblerTests
     {
       File.Delete(executable);
     }
-  }
-
-  [TestMethod]
-  public void CompileBasicTest()
-  {
-    var lines = TestData.AsmData.MovCmpJz.Split(Environment.NewLine);
-    var bytes = Zero.CompileAsm(lines);
-
-    Assert.IsNotNull(bytes);
-  }
-
-  [TestMethod]
-  public void CompileImportTableTest()
-  {
-    var lines = TestData.AsmData.ImportTable1.Split(Environment.NewLine);
-    var bytes = Zero.CompileAsm(lines);
-
-    Assert.IsNotNull(bytes);
-  }
-
-  [TestMethod]
-  public void CompileImportLeaJZ8Test()
-  {
-    var lines = TestData.AsmData.ImportTableShortJumps.Split(Environment.NewLine);
-    var bytes = Zero.CompileAsm(lines);
-
-    Assert.IsNotNull(bytes);
   }
 }

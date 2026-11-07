@@ -41,6 +41,7 @@ public sealed class SampleCompilationTests
     // discovery, and new samples (including subfolders) need no manual test list.
     using var source = typeof(SampleCompilationTests).Assembly.GetManifestResourceStream(ResourcePrefix + sampleName);
     Assert.IsNotNull(source, $"Missing sample: {sampleName}");
+
     using var reader = new StreamReader(source);
     var bytes = new Assembler().Assemble(reader.ReadToEnd().Split('\n'));
     Assert.IsNotNull(bytes, $"Compilation failed: {sampleName}");
