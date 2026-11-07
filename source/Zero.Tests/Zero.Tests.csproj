@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../docs/samples/hello-console.zasm" Link="samples/hello-console.zasm" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../samples/*.zasm" Link="samples/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

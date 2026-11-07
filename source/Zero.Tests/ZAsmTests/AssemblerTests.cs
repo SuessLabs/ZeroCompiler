@@ -11,12 +11,14 @@ namespace Zero.Tests.ZAsmTests;
 public class AssemblerTests
 {
   [TestMethod]
-  public void ConsoleSamplePrintsMessage()
+  [DataRow("hello-console.zasm", "Hello from Zero!\r\n")]
+  [DataRow("integer-arithmetic.zasm", "7 + 5 = 12\r\n6 * 7 = 42\r\n")]
+  public void ConsoleSamplePrintsExpectedOutput(string sampleName, string expectedOutput)
   {
     if (!OperatingSystem.IsWindows())
       Assert.Inconclusive("The sample produces a Windows x86 executable.");
 
-    var source = Path.Combine(AppContext.BaseDirectory, "samples", "hello-console.zasm");
+    var source = Path.Combine(AppContext.BaseDirectory, "samples", sampleName);
     var bytes = Zero.CompileAsm(File.ReadAllLines(source));
     Assert.IsNotNull(bytes);
 
@@ -40,7 +42,7 @@ public class AssemblerTests
       }
 
       Assert.AreEqual(0, process.ExitCode);
-      Assert.AreEqual("Hello from Zero!\r\n", process.StandardOutput.ReadToEnd());
+      Assert.AreEqual(expectedOutput, process.StandardOutput.ReadToEnd());
     }
     finally
     {
