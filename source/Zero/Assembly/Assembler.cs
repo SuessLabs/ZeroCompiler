@@ -15,58 +15,54 @@ namespace Zero.Assembly;
 /// <remarks>r: register, m: memory address, imm: immediate (i.e. a value).</remarks>
 public class Assembler
 {
-  private const char BracketEnd = ']';
-  private const char BracketStart = '[';
-  private const char ColonChar = ':';
-  private const char CommaChar = ',';
-  private const char CommentLine1 = ';';
-  private const string CommentLine2 = "//";
-  private const string DotDll = ".dll";
-  private const string HexPrefix = "0x";
-  private const string HexSuffix = "h";
-  private const char PeriodChar = '.';
-  private const char SpaceChar = ' ';
-  private const char TabChar = '\t';
-
   /// <summary>32-bit registers.</summary>
   private static readonly Dictionary<string, int> Registers = new(StringComparer.OrdinalIgnoreCase)
   {
+    // 64-bit registers
+    [Register.RAX] = 0,
+    [Register.RCX] = 1,
+    [Register.RDX] = 2,
+    [Register.RBX] = 3,
+    [Register.RSP] = 4,
+    [Register.RBP] = 5,
+    [Register.RSI] = 6,
+    [Register.RDI] = 7,
     // 32-bit registers
-    ["EAX"] = 0, // Accumulator register
-    ["ECX"] = 1, // Count register
-    ["EDX"] = 2, // Data register
-    ["EBX"] = 3, // Base register
-    ["ESP"] = 4, // Stack pointer
-    ["EBP"] = 5, // Base pointer
-    ["ESI"] = 6, // Source index
-    ["EDI"] = 7, // Destination index
+    [Register.EAX] = 0, // Accumulator register
+    [Register.ECX] = 1, // Count register
+    [Register.EDX] = 2, // Data register
+    [Register.EBX] = 3, // Base register
+    [Register.ESP] = 4, // Stack pointer
+    [Register.EBP] = 5, // Base pointer
+    [Register.ESI] = 6, // Source index
+    [Register.EDI] = 7, // Destination index
     // 16-bit registers
-    ["AX"] = 0,
-    ["CX"] = 1,
-    ["DX"] = 2,
-    ["BX"] = 3,
-    ["SP"] = 4,
-    ["BP"] = 5,
-    ["SI"] = 6,
-    ["DI"] = 7,
+    [Register.AX] = 0,
+    [Register.CX] = 1,
+    [Register.DX] = 2,
+    [Register.BX] = 3,
+    [Register.SP] = 4,
+    [Register.BP] = 5,
+    [Register.SI] = 6,
+    [Register.DI] = 7,
     // 8-bit registers
-    ["AL"] = 0,
-    ["CL"] = 1,
-    ["DL"] = 2,
-    ["BL"] = 3,
-    ["AH"] = 4,
-    ["CH"] = 5,
-    ["DH"] = 6,
-    ["BH"] = 7,
+    [Register.AL] = 0,
+    [Register.CL] = 1,
+    [Register.DL] = 2,
+    [Register.BL] = 3,
+    [Register.AH] = 4,
+    [Register.CH] = 5,
+    [Register.DH] = 6,
+    [Register.BH] = 7,
     // 128-bit registers
-    ["XMM0"] = 0,
-    ["XMM1"] = 1,
-    ["XMM2"] = 2,
-    ["XMM3"] = 3,
-    ["XMM4"] = 4,
-    ["XMM5"] = 5,
-    ["XMM6"] = 6,
-    ["XMM7"] = 7,
+    [Register.XMM0] = 0,
+    [Register.XMM1] = 1,
+    [Register.XMM2] = 2,
+    [Register.XMM3] = 3,
+    [Register.XMM4] = 4,
+    [Register.XMM5] = 5,
+    [Register.XMM6] = 6,
+    [Register.XMM7] = 7,
   };
 
   private readonly List<ImportRequest> _imports = [];
@@ -126,7 +122,7 @@ public class Assembler
     var bytes = new List<byte>();
     foreach (var operand in line.Operands)
     {
-      if (operand[0] is '\'' or '"')
+      if (operand[0] is Constants.SingleQuote or Constants.DoubleQuote)
         bytes.AddRange(Encoding.UTF8.GetBytes(AssemblySyntax.ReadString(operand, line.LineNumber)));
       else
         bytes.Add((byte)(ParseInt(operand, line.LineNumber) & 0xFF));
@@ -188,10 +184,10 @@ public class Assembler
         // Only ESP addressing needs a SIB byte. Exact sizes keep labels aligned
         // and avoid inserting an executable 0xCC byte after LEA [symbol].
         var inner = ln.Operands[1].Trim()[1..^1].Trim();
-        int plus = inner.IndexOf('+');
+        int plus = inner.IndexOf(Constants.PlusChar);
         var memoryBase = (plus < 0 ? inner : inner[..plus]).Trim();
 
-        return memoryBase.Equals("ESP", StringComparison.OrdinalIgnoreCase) ? 7 : 6;
+        return memoryBase.Equals(Register.ESP, StringComparison.OrdinalIgnoreCase) ? 7 : 6;
       }
 
       case Mnemonic.CALL:
@@ -223,15 +219,15 @@ public class Assembler
   /// <param name="token">Input token.</param>
   /// <returns>True if it is memory pointer.</returns>
   private static bool IsMemory(string token) =>
-    token.Trim().StartsWith(BracketStart) && token.Trim().EndsWith(BracketEnd);
+    token.Trim().StartsWith(Constants.BracketStart) && token.Trim().EndsWith(Constants.BracketEnd);
 
   private static bool IsMemoryAbsolute(string token)
   {
     token = token.Trim();
 
     // Absolute [imm32] or [symbol]
-    return token.StartsWith(BracketStart) && token.EndsWith(BracketEnd) &&
-          !token.Contains('+') && !token.Contains("-");
+    return token.StartsWith(Constants.BracketStart) && token.EndsWith(Constants.BracketEnd) &&
+          !token.Contains(Constants.PlusChar) && !token.Contains(Constants.MinusChar);
   }
 
   /// <summary>Is token a register.</summary>
@@ -249,12 +245,12 @@ public class Assembler
       return false;
 
     // Must start with a letter, not underscore or period (section)
-    if (!(char.IsLetter(line[0]) || line[0] == '_' || line[0] == '.'))
+    if (!(char.IsLetter(line[0]) || line[0] == Constants.UnderscoreChar || line[0] == Constants.PeriodChar))
       return false;
 
     // Must contain alpha-numeric only
     foreach (var c in line)
-      if (!(char.IsLetterOrDigit(c) || c == '_' || c == '.'))
+      if (!(char.IsLetterOrDigit(c) || c == Constants.UnderscoreChar || c == Constants.PeriodChar))
         return false;
 
     return true;
@@ -271,10 +267,10 @@ public class Assembler
     s = s.Trim();
     try
     {
-      if (s.StartsWith(HexPrefix, StringComparison.OrdinalIgnoreCase))
+      if (s.StartsWith(Constants.HexPrefix, StringComparison.OrdinalIgnoreCase))
         return Convert.ToInt32(s[2..], 16);
 
-      if (s.EndsWith(HexSuffix, StringComparison.OrdinalIgnoreCase))
+      if (s.EndsWith(Constants.HexSuffix, StringComparison.OrdinalIgnoreCase))
         return Convert.ToInt32(s[..^1], 16);
 
       return int.Parse(s, NumberStyles.Integer, CultureInfo.InvariantCulture);
@@ -292,7 +288,7 @@ public class Assembler
   private static AsmLine ParseLine(string line, int lineNum)
   {
     // Split mnemonic and operands (space or tab characters)
-    var firstSpace = line.IndexOfAny([SpaceChar, TabChar]);
+    var firstSpace = line.IndexOfAny([Constants.SpaceChar, Constants.TabChar]);
 
     string mnemonic, rest;
     if (firstSpace < 0)
@@ -323,7 +319,7 @@ public class Assembler
   /// <param name="index">Index value.</param>
   /// <param name="bBase">Base value.</param>
   /// <returns></returns>
-  private static byte SIB(byte scale, byte index, byte bBase) =>
+  private static byte ScaleIndexBase(byte scale, byte index, byte bBase) =>
     (byte)((scale << 6) | ((index & 7) << 3) | (bBase & 7));
 
   /// <summary>Strip comment from source code line.</summary>
@@ -331,7 +327,7 @@ public class Assembler
   /// <returns>Line without code comment.</returns>
   private static string StripComment(string line, int lineNumber)
   {
-    var idx = AssemblySyntax.FindUnquoted(line, CommentLine1, lineNumber);
+    var idx = AssemblySyntax.FindUnquoted(line, Constants.CommentLine1, lineNumber);
     return idx >= 0 ? line[..idx] : line;
   }
 
@@ -365,7 +361,7 @@ public class Assembler
         continue;
 
       // Labels: can be on their own line or prefixed before instruction
-      int colon = AssemblySyntax.FindUnquoted(line, ColonChar, i + 1);
+      int colon = AssemblySyntax.FindUnquoted(line, Constants.ColonChar, i + 1);
       if (colon >= 0)
       {
         var label = line[..colon].Trim();
@@ -381,11 +377,11 @@ public class Assembler
       line = line.Trim();
 
       // A byte declaration can name its data without a colon: message db 'Hi', 0.
-      int firstSpace = line.IndexOfAny([SpaceChar, TabChar]);
+      int firstSpace = line.IndexOfAny([Constants.SpaceChar, Constants.TabChar]);
       if (firstSpace >= 0)
       {
         var declaration = line[(firstSpace + 1)..].TrimStart();
-        int directiveEnd = declaration.IndexOfAny([SpaceChar, TabChar]);
+        int directiveEnd = declaration.IndexOfAny([Constants.SpaceChar, Constants.TabChar]);
         var directive = directiveEnd < 0 ? declaration : declaration[..directiveEnd];
 
         if (directive.Equals(Mnemonic.DB, StringComparison.OrdinalIgnoreCase))
@@ -641,6 +637,7 @@ public class Assembler
         ParseMemory(src, ln, externs, out bool hasBase, out int baseReg, out int disp32, out bool needsSib);
 
         bytes.Add(0x8D); // LEA
+
         if (!hasBase)
         {
           // [disp32] => mod=00, rm=101 + disp32
@@ -650,10 +647,11 @@ public class Assembler
         else
         {
           // use mod=10 (disp32) to keep it simple
-          if (baseReg == 4) // ESP needs SIB
+          ////if (baseReg == 4) // ESP needs SIB
+          if (baseReg == Registers[Register.ESP])
           {
             bytes.Add(ModRM(0b10, (byte)rd, 0b100));
-            bytes.Add(SIB(0, 0b100, 0b100)); // scale=1, index=none(100), base=ESP(100)
+            bytes.Add(ScaleIndexBase(0, 0b100, 0b100)); // scale=1, index=none(100), base=ESP(100)
             bytes.AddRange(BitConverter.GetBytes(disp32));
           }
           else
@@ -715,7 +713,7 @@ public class Assembler
         int rel32 = target - next;
 
         bytes.Add(0x0F);
-        bytes.Add(ln.Mnemonic == "JZ" ? (byte)0x84 : (byte)0x85);
+        bytes.Add(ln.Mnemonic == Mnemonic.JZ ? (byte)0x84 : (byte)0x85);
         bytes.AddRange(BitConverter.GetBytes(rel32));
         break;
       }
@@ -733,7 +731,7 @@ public class Assembler
         if (rel8 < -128 || rel8 > 127)
           throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: short jump out of range ({rel8})");
 
-        bytes.Add(ln.Mnemonic == "JZ8" ? (byte)0x74 : (byte)0x75);
+        bytes.Add(ln.Mnemonic == Mnemonic.JZ8 ? (byte)0x74 : (byte)0x75);
         ////bytes.Add((sbyte)rel8);
         bytes.Add((byte)rel8);
         break;
@@ -760,13 +758,14 @@ public class Assembler
       throw new AssemblerException($"Line {ln.LineNumber}: Empty memory operand");
 
     // reg [+ imm] ?
-    var plusIdx = inner.IndexOf('+');
+    var plusIdx = inner.IndexOf(Constants.PlusChar);
     if (plusIdx >= 0)
     {
       var left = inner[..plusIdx].Trim();
       var right = inner[(plusIdx + 1)..].Trim();
       if (!IsRegister(left))
         throw new AssemblerException($"Line {ln.LineNumber}: Unsupported memory base '{left}'");
+
       hasBase = true;
       baseReg = Registers[left.ToUpperInvariant()];
       disp32 = ResolveValue(right, ln, externs);
@@ -802,8 +801,8 @@ public class Assembler
       throw new AssemblerException(ErrorCode.SyntaxErrorImport, $"Line {line.LineNumber}: IMPORT expects 'dll, func[, ...]'");
 
     var dll = line.Operands[0].Trim();
-    if (!dll.Contains(PeriodChar))
-      dll += DotDll;
+    if (!dll.Contains(Constants.PeriodChar))
+      dll += Constants.DotDll;
 
     ////var req = _imports.FirstOrDefault(x => x.Dll.Equals(dll, StringComparison.OrdinalIgnoreCase));
     ImportRequest? req = null;
@@ -864,8 +863,8 @@ public class Assembler
 
     // Immediate number (decimal, hex only)
     if (char.IsDigit(token[0]) ||
-        token.StartsWith(HexPrefix, StringComparison.OrdinalIgnoreCase) ||
-        token.EndsWith(HexSuffix, StringComparison.OrdinalIgnoreCase))
+        token.StartsWith(Constants.HexPrefix, StringComparison.OrdinalIgnoreCase) ||
+        token.EndsWith(Constants.HexSuffix, StringComparison.OrdinalIgnoreCase))
       return ParseInt(token, ln.LineNumber);
 
     throw new AssemblerException(ErrorCode.UnknownSymbol, $"Line {ln.LineNumber}: Unknown symbol or value '{token}'");

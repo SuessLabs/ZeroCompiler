@@ -12,27 +12,27 @@ internal static class AssemblySyntax
   // Delimiters inside quoted strings are data. A doubled quote escapes itself.
   internal static int FindUnquoted(string text, char delimiter, int lineNumber, int start = 0)
   {
-    char quote = '\0';
+    char quote = Constants.NullChar;
     for (int i = start; i < text.Length; i++)
     {
       var current = text[i];
-      if (quote != '\0')
+      if (quote != Constants.NullChar)
       {
         if (current == quote)
         {
           if (i + 1 < text.Length && text[i + 1] == quote)
             i++;
           else
-            quote = '\0';
+            quote = Constants.NullChar;
         }
       }
-      else if (current is '\'' or '"')
+      else if (current is Constants.SingleQuote or Constants.DoubleQuote)
         quote = current;
       else if (current == delimiter)
         return i;
     }
 
-    if (quote != '\0')
+    if (quote != Constants.NullChar)
       throw new AssemblerException($"Line {lineNumber}: Unterminated quoted string");
     return -1;
   }
@@ -46,11 +46,14 @@ internal static class AssemblySyntax
     int start = 0;
     while (true)
     {
-      int comma = FindUnquoted(text, ',', lineNumber, start);
+      int comma = FindUnquoted(text, Constants.CommaChar, lineNumber, start);
       var operand = (comma < 0 ? text[start..] : text[start..comma]).Trim();
+
       if (operand.Length == 0)
         throw new AssemblerException($"Line {lineNumber}: Empty operand");
+
       operands.Add(operand);
+
       if (comma < 0)
         return operands;
       start = comma + 1;
@@ -66,6 +69,7 @@ internal static class AssemblySyntax
       char current = operand[i];
       if (current != quote)
         result.Append(current);
+
       else if (i + 1 < operand.Length && operand[i + 1] == quote)
       {
         result.Append(quote);
