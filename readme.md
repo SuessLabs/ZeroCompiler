@@ -10,22 +10,23 @@ The Zero programming language has its inceptions in 2001 and is aimed to be a si
 
 This is the next generation of the Zero Compiler Project.
 
+## Contributing
+
+* [Building Zero](docs/building.md)
+  * Windows, run: `.\build.bat`
+
 ## Console assembly sample
 
 From a PowerShell terminal in the repository root, build the compiler, compile
 the Windows x86 assembly sample, and run the resulting executable:
 
 ```powershell
-.\build.bat
-.\output\Zero.Cli\Debug\zcc.exe docs\samples\hello-console.zasm output\hello-console.exe
-.\output\hello-console.exe
-```
+# Compile Zero Assembly (ZASM)
+./build.bat
 
-The program prints `Hello from Zero!` followed by a newline and exits with code 0
-(or code 1 if writing fails). It uses `#IMPORT` to call the Windows functions
-`GetStdHandle`, `WriteFile`, and `ExitProcess`. The message is stored as numeric
-ASCII bytes because `DB` currently accepts numeric operands. Run it from an
-existing terminal to keep the output visible.
+# From the publish folder:
+./zcc.exe samples/hello-console.zasm
+```
 
 ## File Types
 

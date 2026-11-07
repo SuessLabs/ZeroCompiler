@@ -83,6 +83,7 @@ TestResult.xml
 !/lib/readme.md
 
 # Output
+/publish/
 !/[Oo]utput/readme.txt
 !/[Oo]utput/readme.md
 
