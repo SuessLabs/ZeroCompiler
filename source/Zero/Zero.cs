@@ -71,6 +71,7 @@ public class Zero
       else
       {
         Console.WriteLine($"Compilation Errors, exiting.");
+        return ErrorCode.AssemblyError;
       }
     }
     else

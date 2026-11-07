@@ -35,6 +35,9 @@ if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }
 
+# Publish a second command name for the same standalone Native AOT executable.
+Copy-Item -LiteralPath (Join-Path $publishDirectory 'zcc.exe') -Destination (Join-Path $publishDirectory 'zero.exe') -Force
+
 # Copy directory
 $samplesDirectory = Join-Path $PSScriptRoot 'samples'
 $publishedSamplesDirectory = Join-Path $publishDirectory 'samples'

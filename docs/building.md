@@ -3,9 +3,13 @@
 ## Building the Native compiler
 
 Run `.\build.bat` (or `.\build.ps1`) to build the solution and publish a
-self-contained Native AOT compiler to `publish\zcc.exe`, with the contents of
-`docs\samples` copied into `publish\samples`.
-This requires the .NET 10 SDK and Visual Studio's **Desktop development with C++**
+self-contained Native AOT compiler as both `publish\zcc.exe` and
+`publish\zero.exe`, with the contents of `samples` copied into `publish\samples`.
+
+Both names run the same compiler; the build copies the native executable rather
+than compiling it twice. Both executables are included in release ZIPs.
+
+Compiling requires the .NET 10 SDK and Visual Studio's **Desktop development with C++**
 workload, including the Windows SDK. The published executable runs without an
 installed .NET runtime.
 
