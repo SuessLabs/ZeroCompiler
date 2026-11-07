@@ -2,7 +2,7 @@
 
 Welcome to the Zero Compiler
 
-Copyright 2026 Xeno Innovations, Inc.
+Copyright 2002-2026 Xeno Innovations, Inc.
 
 ## About
 
