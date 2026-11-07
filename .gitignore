@@ -49,6 +49,9 @@
 [Rr]elease/
 x64/
 x86/
+# Keep architecture source files visible despite the build-output rule above.
+!/source/Zero/Targets/X86/
+!/source/Zero/Targets/X86/**
 build/
 bld/
 [Bb]in/
