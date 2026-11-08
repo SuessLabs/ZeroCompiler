@@ -211,12 +211,27 @@ public class PeWriter
 
     // Extern symbol map (absolute addresses)
     var externs = new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
+    var plainNames = new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
+    var ambiguousNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
     foreach (var (dll, func, iatRva) in id.IatEntries)
     {
+      // Import Address Table and without "IAT"
       uint abs = ImageBase + iatRva;
       externs["IAT_" + func] = abs;
       externs[$"IAT_{SanitizeDll(dll)}_{func}"] = abs;
       externs[$"__imp_{func}"] = abs; // common alias
+
+      if (!plainNames.TryAdd(func, abs))
+        ambiguousNames.Add(func);
+    }
+
+    // Plain names point to the same IAT slots. Preserve all legacy aliases and
+    // require DLL-qualified names when multiple libraries export the same name.
+    foreach (var (name, address) in plainNames)
+    {
+      if (!ambiguousNames.Contains(name))
+        externs.TryAdd(name, address);
     }
 
     return new PePlan

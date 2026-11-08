@@ -43,8 +43,8 @@ format_ready:
   push eax                ; Second %d: computed product.
   push ebx                ; First %d: computed sum.
   push edx                ; Format string.
-  call [IAT_printf]
+  call [printf]
   add esp, 12             ; cdecl requires the caller to remove its arguments.
 
   push 0
-  call [IAT_exit]          ; Flush output and exit with code 0.
+  call [exit]          ; Flush output and exit with code 0.

@@ -6,4 +6,4 @@
 
 start:
   push 0                  ; Exit code
-  call [IAT_ExitProcess]
+  call [ExitProcess]

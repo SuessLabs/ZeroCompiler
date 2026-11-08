@@ -34,17 +34,17 @@ second_ready:
 
   ; puts prints a string and adds a newline.
   push edi
-  call [IAT_puts]
+  call [puts]
   add esp, 4             ; The caller cleans up cdecl arguments.
 
   push ebx
-  call [IAT_puts]
+  call [puts]
   add esp, 4
 
   ; strcpy(buffer, first): initialize the buffer with "Hello" and its zero.
   push edi
   push esi
-  call [IAT_strcpy]
+  call [strcpy]
   add esp, 8
 
   call space_ready
@@ -56,18 +56,18 @@ space_ready:
   ; strcat(buffer, " "): replace the old zero with a space and a new zero.
   push eax
   push esi
-  call [IAT_strcat]
+  call [strcat]
   add esp, 8
 
   ; strcat(buffer, second): build "Hello Zero Assembly!" at runtime.
   push ebx
   push esi
-  call [IAT_strcat]
+  call [strcat]
   add esp, 8
 
   push esi
-  call [IAT_puts]
+  call [puts]
   add esp, 4
 
   push 0
-  call [IAT_exit]         ; Flush console output and terminate with code 0.
+  call [exit]         ; Flush console output and terminate with code 0.
