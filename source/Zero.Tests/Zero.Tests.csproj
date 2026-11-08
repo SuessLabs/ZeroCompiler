@@ -10,10 +10,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Zero\Zero.csproj" />
+    <ProjectReference Include="..\Zero.Cli\Zero.Cli.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="../../samples/**/*.zasm"
+                      Link="Samples/%(RecursiveDir)%(Filename)%(Extension)"
+                      LogicalName="Samples/%(RecursiveDir)%(Filename)%(Extension)"
+                      TargetPath="samples/%(RecursiveDir)%(Filename)%(Extension)"
+                      CopyToOutputDirectory="PreserveNewest"
+                      WithCulture="false" />
   </ItemGroup>
 
 </Project>

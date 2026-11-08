@@ -1,0 +1,50 @@
+; Windows x86 console application: calculate and print two integer results.
+; From the published folder:
+;   .\zcc.exe run samples\v002-integer-math.zasm
+; Expected output:
+;   7 + 5 = 12
+;   6 * 7 = 42
+
+; MSVCRT is the Windows system C runtime. printf formats the actual register
+; values as decimal text. exit flushes stdout before terminating the process.
+#IMPORT msvcrt.dll, printf, exit
+
+start:
+  ; Addition: EAX = 7 + 5.
+  mov eax, 7
+  add eax, 5
+  push eax                ; Save the sum while calculating the product.
+
+  ; Multiplication: add 6 a total of 7 times.
+  ; MUL is not emitted by the current assembler, so use supported instructions.
+  ; This loop accepts a nonnegative multiplier; zero produces a product of zero.
+  mov eax, 0              ; Product accumulator.
+  mov ecx, 7              ; Multiplier / loop count.
+  test ecx, ecx
+  jz multiplication_done
+
+multiply_loop:
+  add eax, 6              ; Multiplicand.
+  sub ecx, 1
+  jnz multiply_loop
+
+multiplication_done:
+  pop ebx                 ; EBX = sum; EAX = product.
+  call format_ready
+format_text:
+  ; Null-terminated ASCII: "7 + 5 = %d\n6 * 7 = %d\n".
+  ; printf translates LF to Windows CR/LF when writing in text mode.
+  db 55, 32, 43, 32, 53, 32, 61, 32, 37, 100, 10
+  db 54, 32, 42, 32, 55, 32, 61, 32, 37, 100, 10, 0
+
+format_ready:
+  pop edx                 ; Format-string address supplied by CALL.
+  ; printf(format, sum, product): cdecl pushes arguments right to left.
+  push eax                ; Second %d: computed product.
+  push ebx                ; First %d: computed sum.
+  push edx                ; Format string.
+  call [printf]
+  add esp, 12             ; cdecl requires the caller to remove its arguments.
+
+  push 0
+  call [exit]          ; Flush output and exit with code 0.

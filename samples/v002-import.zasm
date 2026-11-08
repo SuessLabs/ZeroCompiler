@@ -1,0 +1,9 @@
+; Zero v0.0.2
+; Import table minimal demo
+; Sets EAX=42 and returns, and using code comments
+
+#IMPORT kernel32.dll, ExitProcess
+
+start:
+  push 0                  ; Exit code
+  call [ExitProcess]

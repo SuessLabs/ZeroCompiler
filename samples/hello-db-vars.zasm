@@ -1,0 +1,22 @@
+; Windows x86 console application: print a named DB string.
+; From the published folder:
+;   .\zcc.exe run samples\hello-db-vars.zasm
+; Expected output: Hello, World!
+
+#IMPORT msvcrt.dll, printf, exit
+
+  jmp start              ; Skip inline data so the CPU starts with instructions.
+
+message  db 'Hello, World!', 0x0A, 0  ; Text, newline (10), and ending zero.
+format   db '%s', 0                   ; Print message as text.
+
+start:
+  ; The name message resolves to the address of the declared bytes.
+  ; printf(format, message) takes arguments pushed right to left.
+  push message
+  push format
+  call [printf]
+  add esp, 8              ; Remove both 32-bit arguments from the stack.
+
+  push 0
+  call [exit]         ; Flush console output and exit successfully.

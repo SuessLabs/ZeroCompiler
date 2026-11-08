@@ -1,0 +1,40 @@
+; Windows x86 application: display a MessageBox containing "Hello Zero!".
+; From the published folder:
+;   .\zero.exe run samples\hello-msgbox.zasm
+
+#IMPORT user32.dll, MessageBoxA
+#IMPORT kernel32.dll, ExitProcess
+
+start:
+  ; CALL skips the inline data and pushes its address onto the stack.
+  call message_ready
+
+message:
+  ; Null-terminated ASCII: "Hello Zero!"
+  db 72, 101, 108, 108, 111, 32, 90, 101, 114, 111, 33, 0
+
+message_ready:
+  pop esi                 ; Pointer to the message text.
+  call caption_ready
+
+caption:
+  ; Null-terminated ASCII: "Zero"
+  db 90, 101, 114, 111, 0
+
+caption_ready:
+  pop edi                 ; Pointer to the window title.
+  ; MessageBoxA arguments are pushed right to left (Win32 stdcall).
+  push 0x40               ; MB_OK | MB_ICONINFORMATION.
+  push edi                ; lpCaption = "Zero".
+  push esi                ; lpText = "Hello Zero!".
+  push 0                  ; hWnd = NULL (no owner window).
+  call [MessageBoxA]   ; Wait for the user to click OK.
+  test eax, eax
+  jz failed               ; MessageBoxA returns zero on failure.
+
+  push 0
+  call [ExitProcess]
+
+failed:
+  push 1
+  call [ExitProcess]

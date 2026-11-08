@@ -6,29 +6,24 @@
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
 
-    <Title>Lite State Machine</Title>
-    <Description>Flexible lightweight finite state machine (FSM) for .NET supporting shared context for passing parameters, composite (sub) states, command states, lazy-loading and thread safe. Cross-platform and optimized for speed for use in enterprise, robotic and even tiny applications.</Description>
+    <Title>Zero Language Compiler</Title>
+    <Description>Compiler for the Zero programming language and Zero assembly.</Description>
     <ApplicationIcon>z3-16-48.ico</ApplicationIcon>
     <AssemblyName>zcc</AssemblyName>
     <AssemblyTitle>Zero Language Compiler</AssemblyTitle>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="test.zasm" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="z3-16-48.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="test.zasm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OptimizationPreference Condition="'$(OptimizationPreference)' == ''">Size</OptimizationPreference>
+    <StackTraceSupport>false</StackTraceSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Zero\Zero.csproj" />
+    <InternalsVisibleTo Include="Zero.Tests" />
   </ItemGroup>
 
 </Project>

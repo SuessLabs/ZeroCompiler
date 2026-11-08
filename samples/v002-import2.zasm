@@ -1,7 +1,7 @@
 ; Zero v0.0.2
 ; Demonstrates import table + new instructions
 
-IMPORT kernel32.dll, ExitProcess
+#IMPORT kernel32.dll, ExitProcess
 
 start:
   xor eax, eax          ; XOR r32, r32
@@ -19,4 +19,4 @@ start:
 
 done:
   push 0
-  call [IAT_ExitProcess]
+  call [ExitProcess]
