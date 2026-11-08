@@ -28,13 +28,13 @@ caption_ready:
   push edi                ; lpCaption = "Zero".
   push esi                ; lpText = "Hello Zero!".
   push 0                  ; hWnd = NULL (no owner window).
-  call [IAT_MessageBoxA]   ; Wait for the user to click OK.
+  call [MessageBoxA]   ; Wait for the user to click OK.
   test eax, eax
   jz failed               ; MessageBoxA returns zero on failure.
 
   push 0
-  call [IAT_ExitProcess]
+  call [ExitProcess]
 
 failed:
   push 1
-  call [IAT_ExitProcess]
+  call [ExitProcess]

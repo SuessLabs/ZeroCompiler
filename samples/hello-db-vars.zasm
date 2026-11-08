@@ -15,8 +15,8 @@ start:
   ; printf(format, message) takes arguments pushed right to left.
   push message
   push format
-  call [IAT_printf]
+  call [printf]
   add esp, 8              ; Remove both 32-bit arguments from the stack.
 
   push 0
-  call [IAT_exit]         ; Flush console output and exit successfully.
+  call [exit]         ; Flush console output and exit successfully.

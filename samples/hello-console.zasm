@@ -9,10 +9,10 @@ start:
   push 0                  ; Writable stack storage for the bytes-written count.
   lea esi, [esp]
 
-  push 0xFFFFFFF5          ; STD_OUTPUT_HANDLE (-11 as a 32-bit value).
-  call [IAT_GetStdHandle]
+  push 0xFFFFFFF5           ; STD_OUTPUT_HANDLE (-11 as a 32-bit value).
+  call [GetStdHandle]       ; Import Address Table lookup [IAT_GetStdHandle]
   push eax
-  pop edi                 ; Save the standard-output handle.
+  pop edi                   ; Save the standard-output handle.
 
   ; CALL pushes the address of the following bytes, then skips over them.
   ; DB currently accepts numeric bytes, so this is ASCII "Hello from Zero!\r\n".
@@ -28,13 +28,13 @@ print_message:
   push 18                 ; Message length in bytes, including CR/LF.
   push edx                ; lpBuffer.
   push edi                ; hFile = standard output.
-  call [IAT_WriteFile]
+  call [WriteFile]
   test eax, eax
   jz failed
 
   push 0
-  call [IAT_ExitProcess]
+  call [ExitProcess]
 
 failed:
   push 1
-  call [IAT_ExitProcess]
+  call [ExitProcess]

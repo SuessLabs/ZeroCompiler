@@ -1,14 +1,35 @@
 # Zero Compiler
 
-The Zero compiler project (_AKA: Null Compiler_) is a custom programming language that aims to be simple, fast, and efficient.
+The Zero programming language and compiler project (_AKA: Null Compiler_). **Zero** is a simple, fast, and efficient programming language for the x86-64 architecture.
 
-The compiler supports PE (portable exectuable) file formats for GUI, CLI, and library binaries.
+The compiler supports PE (portable exectuable) file formats for GUI, CLI, and library binaries. Future expansions will include ELF formats and ARM architecture.
 
 ## About
 
-The Zero programming language has its inceptions in 2001 and is aimed to be a simple, fast, and efficient programming language created by Damian Suess. At the time of writing, C/C++ and Visual Basic were the key programmang languages (besides, Java) for creating a compiled application. Marriaged with the C-like style, the simplicity of VB, and the heart of assembly, the Zero compiler language was concieved.
+Zero has its inceptions in 2001 and matured 2006 as a simple, fast, and efficient programming language created by Damian Suess (_Xeno Innovations, inc._). At the time, C/C++ and Visual Basic were the key programmang languages (_besides Java or Pascal_) for creating a compiled business/hobby application. Zero has the heart of assembly language giving it that bare-metal kick.
 
-This is the next generation of the Zero Compiler Project.
+### Zero Next-Generation
+
+This is the next generation of the Zero Compiler Project, being rewritting from the ground up.
+
+Yes, the heart language and engine are being rewritten for a more modern approach. Offering the capabilities of writing low-level Assembly (`ZASM`) and Zero's C-like style (`ZSRC`). The object-oriented functionality is also coming down the pipeline, to give developers the added boost.
+
+## Supported Architectures
+
+| Supported | Target | Architecture | Executable format | Platform conventions |
+|-|-|-|-|-|
+| &#9989; | Windows x86   | x86     | PE32  | Windows APIs and calling conventions |
+| &#9744; | Windows ARM64 | ARM64   | PE32+ | Windows ARM64 ABI |
+| &#9744; | Linux x64     | x86-64  | ELF64 | Linux ABI and system calls |
+| &#9744; | Linux ARM64   | ARM64   | ELF64 | Linux ARM64 ABI |
+
+**References:**
+
+* [PE Format Reference](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#import-address-table)
+  * [File Headers](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#file-headers)
+  * [Section Table/Headers](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#section-table-section-headers)
+  * [Special Sections](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#special-sections)
+  * [Import Address Table](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#import-address-table)
 
 ## Project layout
 
@@ -67,7 +88,7 @@ The following file extensions are suggested for source code.
 
 | Ext | Description |
 |-|-|
-| `.z`, `.zero` | Zero source code file (_`.zsrc`_) |
-| `.zasm` | Zero assembly code file |
-| `.zsrc` | Zero source code file |
-| `.zinc` | Include definitions |
+| `.zsrc`, `.z`, `.zero` | Zero source code file |
+| `.zasm`   | Zero assembly code file |
+| `.zinc`   | Include definitions (_alt: `zh`_) |
+| `.zproj`  | Project files |

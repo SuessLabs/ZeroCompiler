@@ -51,12 +51,13 @@ storing its address in `ebx`.
 
 ```asm
 push edi
-call [IAT_puts]
+call [puts]
 add esp, 4
 ```
 
-`push` supplies the string's address to `puts`. `IAT_puts` points to the imported
-function. Afterward, `add esp, 4` removes that argument from the stack.
+`push` supplies the string's address to `puts`. `call [puts]` calls the imported
+function through its stored address. Afterward, `add esp, 4` removes that argument
+from the stack.
 The program repeats this for the second string.
 
 ## 5. Build and print the combined string

@@ -19,4 +19,4 @@ start:
 
 done:
   push 0
-  call [IAT_ExitProcess]
+  call [ExitProcess]

@@ -22,13 +22,13 @@ button_text  db 'Show message', 0
 
 start:
   push 0
-  call [IAT_GetModuleHandleA]
+  call [GetModuleHandleA]
   push eax
   pop esi                 ; ESI = this application's instance handle.
 
   push 32512              ; IDC_ARROW.
   push 0
-  call [IAT_LoadCursorA]
+  call [LoadCursorA]
   push eax
   pop edi                 ; EDI = arrow cursor.
 
@@ -45,7 +45,7 @@ start:
   push 3                  ; style = CS_HREDRAW | CS_VREDRAW.
   lea eax, [esp]
   push eax
-  call [IAT_RegisterClassA]
+  call [RegisterClassA]
   add esp, 40             ; Release our copy of WNDCLASSA.
   test eax, eax
   jz failed
@@ -63,7 +63,7 @@ start:
   push window_title
   push window_class
   push 0                  ; Extended window style.
-  call [IAT_CreateWindowExA]
+  call [CreateWindowExA]
   test eax, eax
   jz failed
   push eax
@@ -82,7 +82,7 @@ start:
   push label_text
   push label_class
   push 0
-  call [IAT_CreateWindowExA]
+  call [CreateWindowExA]
   test eax, eax
   jz failed
 
@@ -99,7 +99,7 @@ start:
   push initial_text
   push edit_class
   push 0
-  call [IAT_CreateWindowExA]
+  call [CreateWindowExA]
   test eax, eax
   jz failed
 
@@ -116,15 +116,15 @@ start:
   push button_text
   push button_class
   push 0
-  call [IAT_CreateWindowExA]
+  call [CreateWindowExA]
   test eax, eax
   jz failed
 
   push 1                  ; SW_SHOWNORMAL.
   push ebx
-  call [IAT_ShowWindow]
+  call [ShowWindow]
   push ebx
-  call [IAT_UpdateWindow]
+  call [UpdateWindow]
 
   ; Reserve a writable 32-byte x86 MSG structure.
   sub esp, 32
@@ -135,7 +135,7 @@ message_loop:
   push 0
   push 0
   push edi
-  call [IAT_GetMessageA]
+  call [GetMessageA]
   test eax, eax
   jz finished             ; WM_QUIT ends the loop.
   cmp eax, 0xFFFFFFFF     ; GetMessage returns -1 on error.
@@ -143,23 +143,23 @@ message_loop:
 
   push edi
   push ebx
-  call [IAT_IsDialogMessageA] ; Handle Tab and Enter for the child controls.
+  call [IsDialogMessageA] ; Handle Tab and Enter for the child controls.
   test eax, eax
   jnz message_loop
 
   push edi
-  call [IAT_TranslateMessage]
+  call [TranslateMessage]
   push edi
-  call [IAT_DispatchMessageA]
+  call [DispatchMessageA]
   jmp message_loop
 
 finished:
   push 0
-  call [IAT_ExitProcess]
+  call [ExitProcess]
 
 failed:
   push 1
-  call [IAT_ExitProcess]
+  call [ExitProcess]
 
 ; Windows calls this stdcall function with four 32-bit arguments.
 ; Saving EBP gives stable offsets: +8 hwnd, +12 message, +16 wParam, +20 lParam.
@@ -181,7 +181,7 @@ default_message:
   push eax
   mov eax, [ebp + 8]
   push eax
-  call [IAT_DefWindowProcA]
+  call [DefWindowProcA]
   pop ebp
   ret 16                  ; Return and remove the four callback arguments.
 
@@ -198,14 +198,14 @@ window_command:
   push 102                ; Textbox ID.
   mov eax, [ebp + 8]
   push eax
-  call [IAT_GetDlgItemTextA]
+  call [GetDlgItemTextA]
 
   push 0x40               ; MB_OK | MB_ICONINFORMATION.
   push window_title
   push esi
   mov eax, [ebp + 8]
   push eax
-  call [IAT_MessageBoxA]
+  call [MessageBoxA]
   add esp, 256
   pop esi
   mov eax, 0
@@ -214,7 +214,7 @@ window_command:
 
 window_destroyed:
   push 0
-  call [IAT_PostQuitMessage]
+  call [PostQuitMessage]
   mov eax, 0
   pop ebp
   ret 16

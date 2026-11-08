@@ -62,6 +62,27 @@ subsystem for all executables, so the MessageBox sample can also open a console
 window when launched from Explorer. Run console samples from an existing terminal
 to keep their output visible.
 
+## Calling imported functions
+
+Import Address Table lookup references imported functions and can be called by their names in brackets:
+
+```asm
+#IMPORT kernel32.dll, ExitProcess
+
+push 0
+call [ExitProcess]
+```
+
+`call [ExitProcess]` reads the function address from the import table.
+
+The older `call [IAT_ExitProcess]` and `call [__imp_ExitProcess]` forms still work and generate
+the same machine code. Calls to your own procedures keep their direct syntax,
+such as `call window_proc`, without brackets.
+
+Local labels must not reuse imported function names. If two DLLs import the same
+function name, use a DLL-qualified alias such as `call [IAT_kernel32_dll_ExitProcess]`
+to select its library explicitly.
+
 ## Named byte declarations
 
 ```asm
