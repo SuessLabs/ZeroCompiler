@@ -1,0 +1,5 @@
+title: Zero Compiler
+description: The Zero language and assembly compiler
+theme: jekyll-theme-cayman
+url: https://suesslabs.github.io
+baseurl: /ZeroCompiler
