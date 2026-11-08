@@ -10,8 +10,8 @@
   <PropertyGroup>
     <!-- The SDK derives assembly, file, and informational versions from Version. -->
     <!-- CI can override Version, or VersionPrefix and VersionSuffix, with -p:. -->
-    <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.0.3.16</VersionPrefix>
-    <VersionSuffix Condition="'$(VersionSuffix)' == ''">alpha1</VersionSuffix>
+    <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.0.4.0</VersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup>
