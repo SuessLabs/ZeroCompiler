@@ -17,6 +17,7 @@ From the `publish` folder, compile and run a sample:
 | `hello-concat.zasm` | Prints `Hello` and `Zero Assembly!` on separate lines, then joins them with a space and prints `Hello Zero Assembly!`. |
 | `hello-db-vars.zasm` | Declares a named string with `message db 'Hello, World!', 0x0A, 0` and prints it. |
 | `hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
+| `hello-win86-controls.zasm` | Opens a native Windows x86 window with a label, an editable `Hello Zero!` textbox, and a button that displays the current text. |
 | `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
 `zcc run <source> [output.exe]` builds the source, then runs the executable in the
