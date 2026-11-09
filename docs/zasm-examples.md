@@ -16,7 +16,7 @@ All examples target Windows x86 and use only the currently implemented forms.
 Save as `hello-text.zasm`:
 
 ```asm
-using "console.zh"
+using "windows/console.zh"
 
   jmp start
 message db 'Hello Zero!', 0
@@ -48,7 +48,7 @@ Hello Zero!
 Save as `add-integers.zasm`:
 
 ```asm
-using "console.zh"
+using "windows/console.zh"
 
   jmp start
 format db '7 + 5 = %d', 10, 0
@@ -87,7 +87,7 @@ also multiplies using repeated addition because `MUL` is not implemented yet.
 Save as `hello-messagebox.zasm`:
 
 ```asm
-using "windows.zh"
+using "windows/windows.zh"
 
   jmp start
 message db 'Hello Zero!', 0

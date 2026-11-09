@@ -14,14 +14,15 @@ namespace Zero.Tests.ZAsmTests;
 [TestClass]
 public sealed class StandardHeaderTests
 {
-  public static IEnumerable<object[]> GetHeaders()
+  public static IEnumerable<object[]> GetWindowsHeaders()
   {
     var resources = typeof(StandardHeaderTests).Assembly.GetManifestResourceNames();
     Array.Sort(resources, StringComparer.Ordinal);
     bool found = false;
-    foreach (var name in resources)
+    foreach (var resource in resources)
     {
-      if (!name.StartsWith("Include/", StringComparison.Ordinal))
+      var name = resource.Replace('\\', '/');
+      if (!name.StartsWith("Include/windows/", StringComparison.Ordinal))
         continue;
 
       found = true;
@@ -29,12 +30,12 @@ public sealed class StandardHeaderTests
     }
 
     if (!found)
-      throw new InvalidOperationException("No standard .zh headers were included in the test assembly.");
+      throw new InvalidOperationException("No Windows .zh headers were included in the test assembly.");
   }
 
   [TestMethod]
-  [DynamicData(nameof(GetHeaders))]
-  public void EveryHeaderCompilesAndImportsExistingExports(string headerName)
+  [DynamicData(nameof(GetWindowsHeaders))]
+  public void EveryWindowsHeaderCompilesAndImportsExistingExports(string headerName)
   {
     var assembler = CompileHeaders([headerName]);
 
@@ -60,10 +61,10 @@ public sealed class StandardHeaderTests
   }
 
   [TestMethod]
-  public void AllHeadersCanBeCombined()
+  public void AllWindowsHeadersCanBeCombined()
   {
     var headers = new List<string>();
-    foreach (var row in GetHeaders())
+    foreach (var row in GetWindowsHeaders())
       headers.Add((string)row[0]);
 
     _ = CompileHeaders(headers);

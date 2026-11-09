@@ -54,5 +54,12 @@ Get-ChildItem -LiteralPath $samplesDirectory | Copy-Item -Destination $published
 $includeDirectory = Join-Path $PSScriptRoot 'include'
 $publishedIncludeDirectory = Join-Path $publishDirectory 'include'
 New-Item -ItemType Directory -Path $publishedIncludeDirectory -Force | Out-Null
+# Remove only the former flat copies of shipped Windows headers during migration.
+Get-ChildItem -LiteralPath (Join-Path $includeDirectory 'windows') -Filter '*.zh' -File | ForEach-Object {
+  $legacyHeader = Join-Path $publishedIncludeDirectory $_.Name
+  if (Test-Path -LiteralPath $legacyHeader -PathType Leaf) {
+    Remove-Item -LiteralPath $legacyHeader -Force
+  }
+}
 Get-ChildItem -LiteralPath $includeDirectory | Copy-Item -Destination $publishedIncludeDirectory -Recurse -Force
 exit 0

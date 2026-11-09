@@ -55,8 +55,13 @@ Keep this layout when moving or installing the compiler:
 zero.exe
 zcc.exe
 include/
-  console.zh
-  windows.zh
+  windows/
+    console.zh
+    windows.zh
+    ...
+  linux/                  # Drafts for future ELF support.
+    libc/
+    syscalls/
 samples/
   hello-using.zasm
   ...
@@ -73,7 +78,7 @@ extension is `.zasm`, rather than `.txt`.
 
 ```asm
 ; Print a greeting using the shipped console header.
-using "console.zh"
+using "windows/console.zh"
 
   jmp start               ; Skip the bytes stored below.
 
@@ -107,7 +112,7 @@ The compiler creates `hello-zero.exe` beside the source file. Run it again with
 
 | Term | Meaning | Example |
 | --- | --- | --- |
-| Statement | A source line that declares something or requests an operation. | `using "console.zh"` |
+| Statement | A source line that declares something or requests an operation. | `using "windows/console.zh"` |
 | Mnemonic  | The short name of a CPU instruction. | `push`, `call`, `add` |
 | Operand   | A value, register, address, or label used by an instruction. | `message` in `push message` |
 | Register  | A small storage location inside the CPU. | `esp` is the stack pointer. |
@@ -115,7 +120,7 @@ The compiler creates `hello-zero.exe` beside the source file. Run it again with
 | Label     | A name for a position in the program. | `start:` |
 | Comment   | Explanatory text ignored by the compiler. | `; Print a greeting` |
 
-`using` inserts the header's source. `console.zh` declares the DLL imports for
+`using` inserts the header's source. `windows/console.zh` declares the DLL imports for
 `puts`, `printf`, and `exit`. `jmp start` skips the inline string data. `puts`
 prints a zero-terminated string and adds a newline. Its cdecl calling convention
 requires the caller to remove the argument with `add esp, 4`.
@@ -190,7 +195,7 @@ See [register roles and memory addressing](zasm-reference.md#registers).
 | `DW` | Emit 16-bit integer values. | `count: dw 42` |
 | `DD` | Emit 32-bit integer values. | `value: dd 42` |
 | `label:` | Name the current location. | `start: mov eax, 42` |
-| `using "file.zh"` | Include another source file. | `using "console.zh"` |
+| `using "file.zh"` | Include another source file. | `using "windows/console.zh"` |
 | `#IMPORT dll, function` | Declare one or more imported functions. | `#IMPORT kernel32.dll, ExitProcess` |
 | `; comment` | Add a comment or trailing explanation. | `ret ; Return to caller` |
 
@@ -226,6 +231,7 @@ From the release folder, also try:
 - [String concatenation tutorial](tutorial-zasm-concat.md): a short walkthrough with a mnemonic table.
 - [Sample guide](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/readme.md): console, arithmetic, strings, MessageBox, and controls.
 - [Windows API headers](windows-headers.md): core Windows APIs, controls, dialogs, drawing, shell, networking, COM, and more.
+- [Linux headers and future ELF support](linux-headers.md): draft glibc interfaces and architecture-specific syscall references.
 - [Header catalog](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/readme.md): all shipped `.zh` files and calling rules.
 - [Assembly overview and opcodes](Zero-Assembly-Intro.md): a compact companion to the language reference.
 

@@ -47,7 +47,7 @@ See [registers](zasm-reference.md#registers) for their roles.
 | `DW` | 16-bit integer values, little-endian. | `count: dw 42` |
 | `DD` | 32-bit integer values, little-endian. | `value: dd 42` |
 | `#IMPORT` | DLL name followed by exported function names. | `#IMPORT msvcrt.dll, puts, exit` |
-| `using` | Double-quoted header path. | `using "console.zh"` |
+| `using` | Double-quoted header path. | `using "windows/console.zh"` |
 
 Use `;` for comments and `label:` to name a location. `DB` also allows a named
 byte declaration without a colon. Strings need an explicit terminating zero when

@@ -1,8 +1,8 @@
 ; Initialize common controls and print the process ID without opening a window.
 ; Run: zero.exe run samples/hello-windows-headers.zasm
-using "console.zh"
-using "kernel32.zh"
-using "comctl32.zh"
+using "windows/console.zh"
+using "windows/kernel32.zh"
+using "windows/comctl32.zh"
 
   jmp start
 

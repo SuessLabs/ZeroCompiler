@@ -1,0 +1,5 @@
+; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; Pointer/size widths and mmap flags need the target ABI and constants support.
+; Release malloc allocations with free; mmap mappings with munmap.
+#IMPORT libc.so.6, malloc, calloc, realloc, free, memcpy, memmove, memset, memcmp
+#IMPORT libc.so.6, mmap, munmap, mprotect
