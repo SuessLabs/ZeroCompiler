@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'en-US' }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% seo %}
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <link rel="icon" href="{{ '/images/z3-16-48.ico' | relative_url }}" sizes="any">
+  </head>
+  <body>
+    <a class="skip-link" href="#main_content">Skip to content</a>
+
+    <div id="header_wrap" class="outer">
+      <header class="inner site-header">
+        <div class="brand-row">
+          <a class="brand" href="{{ '/' | relative_url }}" aria-label="Zero documentation home">
+            <img src="{{ site.logo | relative_url }}" alt="Zero" width="2172" height="724">
+          </a>
+          <div class="header-links">
+            <a href="https://github.com/{{ site.repository }}">View source</a>
+            <a class="download-link" href="https://github.com/{{ site.repository }}/releases/latest">Download Zero <span aria-hidden="true">&darr;</span></a>
+          </div>
+        </div>
+        <p class="site-description">{{ site.description | escape }}</p>
+        <nav class="site-nav" aria-label="Documentation">
+          <a href="{{ '/' | relative_url }}"{% if page.url == '/' or page.url == '/index.html' %} aria-current="page"{% endif %}>Overview</a>
+          <a href="{{ '/zasm-reference.html' | relative_url }}"{% if page.url == '/zasm-reference.html' %} aria-current="page"{% endif %}>Language reference</a>
+          <a href="{{ '/zasm-examples.html' | relative_url }}"{% if page.url == '/zasm-examples.html' %} aria-current="page"{% endif %}>Examples</a>
+          <a href="{{ '/zasm-coming-soon.html' | relative_url }}"{% if page.url == '/zasm-coming-soon.html' %} aria-current="page"{% endif %}>Roadmap</a>
+          <a href="{{ '/building.html' | relative_url }}"{% if page.url == '/building.html' %} aria-current="page"{% endif %}>Build from source</a>
+        </nav>
+      </header>
+    </div>
+
+    <div id="main_content_wrap" class="outer">
+      <main id="main_content" class="inner" tabindex="-1">
+        {{ content }}
+      </main>
+    </div>
+
+    <div id="footer_wrap" class="outer">
+      <footer class="inner site-footer">
+        <p>Zero &middot; Language and assembly documentation</p>
+        <p><a href="https://github.com/{{ site.repository }}">GitHub</a> &middot; <a href="https://github.com/{{ site.repository }}/releases">Releases</a> &middot; Published with <a href="https://pages.github.com/">GitHub Pages</a></p>
+      </footer>
+    </div>
+  </body>
+</html>
