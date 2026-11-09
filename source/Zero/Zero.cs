@@ -5,25 +5,24 @@ using System;
 using System.IO;
 using System.Reflection;
 using Zero.Assembly;
+using Zero.Compilation;
 using Zero.Exceptions;
+using Zero.Parsing;
 
 namespace Zero;
 
-public enum SourceType
-{
-  Assembly,
-  Zero,
-}
-
 public class Zero
 {
-  public static string Version { get; } = typeof(Zero).Assembly
-    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
   private const string ObjExt = ".obj";
 
   private static ErrorCode _lastError = ErrorCode.None;
+
   private string? _inputPath;
+
   private string? _outputPath;
+
+  public static string Version { get; } = typeof(Zero).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
   public static byte[]? CompileAsm(string[] source)
   {
@@ -51,16 +50,24 @@ public class Zero
     return exeBytes;
   }
 
-  public ErrorCode Compile(string inputPath, string outputPath, SourceType sourceType)
+  public ErrorCode Compile(string inputPath, string outputPath, SourceType sourceType, CompilerOptions? options = null)
   {
     _inputPath = inputPath;
     _outputPath = outputPath;
 
-    string[] source = File.ReadAllLines(inputPath);
-
     if (sourceType == SourceType.Assembly)
     {
-      byte[]? exeBytes = CompileAsm(source);
+      byte[]? exeBytes;
+      try
+      {
+        var source = new SourceLoader().Load(inputPath, options);
+        exeBytes = new Assembler().Assemble(source);
+      }
+      catch (AssemblerException ex)
+      {
+        Console.Error.WriteLine($"Assembly error: {ex.Message}");
+        return ErrorCode.AssemblyError;
+      }
 
       if (exeBytes is not null)
       {

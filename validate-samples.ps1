@@ -72,7 +72,7 @@ try {
         Remove-Item -LiteralPath $outputPath -Force
       }
 
-      $result = Invoke-SampleCompiler @($compiler, $sample.FullName, $outputPath)
+      $result = Invoke-SampleCompiler @($compiler, $sample.FullName, $outputPath, '-I', (Join-Path $PSScriptRoot 'include'))
       if ($result.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $outputPath -PathType Leaf)) {
         throw "Compiler exit code: $($result.ExitCode). $($result.Output -join [Environment]::NewLine)"
       }
