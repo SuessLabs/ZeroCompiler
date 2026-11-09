@@ -246,6 +246,9 @@ proposals are labeled separately so they can evolve without implying support tod
 
 ## Coming Soon
 
+See the [ZASM feature roadmap](zasm-coming-soon.md) for implemented assembly
+features, proposed key features, and nice-to-have improvements.
+
 These are documentation placeholders and development ideas, with no promised release date.
 They are not current compiler capabilities.
 

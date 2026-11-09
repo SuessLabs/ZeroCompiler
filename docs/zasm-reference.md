@@ -336,4 +336,6 @@ The following require future implementation:
 - Higher-level Zero compilation, ELF output, and ARM/ARM64 or native x64 code generation.
 
 **Coming Soon:** expand this reference as each feature gains working syntax and
-examples. The [documentation roadmap](index.md#coming-soon) collects topics to fill in.
+examples. The [ZASM feature roadmap](zasm-coming-soon.md) tracks implemented
+features and outstanding work. The [documentation roadmap](index.md#coming-soon)
+collects broader topics to fill in.
