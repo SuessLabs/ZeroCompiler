@@ -65,7 +65,8 @@ public class Assembler
     [Register.XMM7] = 7,
   };
 
-  private readonly List<ImportRequest> _imports = [];
+  private readonly List<ImportRequest> _imports = new();
+  private readonly Dictionary<string, int> _labelLines = new(StringComparer.OrdinalIgnoreCase);
   private readonly Dictionary<string, int> _labels = new(StringComparer.OrdinalIgnoreCase);
   private readonly List<AsmLine> _lines = [];
 
@@ -94,7 +95,7 @@ public class Assembler
     foreach (var (label, offset) in _labels)
     {
       if (!symbols.TryAdd(label, plan.ImageBase + plan.TextRva + (uint)offset))
-        throw new AssemblerException($"Label '{label}' conflicts with an imported symbol");
+        throw new AssemblerException(_labelLines[label], $"Label '{label}' conflicts with an imported symbol");
     }
 
     // Pass 2: Emit code with resolved addresses for local and imported symbols.
@@ -111,51 +112,25 @@ public class Assembler
     return exeBytes;
   }
 
+  /// <summary>Assemble expanded source and report errors at their original locations.</summary>
+  public byte[]? Assemble(IReadOnlyList<SourceLine> source)
+  {
+    var text = new string[source.Count];
+    for (int i = 0; i < source.Count; i++)
+      text[i] = source[i].Text;
+
+    try
+    {
+      return Assemble(text);
+    }
+    catch (AssemblerException ex) when (ex.LineNumber is > 0 && ex.LineNumber <= source.Count)
+    {
+      throw ex.AtSource(source[ex.LineNumber.Value - 1]);
+    }
+  }
+
   private static int CountDataBytes(List<string> ops, int unitSize) =>
       ops.Count * unitSize;
-
-  private static byte[] GetDefinedBytes(AsmLine line)
-  {
-    if (line.Operands.Count == 0)
-      throw new AssemblerException($"Line {line.LineNumber}: DB expects at least one operand");
-
-    var bytes = new List<byte>();
-    foreach (var operand in line.Operands)
-    {
-      if (operand[0] is Constants.SingleQuote or Constants.DoubleQuote)
-        bytes.AddRange(Encoding.UTF8.GetBytes(AssemblySyntax.ReadString(operand, line.LineNumber)));
-      else
-        bytes.Add((byte)(ParseInt(operand, line.LineNumber) & 0xFF));
-    }
-
-    return bytes.ToArray();
-  }
-
-  private static bool IsRegister32(string token) => token.Trim().ToUpperInvariant() is
-    Register.EAX or Register.ECX or Register.EDX or Register.EBX or
-    Register.ESP or Register.EBP or Register.ESI or Register.EDI;
-
-  private static int MemoryInstructionSize(string operand, int lineNumber)
-  {
-    if (!IsMemory(operand))
-      throw new AssemblerException($"Line {lineNumber}: Expected [mem]");
-
-    var inner = operand.Trim()[1..^1].Trim();
-    int plus = inner.IndexOf(Constants.PlusChar);
-    var memoryBase = (plus < 0 ? inner : inner[..plus]).Trim();
-    return memoryBase.Equals(Register.ESP, StringComparison.OrdinalIgnoreCase) ? 7 : 6;
-  }
-
-  private static ushort ReturnStackBytes(AsmLine line)
-  {
-    if (line.Operands.Count > 1)
-      throw new AssemblerException($"Line {line.LineNumber}: RET expects zero or one operand");
-
-    int bytes = line.Operands.Count == 0 ? 0 : ParseInt(line.Operands[0], line.LineNumber);
-    if (bytes < 0 || bytes > ushort.MaxValue)
-      throw new AssemblerException($"Line {line.LineNumber}: RET stack size must be between 0 and 65535");
-    return (ushort)bytes;
-  }
 
   /// <summary>Basic size estimation for two-pass assembly.</summary>
   /// <param name="ln">Assembly line.</param>
@@ -180,12 +155,14 @@ public class Assembler
 
       case Mnemonic.MOV:
         if (ln.Operands.Count != 2 || !IsRegister32(ln.Operands[0]))
-          throw new AssemblerException($"Line {ln.LineNumber}: MOV expects r32, imm32 or r32, [mem]");
+          throw new AssemblerException(ln.LineNumber, $"MOV expects r32, imm32 or r32, [mem]");
+
         return IsMemory(ln.Operands[1]) ? MemoryInstructionSize(ln.Operands[1], ln.LineNumber) : 5;
 
       case Mnemonic.PUSH:
         if (ln.Operands.Count != 1)
-          throw new AssemblerException($"Line {ln.LineNumber}: PUSH expects 1 operand");
+          throw new AssemblerException(ln.LineNumber, $"PUSH expects 1 operand");
+
         return IsRegister(ln.Operands[0]) ? 1 : 5; // reg or imm32
 
       case Mnemonic.POP:
@@ -210,7 +187,7 @@ public class Assembler
       case Mnemonic.LEA:
       {
         if (ln.Operands.Count != 2 || !IsMemory(ln.Operands[1]))
-          throw new AssemblerException($"Line {ln.LineNumber}: LEA expects a register and [mem]");
+          throw new AssemblerException(ln.LineNumber, $"LEA expects a register and [mem]");
 
         return MemoryInstructionSize(ln.Operands[1], ln.LineNumber);
       }
@@ -218,11 +195,11 @@ public class Assembler
       case Mnemonic.CALL:
         // CALL label => 5; CALL [abs32] => FF 15 + disp32 => 6
         if (ln.Operands.Count != 1)
-          throw new AssemblerException($"Line {ln.LineNumber}: CALL expects 1 operand");
+          throw new AssemblerException(ln.LineNumber, $"CALL expects 1 operand");
 
         return IsMemoryAbsolute(ln.Operands[0]) ? 6 : 5;
 
-        // Jump to label (label:)
+      // Jump to label (label:)
       case Mnemonic.JMP:
         return 5;
 
@@ -236,8 +213,25 @@ public class Assembler
         return 2; // 74/75 + rel8
 
       default:
-        throw new AssemblerException($"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
+        throw new AssemblerException(ln.LineNumber, $"Unknown mnemonic '{ln.Mnemonic}'");
     }
+  }
+
+  private static byte[] GetDefinedBytes(AsmLine line)
+  {
+    if (line.Operands.Count == 0)
+      throw new AssemblerException(line.LineNumber, $"DB expects at least one operand");
+
+    var bytes = new List<byte>();
+    foreach (var operand in line.Operands)
+    {
+      if (operand[0] is Constants.SingleQuote or Constants.DoubleQuote)
+        bytes.AddRange(Encoding.UTF8.GetBytes(AssemblySyntax.ReadString(operand, line.LineNumber)));
+      else
+        bytes.Add((byte)(ParseInt(operand, line.LineNumber) & 0xFF));
+    }
+
+    return bytes.ToArray();
   }
 
   /// <summary>Is token a memory pointer ('[eax]').</summary>
@@ -261,6 +255,10 @@ public class Assembler
   private static bool IsRegister(string token) =>
     Registers.ContainsKey(token.Trim().ToUpperInvariant());
 
+  private static bool IsRegister32(string token) => token.Trim().ToUpperInvariant() is
+          Register.EAX or Register.ECX or Register.EDX or Register.EBX or
+    Register.ESP or Register.EBP or Register.ESI or Register.EDI;
+
   /// <summary>Validates label naming conventions. Must start with a letter and not contain '_' or '.'.</summary>
   /// <param name="line">Line text.</param>
   /// <returns>True when valid.</returns>
@@ -279,6 +277,17 @@ public class Assembler
         return false;
 
     return true;
+  }
+
+  private static int MemoryInstructionSize(string operand, int lineNumber)
+  {
+    if (!IsMemory(operand))
+      throw new AssemblerException(lineNumber, $"Expected [mem]");
+
+    var inner = operand.Trim()[1..^1].Trim();
+    int plus = inner.IndexOf(Constants.PlusChar);
+    var memoryBase = (plus < 0 ? inner : inner[..plus]).Trim();
+    return memoryBase.Equals(Register.ESP, StringComparison.OrdinalIgnoreCase) ? 7 : 6;
   }
 
   private static byte ModRM(byte mod, byte register, byte rm)
@@ -302,7 +311,7 @@ public class Assembler
     }
     catch
     {
-      throw new AssemblerException($"Line {lineNumber}: Invalid number '{s}'");
+      throw new AssemblerException(lineNumber, $"Invalid number '{s}'");
     }
   }
 
@@ -339,6 +348,18 @@ public class Assembler
     };
   }
 
+  private static ushort ReturnStackBytes(AsmLine line)
+  {
+    if (line.Operands.Count > 1)
+      throw new AssemblerException(line.LineNumber, $"RET expects zero or one operand");
+
+    int bytes = line.Operands.Count == 0 ? 0 : ParseInt(line.Operands[0], line.LineNumber);
+    if (bytes < 0 || bytes > ushort.MaxValue)
+      throw new AssemblerException(line.LineNumber, $"RET stack size must be between 0 and 65535");
+
+    return (ushort)bytes;
+  }
+
   /// <summary>Scale, Index, Base.</summary>
   /// <param name="scale">Scale value.</param>
   /// <param name="index">Index value.</param>
@@ -356,15 +377,6 @@ public class Assembler
     return idx >= 0 ? line[..idx] : line;
   }
 
-  private void RegisterLabel(string label, int lineNumber)
-  {
-    if (!IsValidLabel(label) || IsRegister(label))
-      throw new AssemblerException($"Line {lineNumber}: Invalid label '{label}'");
-
-    if (!_labels.TryAdd(label, _offset))
-      throw new AssemblerException($"Line {lineNumber}: Duplicate label '{label}'");
-  }
-
   /// <summary>Pass 1) Parse and Size. Parse, Collect labels, imports and compute size.</summary>
   /// <param name="source">Source code lines.</param>
   /// <returns>Size computed.</returns>
@@ -372,6 +384,7 @@ public class Assembler
   private int AsmParseAndSize(string[] source)
   {
     _labels.Clear();
+    _labelLines.Clear();
     _lines.Clear();
     _imports.Clear();
     _offset = 0;
@@ -488,7 +501,7 @@ public class Assembler
       // Call to interrupt (0xCC, 0xCD)
       case Mnemonic.INT:
         if (ln.Operands.Count != 1)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: INT expects 1 operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"INT expects 1 operand");
 
         bytes.Add(0xCD);
         bytes.Add((byte)(ParseInt(ln.Operands[0], ln.LineNumber) & 0xFF));
@@ -522,14 +535,14 @@ public class Assembler
       case Mnemonic.MOV:
       {
         if (ln.Operands.Count != 2)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: MOV expects 2 operands");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"MOV expects 2 operands");
 
         //// if (_swapOperand)
         var dst = ln.Operands[0];
         var src = ln.Operands[1];
 
         if (!IsRegister32(dst))
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: MOV destination must be a 32-bit register");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"MOV destination must be a 32-bit register");
 
         int r = Registers[dst.ToUpperInvariant()];
         if (IsMemory(src))
@@ -547,7 +560,7 @@ public class Assembler
       case Mnemonic.PUSH:
       {
         if (ln.Operands.Count != 1)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: PUSH expects 1 operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"PUSH expects 1 operand");
 
         var op = ln.Operands[0];
         if (IsRegister(op))
@@ -567,7 +580,7 @@ public class Assembler
       case Mnemonic.POP:
       {
         if (ln.Operands.Count != 1 || !IsRegister(ln.Operands[0]))
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: POP expects 1 operand (r32)");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"POP expects 1 operand (r32)");
 
         int r = Registers[ln.Operands[0].ToUpperInvariant()];
         bytes.Add((byte)(0x58 + r));
@@ -581,7 +594,7 @@ public class Assembler
       case Mnemonic.XOR:
       {
         if (ln.Operands.Count != 2)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: {ln.Mnemonic} expects 2 operands");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"{ln.Mnemonic} expects 2 operands");
 
         // Zero v0.0.1 (2003) spec says to swap these (i.e. AT&T).. keeping Intel ASM below
         //// if (_swapOperand)
@@ -589,7 +602,7 @@ public class Assembler
         var src = ln.Operands[1];
 
         if (!IsRegister(dst))
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: {ln.Mnemonic} only supports r32 as first operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"{ln.Mnemonic} only supports r32 as first operand");
 
         int rd = Registers[dst.ToUpperInvariant()];
         if (IsRegister(src))
@@ -637,12 +650,12 @@ public class Assembler
       case Mnemonic.TEST:
       {
         if (ln.Operands.Count != 2)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: TEST expects 2 operands");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"TEST expects 2 operands");
         var a = ln.Operands[0];
         var b = ln.Operands[1];
 
         if (!IsRegister(a))
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: TEST supports r32 as first operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"TEST supports r32 as first operand");
 
         int ra = Registers[a.ToUpperInvariant()];
         if (IsRegister(b))
@@ -665,12 +678,12 @@ public class Assembler
       {
         // LEA r32, [disp32] or [reg + disp32] or [reg] (we always encode with disp32)
         if (ln.Operands.Count != 2)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: LEA expects 2 operands");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"LEA expects 2 operands");
 
         var dst = ln.Operands[0];
         var src = ln.Operands[1];
         if (!IsRegister(dst) || !IsMemory(src))
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: LEA syntax: LEA r32, [mem]");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"LEA syntax: LEA r32, [mem]");
 
         int rd = Registers[dst.ToUpperInvariant()];
 
@@ -680,7 +693,7 @@ public class Assembler
       case Mnemonic.CALL:
       {
         if (ln.Operands.Count != 1)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: CALL expects 1 operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"CALL expects 1 operand");
         var op = ln.Operands[0];
 
         if (IsMemoryAbsolute(op))
@@ -706,7 +719,7 @@ public class Assembler
       case Mnemonic.JMP:
       {
         if (ln.Operands.Count != 1)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: JMP expects 1 operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"JMP expects 1 operand");
 
         int target = ResolveLabel(ln.Operands[0], ln.LineNumber);
         int next = ln.Offset + 5;
@@ -720,7 +733,7 @@ public class Assembler
       case Mnemonic.JNZ:
       {
         if (ln.Operands.Count != 1)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: {ln.Mnemonic} expects 1 operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"{ln.Mnemonic} expects 1 operand");
 
         int target = ResolveLabel(ln.Operands[0], ln.LineNumber);
         int next = ln.Offset + 6;
@@ -736,14 +749,14 @@ public class Assembler
       case Mnemonic.JNZ8:
       {
         if (ln.Operands.Count != 1)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: {ln.Mnemonic} expects 1 operand");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"{ln.Mnemonic} expects 1 operand");
 
         int target = ResolveLabel(ln.Operands[0], ln.LineNumber);
         int next = ln.Offset + 2;
         int rel8 = target - next;
 
         if (rel8 < -128 || rel8 > 127)
-          throw new AssemblerException(ErrorCode.SyntaxError, $"Line {ln.LineNumber}: short jump out of range ({rel8})");
+          throw new AssemblerException(ErrorCode.SyntaxError, ln.LineNumber, $"short jump out of range ({rel8})");
 
         bytes.Add(ln.Mnemonic == Mnemonic.JZ8 ? (byte)0x74 : (byte)0x75);
         ////bytes.Add((sbyte)rel8);
@@ -752,7 +765,7 @@ public class Assembler
       }
 
       default:
-        throw new AssemblerException(ErrorCode.UnknownSymbol, $"Line {ln.LineNumber}: Unknown mnemonic '{ln.Mnemonic}'");
+        throw new AssemblerException(ErrorCode.UnknownSymbol, ln.LineNumber, $"Unknown mnemonic '{ln.Mnemonic}'");
     }
   }
 
@@ -787,7 +800,7 @@ public class Assembler
     needsSib = false;
 
     if (string.IsNullOrWhiteSpace(inner))
-      throw new AssemblerException($"Line {ln.LineNumber}: Empty memory operand");
+      throw new AssemblerException(ln.LineNumber, $"Empty memory operand");
 
     // reg [+ imm] ?
     var plusIdx = inner.IndexOf(Constants.PlusChar);
@@ -796,7 +809,7 @@ public class Assembler
       var left = inner[..plusIdx].Trim();
       var right = inner[(plusIdx + 1)..].Trim();
       if (!IsRegister32(left))
-        throw new AssemblerException($"Line {ln.LineNumber}: Unsupported memory base '{left}'");
+        throw new AssemblerException(ln.LineNumber, $"Unsupported memory base '{left}'");
 
       hasBase = true;
       baseReg = Registers[left.ToUpperInvariant()];
@@ -809,7 +822,7 @@ public class Assembler
     if (IsRegister(inner))
     {
       if (!IsRegister32(inner))
-        throw new AssemblerException($"Line {ln.LineNumber}: Memory addressing requires a 32-bit register");
+        throw new AssemblerException(ln.LineNumber, $"Memory addressing requires a 32-bit register");
 
       hasBase = true;
       baseReg = Registers[inner.ToUpperInvariant()];
@@ -833,7 +846,7 @@ public class Assembler
     // Syntax: #IMPORT library.dll, Function1[, Func2, ...]
     // At this time, we're not including function arguments (used for intellisense)
     if (line.Operands.Count < 2)
-      throw new AssemblerException(ErrorCode.SyntaxErrorImport, $"Line {line.LineNumber}: IMPORT expects 'dll, func[, ...]'");
+      throw new AssemblerException(ErrorCode.SyntaxErrorImport, line.LineNumber, $"IMPORT expects 'dll, func[, ...]'");
 
     var dll = line.Operands[0].Trim();
     if (!dll.Contains(Constants.PeriodChar))
@@ -867,11 +880,22 @@ public class Assembler
     }
   }
 
+  private void RegisterLabel(string label, int lineNumber)
+  {
+    if (!IsValidLabel(label) || IsRegister(label))
+      throw new AssemblerException(lineNumber, $"Invalid label '{label}'");
+
+    if (!_labels.TryAdd(label, _offset))
+      throw new AssemblerException(lineNumber, $"Duplicate label '{label}'");
+
+    _labelLines.Add(label, lineNumber);
+  }
+
   private int ResolveLabel(string label, int line)
   {
     label = label.Trim();
     if (!_labels.TryGetValue(label, out var addr))
-      throw new AssemblerException($"Line {line}: Undefined label '{label}'");
+      throw new AssemblerException(line, $"Undefined label '{label}'");
 
     return addr;
   }
@@ -902,6 +926,6 @@ public class Assembler
         token.EndsWith(Constants.HexSuffix, StringComparison.OrdinalIgnoreCase))
       return ParseInt(token, ln.LineNumber);
 
-    throw new AssemblerException(ErrorCode.UnknownSymbol, $"Line {ln.LineNumber}: Unknown symbol or value '{token}'");
+    throw new AssemblerException(ErrorCode.UnknownSymbol, ln.LineNumber, $"Unknown symbol or value '{token}'");
   }
 }

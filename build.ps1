@@ -49,4 +49,10 @@ $samplesDirectory = Join-Path $PSScriptRoot 'samples'
 $publishedSamplesDirectory = Join-Path $publishDirectory 'samples'
 New-Item -ItemType Directory -Path $publishedSamplesDirectory -Force | Out-Null
 Get-ChildItem -LiteralPath $samplesDirectory | Copy-Item -Destination $publishedSamplesDirectory -Recurse -Force
+
+# Ship standard headers beside both compiler command names.
+$includeDirectory = Join-Path $PSScriptRoot 'include'
+$publishedIncludeDirectory = Join-Path $publishDirectory 'include'
+New-Item -ItemType Directory -Path $publishedIncludeDirectory -Force | Out-Null
+Get-ChildItem -LiteralPath $includeDirectory | Copy-Item -Destination $publishedIncludeDirectory -Recurse -Force
 exit 0

@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using Zero.Assembly;
+using Zero.Parsing;
 
 namespace Zero.Tests.ZAsmTests;
 
@@ -40,15 +42,14 @@ public class AssemblerTests
   [TestMethod]
   [DataRow("hello-console.zasm", "Hello from Zero!\r\n")]
   [DataRow("hello-db-vars.zasm", "Hello, World!\r\n")]
+  [DataRow("hello-using.zasm", "Hello Zero!\r\n")]
   [DataRow("hello-concat.zasm", "Hello\r\nZero Assembly!\r\nHello Zero Assembly!\r\n")]
   [DataRow("v002-integer-math.zasm", "7 + 5 = 12\r\n6 * 7 = 42\r\n")]
+  [OSCondition(OperatingSystems.Windows)]
   public void ConsoleSamplePrintsExpectedOutput(string sampleName, string expectedOutput)
   {
-    if (!OperatingSystem.IsWindows())
-      Assert.Inconclusive("The sample produces a Windows x86 executable.");
-
     var source = Path.Combine(AppContext.BaseDirectory, "samples", sampleName);
-    var bytes = Zero.CompileAsm(File.ReadAllLines(source));
+    var bytes = new Assembler().Assemble(new SourceLoader().Load(source));
     Assert.IsNotNull(bytes);
 
     var executable = Path.Combine(Path.GetTempPath(), $"zero-console-{Guid.NewGuid():N}.exe");
@@ -61,6 +62,7 @@ public class AssemblerTests
         CreateNoWindow = true,
         RedirectStandardOutput = true,
       });
+
       Assert.IsNotNull(process);
 
       if (!process.WaitForExit(10000))

@@ -27,14 +27,46 @@ internal static class AssemblySyntax
         }
       }
       else if (current is Constants.SingleQuote or Constants.DoubleQuote)
+      {
         quote = current;
+      }
       else if (current == delimiter)
+      {
         return i;
+      }
     }
 
     if (quote != Constants.NullChar)
-      throw new AssemblerException($"Line {lineNumber}: Unterminated quoted string");
+      throw new AssemblerException(lineNumber, $"Unterminated quoted string");
+
     return -1;
+  }
+
+  internal static string ReadString(string operand, int lineNumber)
+  {
+    char quote = operand[0];
+    var result = new StringBuilder();
+    for (int i = 1; i < operand.Length; i++)
+    {
+      char current = operand[i];
+      if (current != quote)
+        result.Append(current);
+      else if (i + 1 < operand.Length && operand[i + 1] == quote)
+      {
+        result.Append(quote);
+        i++;
+      }
+      else if (i == operand.Length - 1)
+      {
+        return result.ToString();
+      }
+      else
+      {
+        throw new AssemblerException(lineNumber, $"Unexpected text after quoted string");
+      }
+    }
+
+    throw new AssemblerException(lineNumber, $"Unterminated quoted string");
   }
 
   internal static List<string> SplitOperands(string text, int lineNumber)
@@ -50,7 +82,7 @@ internal static class AssemblySyntax
       var operand = (comma < 0 ? text[start..] : text[start..comma]).Trim();
 
       if (operand.Length == 0)
-        throw new AssemblerException($"Line {lineNumber}: Empty operand");
+        throw new AssemblerException(lineNumber, $"Empty operand");
 
       operands.Add(operand);
 
@@ -58,29 +90,5 @@ internal static class AssemblySyntax
         return operands;
       start = comma + 1;
     }
-  }
-
-  internal static string ReadString(string operand, int lineNumber)
-  {
-    char quote = operand[0];
-    var result = new StringBuilder();
-    for (int i = 1; i < operand.Length; i++)
-    {
-      char current = operand[i];
-      if (current != quote)
-        result.Append(current);
-
-      else if (i + 1 < operand.Length && operand[i + 1] == quote)
-      {
-        result.Append(quote);
-        i++;
-      }
-      else if (i == operand.Length - 1)
-        return result.ToString();
-      else
-        throw new AssemblerException($"Line {lineNumber}: Unexpected text after quoted string");
-    }
-
-    throw new AssemblerException($"Line {lineNumber}: Unterminated quoted string");
   }
 }

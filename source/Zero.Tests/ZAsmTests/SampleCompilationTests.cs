@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection.PortableExecutable;
 using Zero.Assembly;
+using Zero.Parsing;
 
 namespace Zero.Tests.ZAsmTests;
 
@@ -39,13 +40,12 @@ public sealed class SampleCompilationTests
   {
     // Embed sources at build time so removed/renamed output files cannot enter
     // discovery, and new samples (including subfolders) need no manual test list.
-    using var source = typeof(SampleCompilationTests).Assembly.GetManifestResourceStream(ResourcePrefix + sampleName);
-    Assert.IsNotNull(source, $"Missing sample: {sampleName}");
+    var sourcePath = Path.Combine(AppContext.BaseDirectory, "samples", sampleName);
+    var source = new SourceLoader().Load(sourcePath);
+    var bytes = new Assembler().Assemble(source);
 
-    using var reader = new StreamReader(source);
-    var bytes = new Assembler().Assemble(reader.ReadToEnd().Split('\n'));
     Assert.IsNotNull(bytes, $"Compilation failed: {sampleName}");
-    Assert.IsTrue(bytes.Length > 0, $"Empty executable: {sampleName}");
+    Assert.IsNotEmpty(bytes, $"Empty executable: {sampleName}");
 
     using var executable = new PEReader(new MemoryStream(bytes));
     Assert.IsNotNull(executable.PEHeaders.PEHeader, $"Invalid PE header: {sampleName}");

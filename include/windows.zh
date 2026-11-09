@@ -1,0 +1,3 @@
+; Common Win32 imports. Windows API functions clean up their own arguments.
+#IMPORT kernel32.dll, ExitProcess, GetModuleHandleA
+#IMPORT user32.dll, MessageBoxA

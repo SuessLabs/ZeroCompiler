@@ -4,7 +4,8 @@
 
 Run `.\build.bat` (or `.\build.ps1`) to build the solution and publish a
 self-contained Native AOT compiler as both `publish\zcc.exe` and
-`publish\zero.exe`, with the contents of `samples` copied into `publish\samples`.
+`publish\zero.exe`, with the contents of `samples` copied into `publish\samples`
+and the shared `.zh` headers copied into `publish\include`.
 
 Both names run the same compiler; the build copies the native executable rather
 than compiling it twice. Both executables are included in release ZIPs.
@@ -33,6 +34,9 @@ including subfolders, after building the solution and before Native AOT publishi
 The build fails if any sample fails. Generated sample executables go to
 `output\samples\Release` (or `Debug`), preserving subfolder paths. Samples are
 compiled without launching them, so MessageBox samples require no interaction.
+The validator supplies the repository's `include` directory to the managed
+compiler with `-I`. Tests copy the shared headers beside their compiler output.
+See [Using included files](Zero-Assembly-Include-Files.md) for syntax and search order.
 
 After building the solution, run the validator separately with:
 
