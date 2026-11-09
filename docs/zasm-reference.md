@@ -290,6 +290,11 @@ requesting source location and searched paths.
 | `console.zh` | `puts`, `printf`, `exit` from `msvcrt.dll`. |
 | `windows.zh` | `ExitProcess`, `GetModuleHandleA` from `kernel32.dll`; `MessageBoxA` from `user32.dll`. |
 
+DLL-specific headers also cover Kernel32, User32, GDI32, ComCtl32, ComDlg32,
+Shell32, Winsock, registry/security, COM, Automation, path helpers, multimedia,
+HTTP, and file versions. See [Windows API headers](windows-headers.md) for the catalog,
+architecture naming, string encodings, and initialization requirements.
+
 The repository keeps these files in root `include`; publishing copies them to
 `publish/include`. Read the [include guide](Zero-Assembly-Include-Files.md) for more details.
 

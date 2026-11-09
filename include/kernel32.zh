@@ -1,0 +1,14 @@
+; Core Windows x86 APIs: processes, files, console, memory, and synchronization.
+; WinAPI/stdcall: push arguments right to left; callee removes them.
+; Match A functions with ANSI text and W functions with UTF-16 text.
+#IMPORT kernel32.dll, ExitProcess, GetModuleHandleA, GetModuleHandleW, GetModuleFileNameA, GetModuleFileNameW
+#IMPORT kernel32.dll, GetLastError, SetLastError, GetCurrentProcess, GetCurrentProcessId, GetCurrentThreadId, Sleep, GetTickCount
+#IMPORT kernel32.dll, GetStdHandle, GetConsoleMode, SetConsoleMode, ReadConsoleA, ReadConsoleW, WriteConsoleA, WriteConsoleW
+#IMPORT kernel32.dll, ReadFile, WriteFile, CreateFileA, CreateFileW, CloseHandle, GetFileSizeEx, SetFilePointerEx, FlushFileBuffers
+#IMPORT kernel32.dll, DeleteFileA, DeleteFileW, CopyFileA, CopyFileW, MoveFileA, MoveFileW, GetFileAttributesA, GetFileAttributesW
+#IMPORT kernel32.dll, CreateDirectoryA, CreateDirectoryW, RemoveDirectoryA, RemoveDirectoryW, FindFirstFileA, FindFirstFileW, FindNextFileA, FindNextFileW, FindClose
+#IMPORT kernel32.dll, GetCommandLineA, GetCommandLineW, GetEnvironmentVariableA, GetEnvironmentVariableW, GetCurrentDirectoryA, GetCurrentDirectoryW
+#IMPORT kernel32.dll, LoadLibraryA, LoadLibraryW, GetProcAddress, FreeLibrary, GetProcessHeap, HeapAlloc, HeapReAlloc, HeapFree
+#IMPORT kernel32.dll, VirtualAlloc, VirtualProtect, VirtualFree, QueryPerformanceCounter, QueryPerformanceFrequency
+#IMPORT kernel32.dll, CreateThread, WaitForSingleObject, WaitForMultipleObjects, CreateEventA, CreateEventW, SetEvent, ResetEvent
+#IMPORT kernel32.dll, MultiByteToWideChar, WideCharToMultiByte

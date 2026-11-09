@@ -1,0 +1,7 @@
+; Windows x86 registry and security APIs. WinAPI/stdcall.
+; Release registry keys with RegCloseKey and token handles with CloseHandle.
+#IMPORT advapi32.dll, RegOpenKeyExA, RegOpenKeyExW, RegCreateKeyExA, RegCreateKeyExW, RegCloseKey
+#IMPORT advapi32.dll, RegQueryValueExA, RegQueryValueExW, RegSetValueExA, RegSetValueExW, RegDeleteValueA, RegDeleteValueW
+#IMPORT advapi32.dll, RegEnumKeyExA, RegEnumKeyExW, RegEnumValueA, RegEnumValueW, RegDeleteKeyA, RegDeleteKeyW
+#IMPORT advapi32.dll, OpenProcessToken, GetTokenInformation, LookupPrivilegeValueA, LookupPrivilegeValueW, AdjustTokenPrivileges
+#IMPORT advapi32.dll, GetUserNameA, GetUserNameW

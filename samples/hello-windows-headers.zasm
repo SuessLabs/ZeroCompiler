@@ -1,0 +1,43 @@
+; Initialize common controls and print the process ID without opening a window.
+; Run: zero.exe run samples/hello-windows-headers.zasm
+using "console.zh"
+using "kernel32.zh"
+using "comctl32.zh"
+
+  jmp start
+
+message db 'Common controls initialized. Process ID: %u', 10, 0
+failure db 'Could not initialize common controls.', 0
+
+start:
+  ; INITCOMMONCONTROLSEX: DWORD dwSize, DWORD dwICC.
+  ; Construct a writable 8-byte structure on the stack, last field first.
+  push 0x000000FF          ; ICC_WIN95_CLASSES.
+  push 8                   ; sizeof(INITCOMMONCONTROLSEX) for this layout.
+  lea eax, [esp]
+
+  push eax
+  call [InitCommonControlsEx] ; single input
+
+  add esp, 8               ; Release the structure; the API removed its pointer.
+  test eax, eax
+  jz failed
+
+  call [GetCurrentProcessId]
+
+  push eax
+  push message
+  call [printf]
+
+  add esp, 8               ; cdecl: remove both printf arguments.
+
+  push 0
+  call [exit]
+
+failed:
+  push failure
+  call [puts]
+
+  add esp, 4
+  push 1
+  call [exit]

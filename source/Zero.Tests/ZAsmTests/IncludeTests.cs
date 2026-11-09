@@ -58,7 +58,7 @@ public sealed class IncludeTests
     var error = Assert.ThrowsExactly<AssemblerException>(() => new SourceLoader().Load(main, _options));
 
     Assert.Contains($"{b}(2)", error.Message);
-    Assert.Contains(error.Message, $"{main} -> {a} -> {b} -> {a}");
+    Assert.Contains($"{main} -> {a} -> {b} -> {a}", error.Message);
   }
 
   [TestInitialize]

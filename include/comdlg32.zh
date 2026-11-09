@@ -1,0 +1,6 @@
+; Standard Windows x86 file, color, font, find/replace, and print dialogs.
+; WinAPI/stdcall. APIs expect correctly initialized caller-owned structures.
+#IMPORT comdlg32.dll, GetOpenFileNameA, GetOpenFileNameW, GetSaveFileNameA, GetSaveFileNameW
+#IMPORT comdlg32.dll, ChooseColorA, ChooseColorW, ChooseFontA, ChooseFontW
+#IMPORT comdlg32.dll, FindTextA, FindTextW, ReplaceTextA, ReplaceTextW
+#IMPORT comdlg32.dll, PrintDlgA, PrintDlgW, PageSetupDlgA, PageSetupDlgW, CommDlgExtendedError

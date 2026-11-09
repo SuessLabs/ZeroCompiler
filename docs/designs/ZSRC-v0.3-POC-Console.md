@@ -48,6 +48,11 @@ int main()
 Ideal for copy/pasting in from other assemblers.
 
 ```csharp
+using "win32.zh"
+
+; #IMPORT CustomLibrary.dll, AddNumbers
+import "CustomLibrary.dll", dword AddNumbers(dword a, dword b);
+
 section .data
   greeting db 'Hi!', 0x0A   ; 'H', 'i', '!', and a newline character (4 bytes)
 

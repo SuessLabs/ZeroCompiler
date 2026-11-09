@@ -225,7 +225,8 @@ From the release folder, also try:
 
 - [String concatenation tutorial](tutorial-zasm-concat.md): a short walkthrough with a mnemonic table.
 - [Sample guide](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/readme.md): console, arithmetic, strings, MessageBox, and controls.
-- [Header guide](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/readme.md): the shipped `console.zh` and `windows.zh` headers.
+- [Windows API headers](windows-headers.md): core Windows APIs, controls, dialogs, drawing, shell, networking, COM, and more.
+- [Header catalog](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/readme.md): all shipped `.zh` files and calling rules.
 - [Assembly overview and opcodes](Zero-Assembly-Intro.md): a compact companion to the language reference.
 
 ## Build and Contribute

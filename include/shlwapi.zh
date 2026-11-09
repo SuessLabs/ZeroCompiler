@@ -1,0 +1,5 @@
+; Windows x86 shell path and string helpers. WinAPI/stdcall.
+; Use sufficiently sized writable buffers for APIs that modify a path.
+#IMPORT shlwapi.dll, PathFileExistsA, PathFileExistsW, PathIsDirectoryA, PathIsDirectoryW
+#IMPORT shlwapi.dll, PathFindExtensionA, PathFindExtensionW, PathFindFileNameA, PathFindFileNameW
+#IMPORT shlwapi.dll, PathRemoveFileSpecA, PathRemoveFileSpecW, StrStrIA, StrStrIW

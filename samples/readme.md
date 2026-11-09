@@ -18,6 +18,7 @@ From the `publish` folder, compile and run a sample:
 | `hello-db-vars.zasm` | Declares a named string with `message db 'Hello, World!', 0x0A, 0` and prints it. |
 | `hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
 | `hello-using.zasm` | Loads the shipped `console.zh` header and prints `Hello Zero!`. |
+| `hello-windows-headers.zasm` | Loads console, Kernel32, and ComCtl32 headers, initializes common controls, and prints its process ID. |
 | `hello-win86-controls.zasm` | Opens a native Windows x86 window with a label, an editable `Hello Zero!` textbox, and a button that displays the current text. |
 | `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
@@ -75,6 +76,7 @@ The build ships `console.zh` and `windows.zh` in `publish/include` beside both
 compiler executables. Run `.\zcc.exe run samples\hello-using.zasm` from `publish`
 to try it. Add your own search directories with repeated `-I "headers"` options.
 See [Using included files](../docs/Zero-Assembly-Include-Files.md).
+For the full DLL-specific catalog, see [Windows API headers](../docs/windows-headers.md).
 
 Import Address Table lookup references imported functions and can be called by their names in brackets:
 

@@ -87,6 +87,11 @@ error. Errors inside headers report the header's filename and original line numb
 | `console.zh` | Console text and program exit | `puts`, `printf`, `exit` |
 | `windows.zh` | Basic Windows APIs | `ExitProcess`, `GetModuleHandleA`, `MessageBoxA` |
 
+Additional DLL-specific headers cover core OS services, windows, GDI drawing,
+common controls and dialogs, the shell, sockets, registry/security, COM,
+Automation, path helpers, multimedia, HTTP, and file version resources.
+See the [Windows API header guide](windows-headers.md) for the full catalog.
+
 The headers target the compiler's current Windows x86 output. `puts` and `printf`
 use cdecl, so remove their arguments from the stack after calls. Windows API
 functions remove their own arguments.
@@ -100,6 +105,10 @@ publish/
   include/
     console.zh
     windows.zh
+    kernel32.zh
+    user32.zh
+    comctl32.zh
+    ...
     readme.md
   samples/
     hello-using.zasm
