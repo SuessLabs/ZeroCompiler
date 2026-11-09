@@ -1,0 +1,4 @@
+; Windows x86 file version resources. WinAPI/stdcall.
+; These APIs read existing resources; they do not add resources to a generated PE.
+#IMPORT version.dll, GetFileVersionInfoSizeA, GetFileVersionInfoSizeW, GetFileVersionInfoA, GetFileVersionInfoW
+#IMPORT version.dll, VerQueryValueA, VerQueryValueW

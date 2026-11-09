@@ -1,0 +1,7 @@
+; Windows x86 shell integration, folders, file information, and shell execution.
+; WinAPI/stdcall. COM-based shell operations may need CoInitializeEx first.
+#IMPORT shell32.dll, ShellExecuteA, ShellExecuteW, ShellExecuteExA, ShellExecuteExW
+#IMPORT shell32.dll, SHGetFileInfoA, SHGetFileInfoW, SHGetFolderPathA, SHGetFolderPathW, SHGetKnownFolderPath
+#IMPORT shell32.dll, SHBrowseForFolderA, SHBrowseForFolderW, SHGetPathFromIDListA, SHGetPathFromIDListW
+#IMPORT shell32.dll, Shell_NotifyIconA, Shell_NotifyIconW, DragAcceptFiles, DragQueryFileA, DragQueryFileW, DragFinish
+#IMPORT shell32.dll, CommandLineToArgvW, ExtractIconExA, ExtractIconExW

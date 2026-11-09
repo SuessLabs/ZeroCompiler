@@ -53,6 +53,7 @@ emitted byte is the program entry point.
 - [x] Include search order: working directory, ordered `-I`/`--include` paths, then `include` beside the compiler.
 - [x] Include-cycle diagnostics, searched-path errors, and original filename/line reporting for included source.
 - [x] Shipped `console.zh` and `windows.zh` headers.
+- [x] [DLL-specific Windows API headers](windows-headers.md) for controls/dialogs, drawing, core OS services, shell, sockets, security, COM, HTTP, and other utilities.
 - [x] `#IMPORT dll, function[, ...]` declarations and PE import table generation.
 - [x] Plain imported function names such as `call [puts]`, with backward-compatible and DLL-qualified aliases.
 - [x] `zero.exe` and `zcc.exe`, compile-only mode, and compile-and-execute `run` mode.
@@ -127,7 +128,7 @@ These ideas can follow the core assembler work or be developed independently.
 - [ ] **String instructions:** `MOVSB`, `MOVSW`, `CMPSB`, `CMPSW`, and useful repeat prefixes.
 - [ ] **Flag-stack operations:** `PUSHF`/`POPF` forms with documented operand sizes and OS restrictions.
 - [ ] **Floating-point and SIMD:** selected x87/SSE instructions and matching data/operand support.
-- [ ] **More standard headers:** broader Win32 imports, named constants, structure layouts, and reusable helper routines.
+- [ ] **Richer standard headers:** expand API coverage and add named constants, structure layouts, and reusable helper routines as the language supports them.
 
 ### Tooling and Learning
 

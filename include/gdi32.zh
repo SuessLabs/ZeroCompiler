@@ -1,0 +1,9 @@
+; Windows x86 Graphics Device Interface: drawing, fonts, bitmaps, and DCs.
+; WinAPI/stdcall. Release owned GDI objects/DCs using the appropriate function.
+#IMPORT gdi32.dll, CreateCompatibleDC, DeleteDC, CreateCompatibleBitmap, CreateDIBSection, SelectObject, DeleteObject
+#IMPORT gdi32.dll, BitBlt, StretchBlt, StretchDIBits, SetDIBitsToDevice, GetDeviceCaps
+#IMPORT gdi32.dll, CreateSolidBrush, CreatePen, GetStockObject, SetTextColor, SetBkColor, SetBkMode
+#IMPORT gdi32.dll, MoveToEx, LineTo, Rectangle, Ellipse, RoundRect, Polygon, Polyline
+#IMPORT gdi32.dll, TextOutA, TextOutW, ExtTextOutA, ExtTextOutW, GetTextExtentPoint32A, GetTextExtentPoint32W
+#IMPORT gdi32.dll, CreateFontA, CreateFontW, CreateFontIndirectA, CreateFontIndirectW, GetTextMetricsA, GetTextMetricsW
+#IMPORT gdi32.dll, SaveDC, RestoreDC, SetViewportOrgEx, SetWindowOrgEx, SetMapMode

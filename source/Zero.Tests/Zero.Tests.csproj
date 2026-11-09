@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="../../include/**/*.zh"
+                      LogicalName="Include/%(RecursiveDir)%(Filename)%(Extension)"
+                      WithCulture="false" />
     <Content Include="../../include/**/*"
              Link="Include/%(RecursiveDir)%(Filename)%(Extension)"
              TargetPath="include/%(RecursiveDir)%(Filename)%(Extension)"
