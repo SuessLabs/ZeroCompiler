@@ -1,0 +1,6 @@
+Zero logo generation
+Tool: built-in image_gen (imagegen skill), transparent background enabled.
+Output: zero-logo.png (raster PNG, not a vector file).
+
+Prompt:
+Use case: logo-brand. Create a polished original logo for the Zero programming language, a lean native compiler with its own assembly language. Asset: a single production-ready horizontal logo lockup for documentation and a GitHub README. Transparent background, real alpha. Design: a bold distinctive geometric numeral zero symbol, with one clean diagonal negative-space cut suggesting precision and assembly, paired with an expertly kerned uppercase wordmark reading exactly "ZERO". The symbol must read as a zero rather than a power button. Flat, minimal, vector-like graphic with crisp edges and balanced proportions, recognizable at small sizes. Restrained cool blue/teal symbol and solid deep navy wordmark. No gradients, shadows, glow, 3D, circuit-board details, mockups, border, tagline, extra text, multiple concepts, or presentation sheet. Generous clear padding around a single centered horizontal lockup. Text verbatim: ZERO.

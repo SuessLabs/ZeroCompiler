@@ -1,5 +1,7 @@
 # Zero Compiler
 
+![logo](docs/images/zero-logo.png)
+
 The Zero programming language and compiler project (_AKA: Null Compiler_). **Zero** is a simple, fast, and efficient programming language for the x86-64 architecture.
 
 The compiler supports PE (portable exectuable) file formats for GUI, CLI, and library binaries. Future expansions will include ELF formats and ARM architecture.
