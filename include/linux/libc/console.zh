@@ -1,0 +1,5 @@
+; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; The current compiler emits Windows PE, not a runnable Linux executable.
+; Use the target C ABI, not Windows stdcall. printf-family calls are variadic.
+; FILE pointers and stdout/stderr access require additional runtime support.
+#IMPORT libc.so.6, puts, printf, fprintf, snprintf, getchar, fputs, fgets, fflush, perror

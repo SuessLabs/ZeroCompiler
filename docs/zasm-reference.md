@@ -168,7 +168,7 @@ additional source before assembly.
 | `DW` | Integer values separated by commas. | Two bytes per value, little-endian. | `counts: dw 10, 20` |
 | `DD` | Integer values separated by commas. | Four bytes per value, little-endian. | `total: dd 42` |
 | `#IMPORT` | DLL name, then one or more exported function names. | PE import table entries. | `#IMPORT msvcrt.dll, puts, exit` |
-| `using` | One double-quoted filename. | Source expanded at the directive position. | `using "console.zh"` |
+| `using` | One double-quoted filename. | Source expanded at the directive position. | `using "windows/console.zh"` |
 
 `DW` and `DD` accept integer literals, not quoted strings, symbol initializers,
 or floating-point values. `DB` integer operands emit their low 8 bits; `DW`
@@ -269,7 +269,7 @@ when implementing a procedure or callback whose ABI requires it.
 ## Shared Headers
 
 ```asm
-using "console.zh"
+using "windows/console.zh"
 using "subfolder/helpers.zh" ; A trailing comment is allowed.
 ```
 
@@ -287,8 +287,8 @@ requesting source location and searched paths.
 
 | Shipped header | Imports |
 | --- | --- |
-| `console.zh` | `puts`, `printf`, `exit` from `msvcrt.dll`. |
-| `windows.zh` | `ExitProcess`, `GetModuleHandleA` from `kernel32.dll`; `MessageBoxA` from `user32.dll`. |
+| `windows/console.zh` | `puts`, `printf`, `exit` from `msvcrt.dll`. |
+| `windows/windows.zh` | `ExitProcess`, `GetModuleHandleA` from `kernel32.dll`; `MessageBoxA` from `user32.dll`. |
 
 DLL-specific headers also cover Kernel32, User32, GDI32, ComCtl32, ComDlg32,
 Shell32, Winsock, registry/security, COM, Automation, path helpers, multimedia,
@@ -297,6 +297,9 @@ architecture naming, string encodings, and initialization requirements.
 
 The repository keeps these files in root `include`; publishing copies them to
 `publish/include`. Read the [include guide](Zero-Assembly-Include-Files.md) for more details.
+Use the `windows/` prefix for working Windows headers. Separate
+[Linux drafts](linux-headers.md) under `linux/` prepare future ELF interfaces;
+they are not runnable with the current backend.
 
 ## Command Line and Errors
 

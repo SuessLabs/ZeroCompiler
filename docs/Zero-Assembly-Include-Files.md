@@ -11,7 +11,7 @@ using "{filename.zh}"
 
 ### Sample
 
-**include/console.zh**
+**include/windows/console.zh**
 
 ```asm
 #IMPORT msvcrt.dll, puts, exit
@@ -20,7 +20,7 @@ using "{filename.zh}"
 **main.zasm:**
 
 ```asm
-using "console.zh"
+using "windows/console.zh"
 ; using "subfolder/myfile.zh"
 
   jmp start
@@ -84,13 +84,18 @@ error. Errors inside headers report the header's filename and original line numb
 
 | Header | Purpose | Imported functions |
 | --- | --- | --- |
-| `console.zh` | Console text and program exit | `puts`, `printf`, `exit` |
-| `windows.zh` | Basic Windows APIs | `ExitProcess`, `GetModuleHandleA`, `MessageBoxA` |
+| `windows/console.zh` | Console text and program exit | `puts`, `printf`, `exit` |
+| `windows/windows.zh` | Basic Windows APIs | `ExitProcess`, `GetModuleHandleA`, `MessageBoxA` |
 
 Additional DLL-specific headers cover core OS services, windows, GDI drawing,
 common controls and dialogs, the shell, sockets, registry/security, COM,
 Automation, path helpers, multimedia, HTTP, and file version resources.
 See the [Windows API header guide](windows-headers.md) for the full catalog.
+
+Windows headers now live under `include/windows`; use paths such as
+`using "windows/console.zh"`. Root-level compatibility copies are not shipped.
+Draft Linux headers live separately under `include/linux` and require future
+ELF support. See [Linux headers](linux-headers.md) for their status.
 
 The headers target the compiler's current Windows x86 output. `puts` and `printf`
 use cdecl, so remove their arguments from the stack after calls. Windows API
@@ -103,12 +108,16 @@ publish/
   zero.exe
   zcc.exe
   include/
-    console.zh
-    windows.zh
-    kernel32.zh
-    user32.zh
-    comctl32.zh
-    ...
+    windows/
+      console.zh
+      windows.zh
+      kernel32.zh
+      user32.zh
+      comctl32.zh
+      ...
+    linux/
+      libc/               # Drafts, not runnable with the PE backend.
+      syscalls/           # Comment-only architecture references.
     readme.md
   samples/
     hello-using.zasm

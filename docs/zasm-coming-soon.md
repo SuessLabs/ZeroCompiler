@@ -52,8 +52,9 @@ emitted byte is the program entry point.
 - [x] `using "file.zh"` with recursive loading and one inclusion per normalized path per compilation.
 - [x] Include search order: working directory, ordered `-I`/`--include` paths, then `include` beside the compiler.
 - [x] Include-cycle diagnostics, searched-path errors, and original filename/line reporting for included source.
-- [x] Shipped `console.zh` and `windows.zh` headers.
+- [x] Shipped `windows/console.zh` and `windows/windows.zh` headers.
 - [x] [DLL-specific Windows API headers](windows-headers.md) for controls/dialogs, drawing, core OS services, shell, sockets, security, COM, HTTP, and other utilities.
+- [x] Platform folders: working Windows imports under `include/windows`; draft glibc headers and comment-only syscall references under `include/linux`.
 - [x] `#IMPORT dll, function[, ...]` declarations and PE import table generation.
 - [x] Plain imported function names such as `call [puts]`, with backward-compatible and DLL-qualified aliases.
 - [x] `zero.exe` and `zcc.exe`, compile-only mode, and compile-and-execute `run` mode.
@@ -140,6 +141,9 @@ These ideas can follow the core assembler work or be developed independently.
 - [ ] **Compatibility guide:** explain differences from MASM, NASM, and FASM without promising source compatibility.
 
 ### More Targets and Executable Formats
+
+[Linux header drafts](linux-headers.md) are available for planning. ELF generation,
+Linux linking/ABI support, and runtime verification remain unchecked future work.
 
 - [ ] **Windows x64:** 64-bit instructions, PE32+, and the Windows x64 ABI.
 - [ ] **ARM/ARM64:** dedicated instruction encoders and platform calling conventions.

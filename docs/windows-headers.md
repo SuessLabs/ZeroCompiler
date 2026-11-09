@@ -12,27 +12,31 @@ ZASM ships curated `.zh` headers for common Windows DLLs. They contain `#IMPORT`
 declarations, so your program can share library imports instead of repeating them.
 The headers target the current Windows x86 backend.
 
+Windows headers are stored under `include/windows`. Replace former flat names
+such as `using "console.zh"` with `using "windows/console.zh"`. The include search
+roots stay the same. Linux drafts are kept separately under `include/linux`.
+
 ## Choose a Header
 
 | Area | Header | Example functions |
 | --- | --- | --- |
-| Basic console text | `console.zh` | `puts`, `printf`, `exit` |
-| Minimal Windows startup | `windows.zh` | `ExitProcess`, `GetModuleHandleA`, `MessageBoxA` |
-| Core OS services | `kernel32.zh` | `CreateFileA/W`, `ReadFile`, `WriteFile`, `HeapAlloc`, `CreateThread` |
-| Windows and messages | `user32.zh` | `CreateWindowExA/W`, `GetMessageA/W`, `SendMessageA/W`, `MessageBoxA/W` |
-| Drawing and fonts | `gdi32.zh` | `BitBlt`, `CreateFontA/W`, `TextOutA/W`, `DeleteObject` |
-| Common controls | `comctl32.zh` | `InitCommonControlsEx`, `ImageList_Create`, `CreateStatusWindowA/W` |
-| Standard dialogs | `comdlg32.zh` | `GetOpenFileNameA/W`, `ChooseColorA/W`, `PrintDlgA/W` |
-| Shell integration | `shell32.zh` | `ShellExecuteA/W`, `SHGetKnownFolderPath`, `Shell_NotifyIconA/W` |
-| Modern sockets | `ws2_32.zh` | `WSAStartup`, `socket`, `connect`, `send`, `recv`, `getaddrinfo` |
-| Legacy sockets | `wsock32.zh` | Winsock 1.1-compatible socket functions |
-| Registry and security | `advapi32.zh` | `RegOpenKeyExA/W`, `RegQueryValueExA/W`, `OpenProcessToken` |
-| COM support | `ole32.zh` | `CoInitializeEx`, `CoCreateInstance`, `CoTaskMemFree` |
-| Automation data | `oleaut32.zh` | `SysAllocString`, `VariantClear`, `SafeArrayCreateVector` |
-| Path/string helpers | `shlwapi.zh` | `PathFileExistsA/W`, `PathFindFileNameA/W`, `StrStrIA/W` |
-| Sound and timers | `winmm.zh` | `PlaySoundA/W`, `timeGetTime`, `timeBeginPeriod` |
-| HTTP requests | `winhttp.zh` | `WinHttpOpen`, `WinHttpSendRequest`, `WinHttpReadData` |
-| File version resources | `version.zh` | `GetFileVersionInfoA/W`, `VerQueryValueA/W` |
+| Basic console text | `windows/console.zh` | `puts`, `printf`, `exit` |
+| Minimal Windows startup | `windows/windows.zh` | `ExitProcess`, `GetModuleHandleA`, `MessageBoxA` |
+| Core OS services | `windows/kernel32.zh` | `CreateFileA/W`, `ReadFile`, `WriteFile`, `HeapAlloc`, `CreateThread` |
+| Windows and messages | `windows/user32.zh` | `CreateWindowExA/W`, `GetMessageA/W`, `SendMessageA/W`, `MessageBoxA/W` |
+| Drawing and fonts | `windows/gdi32.zh` | `BitBlt`, `CreateFontA/W`, `TextOutA/W`, `DeleteObject` |
+| Common controls | `windows/comctl32.zh` | `InitCommonControlsEx`, `ImageList_Create`, `CreateStatusWindowA/W` |
+| Standard dialogs | `windows/comdlg32.zh` | `GetOpenFileNameA/W`, `ChooseColorA/W`, `PrintDlgA/W` |
+| Shell integration | `windows/shell32.zh` | `ShellExecuteA/W`, `SHGetKnownFolderPath`, `Shell_NotifyIconA/W` |
+| Modern sockets | `windows/ws2_32.zh` | `WSAStartup`, `socket`, `connect`, `send`, `recv`, `getaddrinfo` |
+| Legacy sockets | `windows/wsock32.zh` | Winsock 1.1-compatible socket functions |
+| Registry and security | `windows/advapi32.zh` | `RegOpenKeyExA/W`, `RegQueryValueExA/W`, `OpenProcessToken` |
+| COM support | `windows/ole32.zh` | `CoInitializeEx`, `CoCreateInstance`, `CoTaskMemFree` |
+| Automation data | `windows/oleaut32.zh` | `SysAllocString`, `VariantClear`, `SafeArrayCreateVector` |
+| Path/string helpers | `windows/shlwapi.zh` | `PathFileExistsA/W`, `PathFindFileNameA/W`, `StrStrIA/W` |
+| Sound and timers | `windows/winmm.zh` | `PlaySoundA/W`, `timeGetTime`, `timeBeginPeriod` |
+| HTTP requests | `windows/winhttp.zh` | `WinHttpOpen`, `WinHttpSendRequest`, `WinHttpReadData` |
+| File version resources | `windows/version.zh` | `GetFileVersionInfoA/W`, `VerQueryValueA/W` |
 
 `A/W` in this table abbreviates two separate exports, such as `CreateFileA` and
 `CreateFileW`; it is not ZASM syntax. Read the actual header for its complete list.
@@ -43,16 +47,16 @@ for usage notes. Microsoft documents each function's parameters and DLL in its
 ## Why There Is No ComCtl64 Header
 
 The Windows common-controls DLL is named `comctl32.dll` on both 32-bit and 64-bit
-Windows. There is no separate standard `comctl64.dll`; `comctl32.zh` is the correct
+Windows. There is no separate standard `comctl64.dll`; `windows/comctl32.zh` is the correct
 header. Including it does not switch the compiler to a 64-bit target.
 See Microsoft's [common-control versions](https://learn.microsoft.com/en-us/windows/win32/controls/common-control-versions).
 
 ## Basic Usage
 
 ```asm
-using "kernel32.zh"
-using "user32.zh"
-using "comctl32.zh"
+using "windows/kernel32.zh"
+using "windows/user32.zh"
+using "windows/comctl32.zh"
 ```
 
 Include only the libraries you need. Every function declared by an included header
@@ -63,7 +67,7 @@ For just one or two functions, a direct declaration can keep dependencies smalle
 #IMPORT kernel32.dll, ExitProcess
 ```
 
-`windows.zh` keeps its original three imports. It does not automatically include
+`windows/windows.zh` keeps its original three imports. It does not automatically include
 all Windows headers. Existing examples continue to use it unchanged.
 
 ## Common-Controls Example
@@ -74,7 +78,7 @@ Run the shipped sample from the published directory:
 .\zero.exe run samples\hello-windows-headers.zasm
 ```
 
-It loads `console.zh`, `kernel32.zh`, and `comctl32.zh`, initializes common controls,
+It loads `windows/console.zh`, `windows/kernel32.zh`, and `windows/comctl32.zh`, initializes common controls,
 and prints:
 
 ```text
@@ -110,14 +114,14 @@ add one or open any windows.
 - **Names:** macros such as C common-control helpers and `GetWindowLongPtr` are not automatically exported function names for this x86 target. These headers list actual DLL exports.
 - **Availability:** imports are resolved when the application loads. Test on the Windows versions you intend to support; the catalog is not a promise that every function exists on all versions.
 
-Prefer `ws2_32.zh` for new socket programs. Avoid mixing it with `wsock32.zh`
+Prefer `windows/ws2_32.zh` for new socket programs. Avoid mixing it with `windows/wsock32.zh`
 unless you use DLL-qualified import names for overlapping functions, such as
 `call [IAT_ws2_32_dll_socket]`.
 
 ## Validation and Shipping
 
 The build copies root `include` into `publish/include`, and release ZIPs include
-that directory. Unit tests compile every shipped header separately and all headers
+that directory. Unit tests compile every shipped Windows header separately and all Windows headers
 together. On Windows, they also verify declared names against installed x86 DLL
 export tables without calling any of those APIs.
 

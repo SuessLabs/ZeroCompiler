@@ -1,0 +1,8 @@
+; FUTURE REFERENCE ONLY: Linux native x86-64 syscall interface (not x32/i386).
+; No constants or helpers are defined yet: ZASM lacks equates and SYSCALL encoding.
+; Number: RAX. Arguments: RDI, RSI, RDX, R10, R8, R9. Result: RAX.
+; SYSCALL clobbers RCX and R11. Raw kernel errors are negative errno values.
+; Selected numbers: read=0, write=1, close=3, mmap=9, munmap=11,
+; getpid=39, socket=41, execve=59, exit=60, exit_group=231, openat=257.
+; exit terminates the calling thread; exit_group terminates the thread group.
+; Source: https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscalls/syscall_64.tbl

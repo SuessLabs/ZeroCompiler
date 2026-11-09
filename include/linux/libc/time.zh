@@ -1,0 +1,3 @@
+; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; timespec, tm, time_t, and clock IDs must match the target ABI.
+#IMPORT libc.so.6, clock_gettime, clock_getres, nanosleep, time, localtime_r, gmtime_r, strftime

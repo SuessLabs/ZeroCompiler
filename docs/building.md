@@ -6,6 +6,8 @@ Run `.\build.bat` (or `.\build.ps1`) to build the solution and publish a
 self-contained Native AOT compiler as both `publish\zcc.exe` and
 `publish\zero.exe`, with the contents of `samples` copied into `publish\samples`
 and the shared `.zh` headers copied into `publish\include`.
+Headers retain their platform subfolders: `windows` contains working PE imports;
+`linux` contains draft declarations/reference files for future ELF support.
 
 Both names run the same compiler; the build copies the native executable rather
 than compiling it twice. Both executables are included in release ZIPs.

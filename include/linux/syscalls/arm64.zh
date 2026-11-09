@@ -1,0 +1,8 @@
+; FUTURE REFERENCE ONLY: Linux AArch64 syscall interface (not 32-bit ARM).
+; No constants or helpers are defined yet: ZASM lacks equates and AArch64 encoding.
+; Instruction: SVC #0. Number: X8. Arguments: X0-X5. Result: X0.
+; Raw kernel errors are negative errno values, unlike libc's errno convention.
+; Selected numbers: openat=56, close=57, read=63, write=64, exit=93,
+; exit_group=94, getpid=172, socket=198, execve=221, mmap=222, munmap=215.
+; exit terminates the calling thread; exit_group terminates the thread group.
+; Source: https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/unistd.h

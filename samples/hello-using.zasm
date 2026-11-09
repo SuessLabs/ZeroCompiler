@@ -1,6 +1,6 @@
 ; Compile and run: zero.exe run samples/hello-using.zasm
 ; The published compiler finds console.zh in its own include folder.
-using "console.zh" ; Shared runtime imports
+using "windows/console.zh" ; Shared runtime imports
 
   jmp start
 
