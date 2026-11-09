@@ -1,5 +1,10 @@
 # Zero - Assembly Compiler Proof of Concept Sandbox
 
+> **Design proposal, not current syntax.** The directives and `PROC`/`ENDP`
+> forms below are experimental ideas. Use the [current ZASM reference](zasm-reference.md)
+> and [working examples](zasm-examples.md) for supported programs.
+> [Back to documentation home](index.md).
+
 The following document contains a sandbox before becoming a Mark-N revision (*i.e. MK-1*).
 
 ## Compiler Switches
