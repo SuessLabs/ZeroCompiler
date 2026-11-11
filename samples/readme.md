@@ -20,6 +20,8 @@ From the `publish` folder, compile and run a sample:
 | `hello-using.zasm` | Loads the shipped `windows/console.zh` header and prints `Hello Zero!`. |
 | `hello-windows-headers.zasm` | Loads console, Kernel32, and ComCtl32 headers, initializes common controls, and prints its process ID. |
 | `hello-linux64-cli.zasm` | Declares `#TARGET linux-x64`, creates a static ELF64 executable, and prints `Hello Zero from Linux x86-64!` through Linux syscalls. |
+| `win-x86-timer.zasm` | Windows PE32 console timer: prints an incrementing unsigned 32-bit counter every second using a periodic waitable timer. |
+| `elf-x64-timer.zasm` | Linux ELF64 console timer: prints an incrementing unsigned 32-bit counter every second using `timerfd` syscalls, without libc. |
 | `hello-win86-controls.zasm` | Opens a native Windows x86 window with a label, an editable `Hello Zero!` textbox, and a button that displays the current text. |
 | `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
@@ -67,6 +69,43 @@ The Windows compiler backend currently writes the console
 subsystem for all executables, so the MessageBox sample can also open a console
 window when launched from Explorer. Run console samples from an existing terminal
 to keep their output visible.
+
+## One-second timers
+
+Both timer samples print `1`, `2`, `3`, ... on separate lines, starting after one
+second. Press **Ctrl+C** to stop. The counter is an unsigned 32-bit value
+(`uint32_t`, or DWORD), wrapping to zero after `4294967295`; a QWORD is 64 bits.
+
+From `publish`, run the Windows x86 PE32 sample:
+
+```powershell
+.\zcc.exe run samples\win-x86-timer.zasm
+```
+
+It uses an auto-reset waitable timer with an initial delay of one second and a
+1000 ms period. The main thread blocks in `WaitForSingleObject`, increments the
+counter, prints it with `%u`, and flushes output each tick. It does not busy-wait.
+Windows timer signals can coalesce if the program is delayed processing output.
+
+Compile the Linux x86-64 ELF64 sample from `publish` on Windows:
+
+```powershell
+.\zcc.exe samples\elf-x64-timer.zasm elf-x64-timer
+```
+
+Copy the executable to Linux/WSL, then run:
+
+```sh
+chmod +x elf-x64-timer
+./elf-x64-timer
+```
+
+The Linux sample uses a periodic `CLOCK_MONOTONIC` timer through `timerfd_create`
+and `timerfd_settime`. Blocking reads report elapsed ticks, including ticks missed
+while delayed; it prints one increment for each. Decimal conversion uses repeated
+subtraction because Zero does not yet support division. All writable storage is
+on the stack, and no libc or dynamic loader is required. Timer scheduling and
+console output are subject to normal operating-system delays on both platforms.
 
 ## Calling imported functions
 

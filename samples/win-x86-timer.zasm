@@ -1,0 +1,70 @@
+; Windows x86 PE32 console: increment and print a uint32_t every second.
+; A uint32_t is a DWORD (32 bits); QWORD means 64 bits.
+; From publish: .\zcc.exe run samples\win-x86-timer.zasm
+; Prints 1, 2, 3, ... until Ctrl+C. The counter wraps after 4294967295.
+#TARGET windows-x86
+#IMPORT kernel32.dll, CreateWaitableTimerA, SetWaitableTimer, WaitForSingleObject
+#IMPORT kernel32.dll, CloseHandle, ExitProcess
+#IMPORT msvcrt.dll, printf, fflush
+
+  jmp start
+
+counter_format db '%u', 10, 0 ; The C runtime translates LF to Windows CR/LF.
+
+start:
+  ; An unnamed, auto-reset waitable timer. Win32 callees clean their arguments.
+  push 0                  ; lpTimerName = NULL.
+  push 0                  ; bManualReset = FALSE.
+  push 0                  ; lpTimerAttributes = NULL.
+  call [CreateWaitableTimerA]
+  test eax, eax
+  jz failed
+  push eax
+  pop edi                 ; EDI = timer handle, preserved across library calls.
+
+  ; LARGE_INTEGER due time = -10000000 in 100 ns units: one second from now.
+  ; Push the high DWORD first so the low DWORD is at the lower address.
+  push 0xFFFFFFFF
+  push 0xFF676980
+  lea esi, [esp]
+  push 0                  ; fResume = FALSE.
+  push 0                  ; lpArgToCompletionRoutine = NULL.
+  push 0                  ; pfnCompletionRoutine = NULL; wait instead of an APC.
+  push 1000               ; Period in milliseconds; repeats without rearming.
+  push esi                ; lpDueTime.
+  push edi                ; hTimer.
+  call [SetWaitableTimer]
+  add esp, 8              ; Release our due-time structure.
+  test eax, eax
+  jz failed_with_timer
+
+  mov ebx, 0              ; Unsigned 32-bit counter, preserved by the C runtime.
+
+timer_loop:
+  push 0xFFFFFFFF         ; INFINITE: sleep until the timer is signaled.
+  push edi
+  call [WaitForSingleObject]
+  cmp eax, 0              ; WAIT_OBJECT_0.
+  jnz failed_with_timer
+  add ebx, 1
+
+  push ebx
+  push counter_format
+  call [printf]           ; %u formats the full unsigned DWORD range.
+  add esp, 8              ; C runtime functions use caller cleanup.
+  test eax, 0x80000000     ; printf returns a negative value on output failure.
+  jnz failed_with_timer
+  ; Flush every tick so output is visible even when redirected to a file/pipe.
+  push 0
+  call [fflush]
+  add esp, 4
+  cmp eax, 0
+  jnz failed_with_timer
+  jmp timer_loop
+
+failed_with_timer:
+  push edi
+  call [CloseHandle]
+failed:
+  push 1
+  call [ExitProcess]
