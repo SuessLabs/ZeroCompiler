@@ -4,7 +4,10 @@
 
 The Zero programming language and compiler project (_AKA: Null Compiler_). **Zero** is a simple, fast, and efficient programming language for the x86-64 architecture.
 
-The compiler supports PE (portable exectuable) file formats for GUI, CLI, and library binaries. Future expansions will include ELF formats and ARM architecture.
+The compiler generates Windows x86 PE32 console executables (including programs
+that create Windows GUI controls) and static Linux x86-64 ELF64 executables using
+syscalls. Shared-library ELF linking, DLL output, additional architectures, macOS,
+and STM32 remain future work. See [Linux x86-64 support](docs/linux64.md).
 
 ## About
 
@@ -22,8 +25,10 @@ Yes, the heart language and engine are being rewritten for a more modern approac
 |-|-|-|-|-|
 | &#9989; | Windows x86   | x86     | PE32  | Windows APIs and calling conventions |
 | &#9744; | Windows ARM64 | ARM64   | PE32+ | Windows ARM64 ABI |
-| &#9744; | Linux x64     | x86-64  | ELF64 | Linux ABI and system calls |
+| &#9989; | Linux x64     | x86-64  | ELF64 | Static executables and Linux system calls |
 | &#9744; | Linux ARM64   | ARM64   | ELF64 | Linux ARM64 ABI |
+| &#9744; | macOS ARM64   | ARM64   | Mach-O | macOS ABI and loader |
+| &#9744; | STM32         | ARM     | ELF   | Bare-metal startup and board memory map |
 
 **References:**
 
@@ -45,10 +50,13 @@ source/
     Core/           Shared utility functions
     Diagnostics/    Error codes and assembler exceptions
     Parsing/        Quote-aware operand and string parsing
+    Compilation/    Target selection and instruction encoder contract
     Formats/
       Pe/           PE writer, layout, imports, and binary structures
+      Elf/          Static Linux ELF64 writer
     Targets/
       X86/          x86 mnemonic and opcode definitions
+      X64/          AMD64 instruction encoder
     Zero.cs         Public compiler entry point
   Zero.Cli/         Arguments, console output, and program execution
   Zero.Tests/       Compiler and CLI tests

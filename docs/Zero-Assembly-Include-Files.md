@@ -94,8 +94,9 @@ See the [Windows API header guide](windows-headers.md) for the full catalog.
 
 Windows headers now live under `include/windows`; use paths such as
 `using "windows/console.zh"`. Root-level compatibility copies are not shipped.
-Draft Linux headers live separately under `include/linux` and require future
-ELF support. See [Linux headers](linux-headers.md) for their status.
+Draft Linux libc headers live separately under `include/linux` and require future
+shared-library linking. Static syscall-only [Linux ELF64 output](linux64.md) is
+supported. See [Linux headers](linux-headers.md) for the drafts' status.
 
 The headers target the compiler's current Windows x86 output. `puts` and `printf`
 use cdecl, so remove their arguments from the stack after calls. Windows API

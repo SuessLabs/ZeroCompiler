@@ -1,9 +1,9 @@
-# Linux Headers: Future ELF Support
+# Linux Headers: Future Shared-Library Support
 
-These files prepare an interface catalog for a future Linux backend. **They cannot
-produce runnable Linux applications with the current Windows PE compiler.** The
-`.zh` format and `#IMPORT` notation are shared source conventions; the future ELF
-backend must still implement shared-library imports and target calling conventions.
+These files prepare libc imports for future shared-library support. Zero now emits
+static Linux x86-64 ELF64 applications using syscalls; see the [Linux x64 guide](../../docs/linux64.md).
+**The libc drafts still cannot link or run.** The ELF64 backend rejects `#IMPORT`
+until shared-library linking and the required runtime/ABI support are implemented.
 
 ## Scope: glibc 2.34 or Newer
 
@@ -56,15 +56,16 @@ numbers on another. See [syscall conventions](https://man7.org/linux/man-pages/m
 
 ## Work Needed Before These Become Usable
 
-- ELF output, program startup, and an appropriate dynamic interpreter.
+- Dynamic interpreter selection and libc startup; static syscall ELF64 output is implemented.
 - Shared-library dependencies, relocations, symbol/version resolution, and PLT/GOT handling or an equivalent import mechanism.
-- Target-specific machine code, Linux C ABI calls, stack alignment, and variadic-call rules.
+- Additional target machine code, Linux C ABI calls, stack alignment, and variadic-call rules.
 - Matching integer/pointer widths, structure layouts, constants, and callback support.
 - Tests on actual supported Linux/libc/architecture combinations.
-- Syscall instruction encodings, equates/macros, and checked syscall helpers if direct syscalls are implemented.
+- Equates/macros and checked syscall helpers; the x86-64 SYSCALL instruction is implemented.
 
 Windows tests only check that the draft declarations load and are well formed;
 they do not validate Linux exports, linking, or runtime behavior. The build ships
-the drafts for reference, while runnable samples continue to use Windows headers.
+the drafts for reference. Windows samples use Windows headers; the runnable
+`hello-linux64-cli.zasm` sample uses direct Linux syscalls without libc.
 
 [Platform catalog](../readme.md) · [Linux documentation](../../docs/linux-headers.md)

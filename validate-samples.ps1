@@ -63,7 +63,10 @@ try {
     $relativePath = $sample.FullName.Substring($samplesRoot.Length).TrimStart(
       [IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
 
-    $outputPath = Join-Path $outputRoot ([IO.Path]::ChangeExtension($relativePath, '.exe'))
+    # Samples declare their target explicitly; unmarked samples retain Windows defaults.
+    $linuxTarget = Select-String -LiteralPath $sample.FullName -Pattern '^\s*#TARGET\s+linux-x64\s*(;.*)?$' -Quiet
+    $outputExtension = if ($linuxTarget) { $null } else { '.exe' }
+    $outputPath = Join-Path $outputRoot ([IO.Path]::ChangeExtension($relativePath, $outputExtension))
     try {
       New-Item -ItemType Directory -Path (Split-Path -Parent $outputPath) -Force | Out-Null
 
@@ -80,6 +83,15 @@ try {
       $stream = [IO.File]::OpenRead($outputPath)
       try {
         if ($stream.Length -eq 0) { throw 'Compiler produced an empty executable.' }
+        $signature = New-Object byte[] 4
+        if ($stream.Read($signature, 0, 4) -ne 4) { throw 'Executable header is truncated.' }
+        if ($linuxTarget) {
+          if ($signature[0] -ne 0x7F -or $signature[1] -ne 0x45 -or $signature[2] -ne 0x4C -or $signature[3] -ne 0x46) {
+            throw 'Expected an ELF executable.'
+          }
+        } elseif ($signature[0] -ne 0x4D -or $signature[1] -ne 0x5A) {
+          throw 'Expected a PE executable.'
+        }
       } finally {
         $stream.Dispose()
       }

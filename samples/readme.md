@@ -19,6 +19,7 @@ From the `publish` folder, compile and run a sample:
 | `hello-msgbox.zasm` | Opens a Windows MessageBox titled `Zero` displaying `Hello Zero!`. Click OK to exit. |
 | `hello-using.zasm` | Loads the shipped `windows/console.zh` header and prints `Hello Zero!`. |
 | `hello-windows-headers.zasm` | Loads console, Kernel32, and ComCtl32 headers, initializes common controls, and prints its process ID. |
+| `hello-linux64-cli.zasm` | Declares `#TARGET linux-x64`, creates a static ELF64 executable, and prints `Hello Zero from Linux x86-64!` through Linux syscalls. |
 | `hello-win86-controls.zasm` | Opens a native Windows x86 window with a label, an editable `Hello Zero!` textbox, and a button that displays the current text. |
 | `v002-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
@@ -59,7 +60,10 @@ If you change the operands, update the descriptive numbers in the format string
 as well. Strings use numeric ASCII `DB` operands; terminating zero bytes are
 required for MessageBox and printf strings.
 
-These applications target Windows x86. The compiler currently writes the console
+Most applications target Windows x86. `hello-linux64-cli.zasm` targets Linux x86-64
+and must run in Linux/WSL; it can be compiled on Windows. See the
+[Linux x64 guide](../docs/linux64.md) for commands and supported encodings.
+The Windows compiler backend currently writes the console
 subsystem for all executables, so the MessageBox sample can also open a console
 window when launched from Explorer. Run console samples from an existing terminal
 to keep their output visible.

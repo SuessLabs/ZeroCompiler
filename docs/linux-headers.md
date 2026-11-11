@@ -8,10 +8,11 @@ title: Linux Headers and Future ELF Support
 [Documentation home](index.md) · [Platform header catalog](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/readme.md) ·
 [Future targets](designs/Future-Formats-and-Targets.md)
 
-Linux headers live under `include/linux`. These are drafts for future ELF work,
-not implemented Linux compilation. The compiler still generates Windows x86 PE
-executables; do not build a Linux program with the Windows backend simply because
-it accepts the source's `#IMPORT` syntax.
+Linux headers live under `include/linux`. The compiler now emits
+[static Linux x86-64 ELF64 executables](linux64.md) using syscalls. These libc
+headers are still drafts: shared-library linking is not implemented, and the
+ELF64 backend explicitly rejects `#IMPORT`. Use the working syscall sample to
+create Linux applications without libc.
 
 ## Library Calls
 
@@ -47,24 +48,27 @@ and from the kernel's raw syscall ABI.
 
 `linux/syscalls/x64.zh` and `linux/syscalls/arm64.zh` are comment-only references
 with selected syscall numbers and register conventions. No equates, executable
-helpers, or supported syscall instructions are implied. Keeping the architectures
+helpers are defined. The Linux x64 backend supports `SYSCALL`; AArch64 encoding
+remains future work. Keeping the architectures
 separate avoids confusing Linux x86-64 with AArch64, x32, i386, or 32-bit ARM.
 See the Linux [syscall reference](https://man7.org/linux/man-pages/man2/syscall.2.html).
 
 ## Coming Soon
 
-- ELF writing, process startup, and dynamic loader selection.
+- Dynamic loader selection and libc-aware startup; static syscall-only ELF64 is implemented.
 - Shared-library symbol resolution, relocations, and PLT/GOT handling or an equivalent mechanism.
-- Target instructions, argument registers, stack alignment, and variadic-call rules.
+- Additional instructions and C ABI stack/variadic-call support; essential AMD64 encodings are implemented.
 - Target-sized data, constants, structures, and errno/runtime helpers.
 - Linux export checks and runnable tests on each supported libc/architecture combination.
-- Direct syscall instruction support and constant/helper definitions.
+- Syscall constant/helper definitions; x86-64 `SYSCALL` is implemented.
 
 Current tests validate the draft source's format and include loading only. They
-do not compile ELF, inspect Linux exports, or run Linux code. Windows header tests
+do not link libc, inspect Linux exports, or call these functions. Separate Linux
+runtime tests exercise static syscall executables. Windows header tests
 continue to validate only `include/windows`.
 
-The build ships both platform directories. Existing runnable samples use
-`using "windows/..."`. For fuller notes, see the
+The build ships both platform directories. Windows samples use
+`using "windows/..."`; `hello-linux64-cli.zasm` uses direct syscalls and no libc
+header. For fuller notes, see the
 [Linux header README](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/linux/readme.md)
 and [ZASM roadmap](zasm-coming-soon.md).

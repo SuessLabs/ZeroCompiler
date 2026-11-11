@@ -42,11 +42,11 @@ The former flat paths have moved: replace `using "console.zh"` with
 Alternatively, `-I "path/to/include/windows"` lets an older program keep its
 short filenames; explicit platform paths are recommended for new code.
 
-## Linux: Future ELF Support
+## Linux: Static ELF64 and Future libc Support
 
 The [Linux header catalog](linux/readme.md) contains eight draft glibc import
 headers and architecture-specific syscall references. They are source preparation,
-not working Linux executable support. Do not use these drafts with the current
+not working libc linking. Static Linux x86-64 syscall executables are supported; see [the guide](../docs/linux64.md). Do not use these drafts with the current
 Windows PE compiler: a `.so` import does not make its output an ELF program.
 
 ## Search Paths and Other Platforms

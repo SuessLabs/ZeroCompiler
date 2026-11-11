@@ -1,4 +1,4 @@
-; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; DRAFT ELF SHARED-LIBRARY SUPPORT: imports for Linux with glibc 2.34 or newer.
 ; execve expects argv/envp arrays; waitpid writes status to caller-owned memory.
 ; exit performs libc cleanup; _exit terminates without stdio flushing.
 #IMPORT libc.so.6, getpid, getppid, fork, execve, waitpid, exit, _exit, abort

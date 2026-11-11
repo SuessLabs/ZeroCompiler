@@ -1,4 +1,4 @@
-; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; DRAFT ELF SHARED-LIBRARY SUPPORT: imports for Linux with glibc 2.34 or newer.
 ; Linux sockets are file descriptors: close them with close (files.zh).
 ; No WSAStartup is required. sockaddr/addrinfo layouts are not defined here.
 #IMPORT libc.so.6, socket, socketpair, bind, listen, accept, connect, shutdown

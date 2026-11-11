@@ -8,7 +8,10 @@ title: ZASM Language Reference
 [Documentation home](index.md) · [Complete examples](zasm-examples.md) ·
 [Include files](Zero-Assembly-Include-Files.md)
 
-This reference covers the current Windows x86 assembler. An instruction name
+This reference covers Windows x86 operand forms. For the Linux x86-64 target,
+see [Linux x86-64 and ELF64](linux64.md), including its 64-bit encodings and syscalls.
+Shared source syntax, labels, comments, and includes also apply to Linux.
+An instruction name
 appearing in a source-code constant or an older design document does not establish
 support; the operand forms below describe the implemented encodings.
 
@@ -298,20 +301,22 @@ architecture naming, string encodings, and initialization requirements.
 The repository keeps these files in root `include`; publishing copies them to
 `publish/include`. Read the [include guide](Zero-Assembly-Include-Files.md) for more details.
 Use the `windows/` prefix for working Windows headers. Separate
-[Linux drafts](linux-headers.md) under `linux/` prepare future ELF interfaces;
-they are not runnable with the current backend.
+[Linux libc drafts](linux-headers.md) under `linux/` prepare future shared-library
+interfaces. Static syscall-only ELF64 applications work today; see the [Linux guide](linux64.md).
 
 ## Command Line and Errors
 
 ```text
-zero <source> [output.exe] [-I <directory>]...
-zero run <source> [output.exe] [-I <directory>]...
+zero <source> [output] [--target <target>] [-I <directory>]...
+zero run <source> [output] [--target <target>] [-I <directory>]...
 ```
 
 `zcc` accepts the same arguments. Options can appear before or after the positional
 filenames, after `run` if present. `-I` and `--include` each take a separate directory
 argument. `-h` and `--help` display help. The output defaults to the source path with
-an `.exe` extension. `run` inherits the terminal and working directory, waits for
+an `.exe` extension for Windows and no extension for Linux. `--target windows-x86`
+or `--target linux-x64` selects the target; a source `#TARGET` must agree with it.
+`run` checks host compatibility, inherits the terminal and working directory, waits for
 completion, and returns the generated program's exit code.
 
 | CLI code | Meaning |
@@ -334,14 +339,14 @@ an invalid include path, or a short jump out of range.
 
 The following require future implementation:
 
-- Register-to-register `MOV`, memory stores, arithmetic on memory operands, and register-indirect calls.
+- Windows x86 register-to-register `MOV`, memory stores, and register-indirect calls; Linux x64 implements these forms. Arithmetic on memory operands remains unsupported.
 - `MUL`, division, `ADC`, `SBB`, `NOT`, string instructions, flag-stack instructions, and additional branch conditions.
-- Real 8-bit, 16-bit, 64-bit, or SIMD instruction forms.
+- Real 8-bit, 16-bit, or SIMD instruction forms; 64-bit forms are available for Linux x64.
 - Macros, constants/equates, conditional assembly, general expressions, and typed structures.
 - Writable data sections, alignment/reservation directives, and entry-point/subsystem selection.
 - `#zero`, `#entry`, `#define`, `#importlib`, `PROC`, `ENDP`, `END`, and MASM-style section/model directives.
 - Object files, linker inputs, exports, and `.zprj` project files.
-- Higher-level Zero compilation, ELF output, and ARM/ARM64 or native x64 code generation.
+- Higher-level Zero compilation, ELF shared-library linking/PIE, ARM/ARM64, Windows x64, macOS, and STM32 backends.
 
 **Coming Soon:** expand this reference as each feature gains working syntax and
 examples. The [ZASM feature roadmap](zasm-coming-soon.md) tracks implemented

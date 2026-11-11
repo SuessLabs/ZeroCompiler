@@ -22,6 +22,9 @@ in the compiler source does not by itself mean its instruction encoding works.
 
 ### Instructions and Registers
 
+- [x] [Linux x86-64 ELF64 backend](linux64.md): static executables, essential 32/64-bit AMD64 encodings, extended registers, RIP-relative addresses, stores, and `SYSCALL`.
+- [x] Shared parser with separate architecture encoders and PE/ELF writers; explicit target selection and host compatibility checks.
+
 - [x] Windows x86 (32-bit) instruction encoding and PE32 executable output.
 - [x] General-purpose registers: `EAX`, `EBX`, `ECX`, `EDX`, `ESI`, `EDI`, `EBP`, `ESP`.
 - [x] `MOV` from an immediate/address or 32-bit memory into a register.
@@ -72,20 +75,20 @@ before it moves to Implemented.
 
 ### Complete Everyday Instruction Forms
 
-- [ ] **Register copies and memory stores:** register-to-register `MOV` and register/immediate-to-memory forms.
+- [ ] **Remaining MOV forms:** Windows x86 register copies/stores and size-qualified immediate stores; Linux x64 already supports register copies and register-to-memory stores.
 - [ ] **Arithmetic on memory:** supported memory source/destination combinations with explicit operand-size rules.
 - [ ] **Multiplication and division:** `MUL`, `IMUL`, `DIV`, `IDIV`, and the sign-extension instructions their forms require.
 - [ ] **Additional integer operations:** `INC`, `DEC`, `NEG`, `NOT`, `ADC`, and `SBB`.
 - [ ] **Shifts and rotates:** logical/arithmetic shifts and rotations, with validated count operands.
 - [ ] **More conditions:** signed and unsigned conditional branches, plus familiar aliases such as `JE` and `JNE`.
-- [ ] **Indirect control flow:** calls and jumps through registers and more memory-address forms.
+- [ ] **Broader indirect control flow:** extend Windows x86 and add address forms; Linux x64 already supports register and basic memory-indirect calls/jumps.
 
 ### Operand Sizes, Addresses, and Expressions
 
 - [ ] **8-bit and 16-bit forms:** real encodings for subregisters, prefixes, and width checks.
 - [ ] **Size-qualified memory:** an unambiguous way to state byte, word, or double-word operations when no register supplies the width.
-- [ ] **Full x86 addressing:** negative displacements, base-plus-index, and scaled-index forms.
-- [ ] **Consistent signed immediates:** accept negative decimal operands where the instruction permits them.
+- [ ] **Full x86 addressing:** base-plus-index/scaled-index forms and broader Windows x86 addressing; Linux x64 supports negative numeric displacements.
+- [ ] **Consistent signed immediates:** extend Windows x86; Linux x64 already accepts signed decimal immediates where representable.
 - [ ] **Constant expressions:** arithmetic, bitwise expressions, symbol-plus-offset values, and clear precedence rules.
 - [ ] **Range validation:** consistent errors for values that do not fit an operand or data width.
 
@@ -94,7 +97,7 @@ before it moves to Implemented.
 - [ ] **Sections:** separate executable code, read-only data, writable data, and uninitialized storage.
 - [ ] **Storage directives:** reserve byte/word/double-word buffers and support repeated data values.
 - [ ] **Alignment:** align data and code with explicit padding rules.
-- [ ] **Wider data:** `DQ` and clearly specified wider integer/string representations.
+- [ ] **Wider data:** Windows x86 `DQ` and broader representations; numeric `DQ` is available on Linux x64.
 - [ ] **Symbol initializers:** allow suitable data directives to contain addresses and expressions.
 - [ ] **Entry-point selection:** explicitly select a label instead of always starting at the first emitted byte.
 - [ ] **Subsystem selection:** choose Windows console or GUI output independently of which APIs the program uses.
@@ -142,12 +145,12 @@ These ideas can follow the core assembler work or be developed independently.
 
 ### More Targets and Executable Formats
 
-[Linux header drafts](linux-headers.md) are available for planning. ELF generation,
-Linux linking/ABI support, and runtime verification remain unchecked future work.
+[Linux libc drafts](linux-headers.md) are available for planning. Static syscall-only
+Linux ELF64 output is implemented; shared-library linking remains future work.
 
-- [ ] **Windows x64:** 64-bit instructions, PE32+, and the Windows x64 ABI.
+- [ ] **Windows x64:** PE32+ output and the Windows x64 ABI; essential AMD64 encoding exists for Linux x64.
 - [ ] **ARM/ARM64:** dedicated instruction encoders and platform calling conventions.
-- [ ] **ELF:** a separate executable-format writer, target combinations, imports/linking, and OS startup conventions.
+- [ ] **Dynamic ELF:** shared-library imports/linking, PIE/relocations, and libc startup; static Linux ELF64 is implemented.
 - [ ] **Additional platforms:** define supported architecture, format, and ABI combinations before exposing target options.
 
 Changing the compiler's own host runtime does not change its generated target.
