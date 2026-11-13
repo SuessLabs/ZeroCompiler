@@ -1,4 +1,4 @@
-; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; DRAFT ELF SHARED-LIBRARY SUPPORT: imports for Linux with glibc 2.34 or newer.
 ; glibc 2.34 integrated libdl into libc; older glibc needs another profile.
 ; Loader flags and calls through returned function pointers need future support.
 #IMPORT libc.so.6, dlopen, dlsym, dlclose, dlerror

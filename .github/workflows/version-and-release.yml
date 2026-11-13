@@ -59,7 +59,7 @@ jobs:
           $installDirectory = Join-Path $env:RUNNER_TEMP 'zero-dotnet'
           Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $installer
           # The installer calls exit, so run it in a separate PowerShell process.
-          & (Join-Path $PSHOME 'pwsh.exe') -NoProfile -File $installer -Channel 10.0 -InstallDir $installDirectory -NoPath
+          & (Join-Path $PSHOME 'pwsh.exe') -NoProfile -File $installer -Channel 10.0 -Architecture x64 -InstallDir $installDirectory -NoPath
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "DOTNET_ROOT=$installDirectory" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           $installDirectory | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8

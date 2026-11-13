@@ -1,0 +1,27 @@
+; Compile on Windows or Linux: ./zero hello-linux64-cli.zasm
+; Run on Linux: chmod +x hello-linux64-cli && ./hello-linux64-cli
+; The executable uses Linux syscalls and does not need libc or a dynamic loader.
+#TARGET linux-x64
+
+  jmp start
+
+message db 'Hello Zero from Linux x86-64!', 10
+
+start:
+  mov eax, 1                ; SYS_write.
+  mov edi, 1                ; Standard output.
+  lea rsi, [message]        ; RIP-relative address of the text.
+  mov edx, 30               ; Number of UTF-8 bytes, including the newline.
+  syscall
+
+  cmp rax, 30
+  jnz failed
+
+  mov eax, 60               ; SYS_exit.
+  xor edi, edi              ; Exit status 0.
+  syscall
+
+failed:
+  mov eax, 60
+  mov edi, 1                ; Nonzero exit status if writing failed.
+  syscall

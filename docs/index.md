@@ -7,7 +7,7 @@ title: Zero Compiler
 
 Zero is a compiler project for the Zero programming language and **Zero Assembly
 (ZASM)**. ZASM is the working assembly language today: write x86 instructions,
-define data, share headers, and call Windows DLL functions to build an executable.
+define data, share headers, call Windows DLL functions, or use Linux syscalls.
 The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 
 [Download Zero](https://github.com/SuessLabs/ZeroCompiler/releases/latest) ·
@@ -21,12 +21,13 @@ The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 | Feature | Current support |
 | --- | --- |
 | Assembly input | `.zasm` source files using Intel-style operand order. |
-| Executable output | Windows x86 (32-bit) PE executables with the console subsystem. |
+| Executable output | Windows x86 PE32 and static Linux x86-64 ELF64 executables. |
+| Target selection | `#TARGET linux-x64` or `--target linux-x64`; existing source defaults to `windows-x86`. |
 | Compiler commands | `zero.exe` and `zcc.exe` provide the same commands. |
 | Compile and run | `run` builds a source file, executes it, and returns its exit code. |
 | Native distribution | Self-contained Native AOT compiler; no .NET runtime needed to run it. |
 | Instructions | Data movement, integer addition/subtraction, bitwise operations, comparisons, branches, calls, and returns. |
-| Data | `DB`, `DW`, and `DD`; named UTF-8 byte strings with `DB`. |
+| Data | `DB`, `DW`, and `DD`; Linux x64 also supports numeric `DQ`. Named UTF-8 strings use `DB`. |
 | Symbols | Labels, forward references, and named data addresses. |
 | Windows libraries | `#IMPORT` declares DLL functions; call them with `call [FunctionName]`. |
 | Shared headers | `using "file.zh"`, nested includes, include-once behavior, and repeatable `-I` paths. |
@@ -34,9 +35,11 @@ The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 | Samples | Console output, arithmetic, string concatenation, MessageBox, and Windows controls. |
 
 The compiler's host architecture and its output architecture are separate. The
-Windows x64 release runs on Windows x64 and generates **Windows x86** programs.
+Windows x64 release generates **Windows x86** programs by default and can also
+cross-compile Linux x86-64 ELF64 output. See [Linux x86-64](linux64.md).
 Windows APIs can create windows and controls, but the current output still uses
-the console subsystem. ELF, ARM code generation, and native x64 output are future work.
+the console subsystem. Linux shared-library linking, ARM, Windows x64, macOS,
+and STM32 backends remain future work.
 
 ## Download and Install
 
@@ -168,6 +171,8 @@ Semicolons start comments outside quoted strings; they are not required terminat
 | Procedures | `CALL`, `RET` | `call calculate` |
 | Other | `NOP`, `INT` | `nop` |
 
+The table above summarizes Windows x86. See [Linux x64 instruction forms](linux64.md#essential-amd64-instructions)
+for 64-bit registers, memory stores, indirect calls, and `SYSCALL`.
 Only the operand forms listed in the [instruction reference](zasm-reference.md#instruction-reference)
 are supported. For example, `mov eax, 42` and `mov eax, [value]` work;
 register-to-register `MOV` and memory stores are Coming Soon.
@@ -231,7 +236,8 @@ From the release folder, also try:
 - [String concatenation tutorial](tutorial-zasm-concat.md): a short walkthrough with a mnemonic table.
 - [Sample guide](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/readme.md): console, arithmetic, strings, MessageBox, and controls.
 - [Windows API headers](windows-headers.md): core Windows APIs, controls, dialogs, drawing, shell, networking, COM, and more.
-- [Linux headers and future ELF support](linux-headers.md): draft glibc interfaces and architecture-specific syscall references.
+- [Linux x86-64 and ELF64](linux64.md): compile and run a syscall-based Linux console application.
+- [Linux header drafts](linux-headers.md): future glibc interfaces and architecture-specific syscall references.
 - [Header catalog](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/readme.md): all shipped `.zh` files and calling rules.
 - [Assembly overview and opcodes](Zero-Assembly-Intro.md): a compact companion to the language reference.
 
@@ -263,11 +269,11 @@ They are not current compiler capabilities.
 | --- | --- |
 | Higher-level Zero / `.zsrc` | **Coming Soon:** specify grammar, types, expressions, functions, scopes, and a first working program. |
 | More x86 instructions | **Coming Soon:** multiplication/division, additional conditions, and more data movement forms. |
-| Additional register widths | **Coming Soon:** document validated 8-bit, 16-bit, 64-bit, and SIMD instructions when implemented. |
+| Additional register widths | **Coming Soon:** 8-bit, 16-bit, and SIMD forms; essential Linux x64 forms are documented today. |
 | Writable data and sections | **Coming Soon:** define data sections, buffers, alignment, and memory stores. |
 | Macros and constants | **Coming Soon:** define reusable constants, expressions, macros, and conditional assembly. |
 | Projects and libraries | **Coming Soon:** document `.zprj`, multi-file linking, objects, and exports. |
-| More targets | **Coming Soon:** Windows x64, ARM/ARM64, ELF, and platform-specific calling conventions. |
+| More targets | **Coming Soon:** Windows x64, ARM/ARM64, macOS, STM32, and dynamic ELF linking. |
 | GUI output selection | **Coming Soon:** select a GUI subsystem without an accompanying console window. |
 | Debugging | **Coming Soon:** debugger setup, symbols, source stepping, and troubleshooting walkthroughs. |
 | More tutorials | **Coming Soon:** loops, reusable procedures, stack frames, and a step-by-step controls application. |

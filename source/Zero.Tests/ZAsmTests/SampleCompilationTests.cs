@@ -2,10 +2,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection.PortableExecutable;
 using Zero.Assembly;
+using Zero.Compilation;
 using Zero.Parsing;
 
 namespace Zero.Tests.ZAsmTests;
@@ -42,10 +44,21 @@ public sealed class SampleCompilationTests
     // discovery, and new samples (including subfolders) need no manual test list.
     var sourcePath = Path.Combine(AppContext.BaseDirectory, "samples", sampleName);
     var source = new SourceLoader().Load(sourcePath);
-    var bytes = new Assembler().Assemble(source);
+    var assembler = new Assembler();
+    var bytes = assembler.Assemble(source);
 
     Assert.IsNotNull(bytes, $"Compilation failed: {sampleName}");
     Assert.IsNotEmpty(bytes, $"Empty executable: {sampleName}");
+
+    if (assembler.Target == CompilationTarget.LinuxX64)
+    {
+      Assert.IsTrue(bytes.Length >= 64);
+      Assert.AreSequenceEqual(new byte[] { 0x7F, 0x45, 0x4C, 0x46 }, bytes[..4]);
+      Assert.AreEqual((byte)2, bytes[4]);
+      Assert.AreEqual((ushort)62, BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(18)));
+      Assert.IsTrue(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(24)) > 0);
+      return;
+    }
 
     using var executable = new PEReader(new MemoryStream(bytes));
     Assert.IsNotNull(executable.PEHeaders.PEHeader, $"Invalid PE header: {sampleName}");

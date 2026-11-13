@@ -1,4 +1,4 @@
-; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; DRAFT ELF SHARED-LIBRARY SUPPORT: imports for Linux with glibc 2.34 or newer.
 ; glibc 2.34 integrated libpthread into libc; older glibc needs another profile.
 ; pthread_t, mutex/condition layouts, callback ABIs, and lifetimes need definitions.
 #IMPORT libc.so.6, pthread_create, pthread_join, pthread_detach, pthread_self, pthread_exit

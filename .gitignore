@@ -52,6 +52,8 @@ x86/
 # Keep architecture source files visible despite the build-output rule above.
 !/source/Zero/Targets/X86/
 !/source/Zero/Targets/X86/**
+!/source/Zero/Targets/X64/
+!/source/Zero/Targets/X64/**
 build/
 bld/
 [Bb]in/

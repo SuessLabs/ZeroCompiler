@@ -1,0 +1,62 @@
+name: Linux ELF64 tests
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-x64:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      # Native Git and PowerShell keep this workflow free of Node-based actions.
+      - name: Check out source
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git remote add origin "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY.git"
+          git fetch --depth=1 origin $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Install .NET 10 SDK
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = Join-Path $env:RUNNER_TEMP 'dotnet-install.sh'
+          $installDirectory = Join-Path $env:RUNNER_TEMP 'zero-dotnet'
+          Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile $installer
+          # Microsoft's PowerShell installer is Windows-only; invoke its Linux installer from pwsh.
+          & bash $installer --channel 10.0 --architecture x64 --install-dir $installDirectory --no-path
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "DOTNET_ROOT=$installDirectory" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $installDirectory | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Test encoders, executable formats, and Linux runtime
+        run: dotnet test source/Zero.slnx --configuration Release --disable-build-servers --maxcpucount:1
+
+      - name: Validate all samples
+        run: ./validate-samples.ps1
+
+      - name: Inspect and execute ELF64 sample
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $executable = './output/samples/Release/hello-linux64-cli'
+          if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
+            throw "Expected the extensionless Linux executable at '$executable'."
+          }
+          readelf -h -l $executable
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $output = & $executable
+          if ($LASTEXITCODE -ne 0 -or $output -cne 'Hello Zero from Linux x86-64!') {
+            throw 'Linux ELF64 sample output or exit code was incorrect.'
+          }

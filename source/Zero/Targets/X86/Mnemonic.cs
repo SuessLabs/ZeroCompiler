@@ -43,6 +43,8 @@ public class Mnemonic
 
   /// <summary>Text section - ___.</summary>
   public const string DW = "DW";
+  public const string DQ = "DQ";
+  public const string SYSCALL = "SYSCALL";
 
   /// <summary>Call to interrupt (0xCC, 0xCD).</summary>
   public const string INT = "INT";

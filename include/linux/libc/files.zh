@@ -1,4 +1,4 @@
-; FUTURE ELF ONLY: draft imports for Linux with glibc 2.34 or newer.
+; DRAFT ELF SHARED-LIBRARY SUPPORT: imports for Linux with glibc 2.34 or newer.
 ; open/openat take an extra mode argument when flags require one.
 ; Flags, off_t widths, dirent layouts, and errno handling depend on target ABI.
 #IMPORT libc.so.6, open, openat, read, write, close, lseek, fsync, dup, dup2, pipe

@@ -2,6 +2,11 @@
 
 **Date:** 2026-11-07 - _Damian Suess_
 
+**Implementation update:** the shared parser, separate x86/x64 encoders, and
+PE32/static Linux ELF64 writers are now implemented. See [Linux x64](../linux64.md)
+for the supported target and limitations. The broader folder/model proposals
+below still include future work, especially ARM, macOS, STM32, and dynamic linking.
+
 The next stage of Zero's development will preserve a shared parsing core while separating the components that depend on processor architecture, executable format, and operating system. This will allow the compiler to grow beyond Windows x86 without duplicating its parser or tying every backend to PE output.
 
 For now, `Zero.Cli` will remain separate from the `Zero` compiler library; _though subject to change_. The CLI will handle command-line arguments, file operations, console messages, and exit codes. The library will expose compilation functionality that can also be used by tests, editors, or other applications.

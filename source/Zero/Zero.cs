@@ -13,13 +13,9 @@ namespace Zero;
 
 public class Zero
 {
-  private const string ObjExt = ".obj";
-
   private static ErrorCode _lastError = ErrorCode.None;
-
-  private string? _inputPath;
-
-  private string? _outputPath;
+  public string? OutputPath { get; private set; }
+  public CompilationTarget? Target { get; private set; }
 
   public static string Version { get; } = typeof(Zero).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
@@ -50,10 +46,10 @@ public class Zero
     return exeBytes;
   }
 
-  public ErrorCode Compile(string inputPath, string outputPath, SourceType sourceType, CompilerOptions? options = null)
+  public ErrorCode Compile(string inputPath, string? outputPath, SourceType sourceType, CompilerOptions? options = null)
   {
-    _inputPath = inputPath;
-    _outputPath = outputPath;
+    OutputPath = null;
+    Target = null;
 
     if (sourceType == SourceType.Assembly)
     {
@@ -61,7 +57,9 @@ public class Zero
       try
       {
         var source = new SourceLoader().Load(inputPath, options);
-        exeBytes = new Assembler().Assemble(source);
+        var assembler = new Assembler(options?.Target);
+        exeBytes = assembler.Assemble(source);
+        Target = assembler.Target;
       }
       catch (AssemblerException ex)
       {
@@ -71,8 +69,14 @@ public class Zero
 
       if (exeBytes is not null)
       {
-        // Generate EXE
+        outputPath ??= Target == CompilationTarget.LinuxX64 ? Path.ChangeExtension(inputPath, null) : Path.ChangeExtension(inputPath, ".exe");
+        if (string.Equals(Path.GetFullPath(inputPath), Path.GetFullPath(outputPath), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+          throw new IOException("The output path must differ from the input source path.");
         File.WriteAllBytes(outputPath, exeBytes);
+        if (Target == CompilationTarget.LinuxX64 && OperatingSystem.IsLinux())
+          File.SetUnixFileMode(outputPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+            UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        OutputPath = outputPath;
         Console.WriteLine($"Compiled {outputPath} ({exeBytes.Length} bytes)");
       }
       else

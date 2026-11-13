@@ -10,6 +10,9 @@ namespace Zero.Compilation;
 /// <summary>Source search paths for a single compilation.</summary>
 public sealed class CompilerOptions
 {
+  /// <summary>Explicit target; null allows #TARGET, defaulting to windows-x86.</summary>
+  public CompilationTarget? Target { get; set; }
+
   public string WorkingDirectory { get; set; } = Directory.GetCurrentDirectory();
 
   public string CompilerDirectory { get; set; } = AppContext.BaseDirectory;

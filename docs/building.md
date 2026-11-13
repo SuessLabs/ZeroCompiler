@@ -33,6 +33,8 @@ Each build replaces the published compiler for the selected runtime in the same
 
 Every `build.ps1` / `build.bat` run compiles all `.zasm` files under `samples`,
 including subfolders, after building the solution and before Native AOT publishing.
+Linux samples declare `#TARGET linux-x64` and produce extensionless ELF64 output;
+unmarked samples retain Windows x86 PE32 output with `.exe` extensions.
 The build fails if any sample fails. Generated sample executables go to
 `output\samples\Release` (or `Debug`), preserving subfolder paths. Samples are
 compiled without launching them, so MessageBox samples require no interaction.
@@ -61,6 +63,9 @@ dotnet test source/Zero.Tests/Zero.Tests.csproj --configuration Release
 
 These compilation tests run on any OS supported by .NET. Existing console-output
 tests still execute selected samples on Windows to check their behavior.
+Native Linux x86-64 runtime tests run under Linux/WSL and skip other hosts. The
+PowerShell-only Linux CI workflow runs the tests, validates all sample formats,
+and inspects/executes `hello-linux64-cli` on Ubuntu. See [Linux x64](linux64.md).
 
 ## Build version
 

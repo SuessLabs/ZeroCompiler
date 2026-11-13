@@ -43,17 +43,37 @@ int main()
 
 ## Zero Assembly (ZASM)
 
+### Header Directives
+
+```sh
+// OS Target
+#target linux-64            # Linux-x64 (ELF-x64)
+
+// Import library and function
+#IMPORT library.dll, getaddrinfo
+#IMPORT libc.so.6, function1, function2
+
+// Set target type, platform, file output type
+#format PE64 console        # Win-x64 EXE (PE-x64)
+#format PE64 console DLL    # Win-x64 DLL (PE-x64)
+```
+
 ### Raw
 
 Ideal for copy/pasting in from other assemblers.
 
 ```csharp
-using "win32.zh"
+#format PE64 console
 
-; #IMPORT CustomLibrary.dll, AddNumbers
+using "windows/console.zh";
+using "win32.zh";
+
+;// #IMPORT CustomLibrary.dll, AddNumbers
+;// import("CustomLibrary.dll", dword, "AddNumbers", dword a, dword b);
+;// import "CustomLibrary.dll": dword AddNumbers(dword a, dword b);
 import "CustomLibrary.dll", dword AddNumbers(dword a, dword b);
 
-section .data
+section .data (readable, writable)
   greeting db 'Hi!', 0x0A   ; 'H', 'i', '!', and a newline character (4 bytes)
 
 section .text
@@ -76,12 +96,14 @@ _start:
 Zero's C-Like assemblly syntax is intended to catch line errors and accidental section misplacements by use of curley braces `{ }` and semicolons `;`.
 
 ```csharp
+using "windows/console.zh"
+
 section .data
 {
   greeting db 'Hi!', 0x0A;  // 'H', 'i', '!', and a newline character (4 bytes)
 }
 
-section .text
+section .text (readable, executable)
 {
   global _start
 }
