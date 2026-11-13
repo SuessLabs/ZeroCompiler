@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/IDE/">
+    <Project Path="Zero.Ide/Zero.Ide.csproj" Id="bc9c27ed-aefd-4df3-8d89-f96d2f8ce58c" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
@@ -10,6 +13,7 @@
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Zero.Ide.Tests/Zero.Ide.Tests.csproj" />
     <Project Path="Zero.Tests/Zero.Tests.csproj" />
   </Folder>
   <Project Path="Zero.Cli/Zero.Cli.csproj" />

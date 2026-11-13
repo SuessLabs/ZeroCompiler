@@ -1,0 +1,123 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:views="using:Zero.Ide.Views"
+        xmlns:vm="using:Zero.Ide.ViewModels"
+        x:Class="Zero.Ide.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}"
+        Width="1100"
+        Height="750"
+        MinWidth="640"
+        MinHeight="400"
+        Icon="/Assets/z3-main.ico"
+        mc:Ignorable="d">
+
+  <Window.KeyBindings>
+    <KeyBinding Command="{Binding CmdNew}" Gesture="Ctrl+N" />
+    <KeyBinding Command="{Binding CmdOpen}" Gesture="Ctrl+O" />
+    <KeyBinding Command="{Binding CmdSave}" Gesture="Ctrl+S" />
+    <KeyBinding Command="{Binding CmdSaveAs}" Gesture="Ctrl+Shift+S" />
+  </Window.KeyBindings>
+
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Command="{Binding CmdNew}"
+                  Header="_New"
+                  InputGesture="Ctrl+N" />
+        <MenuItem Command="{Binding CmdOpen}"
+                  Header="_Open"
+                  InputGesture="Ctrl+O" />
+        <MenuItem Command="{Binding CmdSave}"
+                  Header="_Save"
+                  InputGesture="Ctrl+S" />
+        <MenuItem Command="{Binding CmdSaveAs}"
+                  Header="Save _As..."
+                  InputGesture="Ctrl+Shift+S" />
+        <Separator />
+        <MenuItem Command="{Binding CmdExit}" Header="E_xit" />
+      </MenuItem>
+      <MenuItem Header="_Edit" IsEnabled="{Binding !IsBusy}">
+        <MenuItem Click="OnEditClick"
+                  Header="_Undo"
+                  InputGesture="Ctrl+Z"
+                  IsEnabled="{Binding #EditorPane.Editor.CanUndo}"
+                  Tag="Undo" />
+        <MenuItem Click="OnEditClick"
+                  Header="_Redo"
+                  InputGesture="Ctrl+Y"
+                  IsEnabled="{Binding #EditorPane.Editor.CanRedo}"
+                  Tag="Redo" />
+        <Separator />
+        <MenuItem Click="OnEditClick"
+                  Header="Cu_t"
+                  InputGesture="Ctrl+X"
+                  IsEnabled="{Binding #EditorPane.Editor.CanCut}"
+                  Tag="Cut" />
+        <MenuItem Click="OnEditClick"
+                  Header="_Copy"
+                  InputGesture="Ctrl+C"
+                  IsEnabled="{Binding #EditorPane.Editor.CanCopy}"
+                  Tag="Copy" />
+        <MenuItem Click="OnEditClick"
+                  Header="_Paste"
+                  InputGesture="Ctrl+V"
+                  IsEnabled="{Binding #EditorPane.Editor.CanPaste}"
+                  Tag="Paste" />
+      </MenuItem>
+      <MenuItem Header="_Build" ToolTip.Tip="Compiler integration is planned for a later phase.">
+        <MenuItem Command="{Binding CmdBuild}" Header="_Build" />
+        <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" />
+        <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
+      </MenuItem>
+      <MenuItem Header="_Help">
+        <MenuItem Command="{Binding CmdAbout}" Header="_About" />
+      </MenuItem>
+    </Menu>
+
+    <Border Padding="8,6"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="0,1,0,1"
+            DockPanel.Dock="Top">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <Button Content="New"
+                Command="{Binding CmdNew}"
+                ToolTip.Tip="New (Ctrl+N)" />
+        <Button Content="Open"
+                Command="{Binding CmdOpen}"
+                ToolTip.Tip="Open (Ctrl+O)" />
+        <Button Content="Save"
+                Command="{Binding CmdSave}"
+                ToolTip.Tip="Save (Ctrl+S)" />
+        <Separator Width="1" Margin="6,0" />
+        <Button Content="Undo"
+                Click="OnEditClick"
+                Focusable="False"
+                IsEnabled="{Binding #EditorPane.Editor.CanUndo}"
+                Tag="Undo" />
+        <Button Content="Redo"
+                Click="OnEditClick"
+                Focusable="False"
+                IsEnabled="{Binding #EditorPane.Editor.CanRedo}"
+                Tag="Redo" />
+        <Separator Width="1" Margin="6,0" />
+        <Button Content="Build"
+                Command="{Binding CmdBuild}"
+                ToolTip.Tip="Compiler integration is planned for a later phase." />
+      </StackPanel>
+    </Border>
+
+    <Border Padding="12,6"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="0,1,0,0"
+            DockPanel.Dock="Bottom">
+      <TextBlock Text="{Binding Status}" FontSize="12" />
+    </Border>
+    <views:EditorView x:Name="EditorPane" IsEnabled="{Binding !IsBusy}" />
+  </DockPanel>
+
+</Window>
