@@ -6,22 +6,37 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Layout;
 using Avalonia.Platform.Storage;
+using Prism.Dialogs;
+using Zero.Ide.Views;
 
 namespace Zero.Ide.Services;
 
 public class EditorDialogService : IEditorDialogService
 {
+  private readonly IDialogService _dialogService;
+
+  public EditorDialogService(IDialogService dialogService)
+  {
+    _dialogService = dialogService;
+  }
+
   private static Window Owner =>
     (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
     ?? throw new InvalidOperationException("The editor window is not available.");
 
   public void CloseWindow() => Owner.Close();
 
-  public Task<SaveChangesChoice> ConfirmSaveAsync(string fileName) =>
-    ShowDialogAsync("Unsaved changes", $"Save changes to {fileName}?",
-      [("Save", SaveChangesChoice.Save), ("Don't Save", SaveChangesChoice.Discard), ("Cancel", SaveChangesChoice.Cancel)]);
+  public async Task<SaveChangesChoice> ConfirmSaveAsync(string fileName)
+  {
+    var result = await ShowDialogAsync("Unsaved changes", $"Save changes to {fileName}?", true);
+    return result.Result switch
+    {
+      ButtonResult.Yes => SaveChangesChoice.Save,
+      ButtonResult.No => SaveChangesChoice.Discard,
+      _ => SaveChangesChoice.Cancel,
+    };
+  }
 
   public async Task<IStorageFile?> OpenFileAsync()
   {
@@ -44,41 +59,14 @@ public class EditorDialogService : IEditorDialogService
     });
 
   public async Task ShowMessageAsync(string title, string message) =>
-    await ShowDialogAsync(title, message, [("OK", SaveChangesChoice.Cancel)]);
+    await ShowDialogAsync(title, message, false);
 
-  private static Task<SaveChangesChoice> ShowDialogAsync(
-    string title, string message, (string Label, SaveChangesChoice Result)[] choices)
-  {
-    var dialog = new Window
+  private Task<IDialogResult> ShowDialogAsync(string title, string message, bool confirmSave) =>
+    _dialogService.ShowDialogAsync(nameof(EditorDialogView), new DialogParameters
     {
-      Title = title,
-      Width = 440,
-      SizeToContent = SizeToContent.Height,
-      CanResize = false,
-      ShowInTaskbar = false,
-      WindowStartupLocation = WindowStartupLocation.CenterOwner,
-    };
-
-    var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right };
-
-    foreach (var (label, result) in choices)
-    {
-      var button = new Button { Content = label, MinWidth = 80, IsCancel = label is "Cancel" or "OK", IsDefault = label is "Save" or "OK" };
-      button.Click += (_, _) => dialog.Close(result);
-      buttons.Children.Add(button);
-    }
-
-    dialog.Content = new StackPanel
-    {
-      Margin = new Thickness(24),
-      Spacing = 24,
-      Children =
-      {
-        new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
-        buttons,
-      },
-    };
-
-    return dialog.ShowDialog<SaveChangesChoice>(Owner);
-  }
+      { "title", title },
+      { "message", message },
+      { "confirmSave", confirmSave },
+      { KnownDialogParameters.WindowName, nameof(EditorDialogWindow) },
+    });
 }

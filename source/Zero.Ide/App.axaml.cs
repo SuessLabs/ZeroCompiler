@@ -28,6 +28,9 @@ namespace Zero.Ide
       containerRegistry.RegisterSingleton<EditorViewModel>();
       containerRegistry.RegisterSingleton<MainWindowViewModel>();
 
+      containerRegistry.RegisterDialog<EditorDialogView, EditorDialogViewModel>();
+      containerRegistry.RegisterDialogWindow<EditorDialogWindow>(nameof(EditorDialogWindow));
+
       ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
       ViewModelLocationProvider.Register<EditorView, EditorViewModel>();
     }

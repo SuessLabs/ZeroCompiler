@@ -13,7 +13,7 @@
         Height="750"
         MinWidth="640"
         MinHeight="400"
-        Icon="/Assets/z3-main.ico"
+        Icon="/Assets/zero-logo.ico"
         mc:Ignorable="d">
 
   <Window.KeyBindings>
@@ -38,9 +38,12 @@
         <MenuItem Command="{Binding CmdSaveAs}"
                   Header="Save _As..."
                   InputGesture="Ctrl+Shift+S" />
+
         <Separator />
+
         <MenuItem Command="{Binding CmdExit}" Header="E_xit" />
       </MenuItem>
+
       <MenuItem Header="_Edit" IsEnabled="{Binding !IsBusy}">
         <MenuItem Click="OnEditClick"
                   Header="_Undo"
@@ -52,7 +55,9 @@
                   InputGesture="Ctrl+Y"
                   IsEnabled="{Binding #EditorPane.Editor.CanRedo}"
                   Tag="Redo" />
+
         <Separator />
+
         <MenuItem Click="OnEditClick"
                   Header="Cu_t"
                   InputGesture="Ctrl+X"
@@ -69,11 +74,13 @@
                   IsEnabled="{Binding #EditorPane.Editor.CanPaste}"
                   Tag="Paste" />
       </MenuItem>
+
       <MenuItem Header="_Build" ToolTip.Tip="Compiler integration is planned for a later phase.">
         <MenuItem Command="{Binding CmdBuild}" Header="_Build" />
         <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" />
         <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
       </MenuItem>
+
       <MenuItem Header="_Help">
         <MenuItem Command="{Binding CmdAbout}" Header="_About" />
       </MenuItem>
@@ -93,7 +100,9 @@
         <Button Content="Save"
                 Command="{Binding CmdSave}"
                 ToolTip.Tip="Save (Ctrl+S)" />
+
         <Separator Width="1" Margin="6,0" />
+
         <Button Content="Undo"
                 Click="OnEditClick"
                 Focusable="False"
@@ -104,7 +113,9 @@
                 Focusable="False"
                 IsEnabled="{Binding #EditorPane.Editor.CanRedo}"
                 Tag="Redo" />
+
         <Separator Width="1" Margin="6,0" />
+
         <Button Content="Build"
                 Command="{Binding CmdBuild}"
                 ToolTip.Tip="Compiler integration is planned for a later phase." />
@@ -117,6 +128,7 @@
             DockPanel.Dock="Bottom">
       <TextBlock Text="{Binding Status}" FontSize="12" />
     </Border>
+
     <views:EditorView x:Name="EditorPane" IsEnabled="{Binding !IsBusy}" />
   </DockPanel>
 
