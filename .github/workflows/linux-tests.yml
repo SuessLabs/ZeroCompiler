@@ -51,6 +51,9 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $executable = './output/samples/Release/hello-linux64-cli'
+          if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
+            throw "Expected the extensionless Linux executable at '$executable'."
+          }
           readelf -h -l $executable
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $output = & $executable
