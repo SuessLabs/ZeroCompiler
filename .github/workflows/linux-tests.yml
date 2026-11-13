@@ -32,10 +32,11 @@ jobs:
       - name: Install .NET 10 SDK
         run: |
           $ErrorActionPreference = 'Stop'
-          $installer = Join-Path $env:RUNNER_TEMP 'dotnet-install.ps1'
+          $installer = Join-Path $env:RUNNER_TEMP 'dotnet-install.sh'
           $installDirectory = Join-Path $env:RUNNER_TEMP 'zero-dotnet'
-          Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $installer
-          & (Join-Path $PSHOME 'pwsh') -NoProfile -File $installer -Channel 10.0 -InstallDir $installDirectory -NoPath
+          Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile $installer
+          # Microsoft's PowerShell installer is Windows-only; invoke its Linux installer from pwsh.
+          & bash $installer --channel 10.0 --architecture x64 --install-dir $installDirectory --no-path
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "DOTNET_ROOT=$installDirectory" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           $installDirectory | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
