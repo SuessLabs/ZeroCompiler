@@ -42,9 +42,10 @@ public sealed class DoomFireControl : Control
   {
     base.OnAttachedToVisualTree(e);
 
-    _bitmap = new WriteableBitmap(new PixelSize(FireWidth, FireHeight), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Opaque);
+    _bitmap = new WriteableBitmap(new PixelSize(FireWidth, FireHeight), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
     Array.Clear(_heat);
+
     // Pre-warm so the dialog opens with visible flames rather than an empty frame.
     for (var frame = 0; frame < FireHeight * 2; frame++)
       SpreadFire();
@@ -63,7 +64,7 @@ public sealed class DoomFireControl : Control
 
   private static int[] CreatePalette()
   {
-    // Original-style 37-step palette: black, red, orange, yellow, warm white.
+    // Cool pixels dissolve into the logo backdrop; hot pixels keep the classic fire palette.
     int[] colors =
     [
       0x101722, 0x230607, 0x370707, 0x470707, 0x570707, 0x670707,
@@ -75,7 +76,7 @@ public sealed class DoomFireControl : Control
     ];
 
     for (var i = 0; i < colors.Length; i++)
-      colors[i] = unchecked((int)0xFF000000) | colors[i];
+      colors[i] |= Math.Min(255, i * 12) << 24;
 
     return colors;
   }

@@ -3,7 +3,11 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SupportedRuntimeIdentifiers>win-x64;linux-x64;linux-arm64;linux-arm;osx-x64;osx-arm64</SupportedRuntimeIdentifiers>
+    <RuntimeIdentifiers>$(SupportedRuntimeIdentifiers)</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
+    <ApplicationManifest Condition="'$(RuntimeIdentifier)' == 'win-x64'">app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\zero-logo.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
@@ -26,4 +30,12 @@
     <PackageReference Include="Prism.Avalonia" />
     <PackageReference Include="Prism.DryIoc.Avalonia" />
   </ItemGroup>
+
+  <Target Name="ValidateIdeRuntime" BeforeTargets="Restore;PrepareForBuild;Publish"
+          Condition="'$(DesignTimeBuild)' != 'true'" Returns="$(RuntimeIdentifier)">
+    <Error Condition="'$(RuntimeIdentifier)' == 'linux-x86'"
+           Text="Zero.Ide cannot target linux-x86: .NET 10 has no Linux x86 runtime/app host, and SkiaSharp 2.88 lacks Linux x86 native assets. Use linux-x64, linux-arm, or linux-arm64." />
+    <Error Condition="!$([System.String]::Copy(';$(SupportedRuntimeIdentifiers);').Contains(';$(RuntimeIdentifier);'))"
+           Text="Zero.Ide does not support runtime '$(RuntimeIdentifier)'. Supported runtimes: $(SupportedRuntimeIdentifiers)." />
+  </Target>
 </Project>
