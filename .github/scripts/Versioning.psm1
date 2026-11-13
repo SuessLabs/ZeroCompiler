@@ -2,6 +2,7 @@
 Set-StrictMode -Version Latest
 
 $script:VersionPath = 'source/Directory.Build.props'
+$script:IdeVersionPath = 'source/Zero.Ide/Version.props'
 $script:PrefixPattern = [regex]'(<VersionPrefix\b[^>]*>)([^<]*)(</VersionPrefix>)'
 
 function ConvertTo-VersionParts {
@@ -25,7 +26,7 @@ function Get-PropsVersion {
 
   $prefixes = $script:PrefixPattern.Matches($Contents)
   if ($prefixes.Count -ne 1) {
-    throw 'Expected exactly one VersionPrefix in Directory.Build.props.'
+    throw 'Expected exactly one VersionPrefix in the version properties file.'
   }
   $value = $prefixes[0].Groups[2].Value
   $null = ConvertTo-VersionParts $value
@@ -132,6 +133,7 @@ function Update-ZeroVersion {
   $marker = "Zero-Version-PR: ${Branch}#$PullRequest"
   $remoteRef = "refs/remotes/origin/$Branch"
   $propsPath = Join-Path $Directory $script:VersionPath
+  $idePropsPath = Join-Path $Directory $script:IdeVersionPath
   $null = Get-GitText @('config', 'user.name', 'github-actions[bot]')
   $null = Get-GitText @('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
 
@@ -140,32 +142,50 @@ function Update-ZeroVersion {
     $previous = Get-GitText @('log', $remoteRef, '--format=%H', '--max-count=1', "--grep=^${marker}$")
     if ($previous) {
       $version = Get-PropsVersion (Get-GitText @('show', "${previous}:$script:VersionPath"))
+      $ideVersion = Get-PropsVersion (Get-GitText @('show', "${previous}:$script:IdeVersionPath"))
       if ($Branch -eq 'master' -and
         (Get-GitText @('rev-parse', "refs/tags/v${version}^{commit}")) -ne $previous) {
         throw "Release tag v$version does not point to the version commit."
       }
       $null = Get-GitText @('switch', '--detach', $previous)
-      return [pscustomobject]@{ version = $version; tag = "v$version"; commit = $previous; reused = $true }
+      return [pscustomobject]@{ version = $version; ideVersion = $ideVersion; tag = "v$version"; commit = $previous; reused = $true }
     }
 
     $null = Get-GitText @('switch', '--detach', $remoteRef)
     $contents = [System.IO.File]::ReadAllText($propsPath)
+    $ideContents = [System.IO.File]::ReadAllText($idePropsPath)
+    [string[]]$ideBaselines = @()
     [string[]]$baselines = @(
       (Get-GitText @('tag', '--list', 'v*')).Split("`n") |
         Where-Object { $_ -match '^v\d+\.\d+\.\d+\.\d+$' } |
         ForEach-Object { $_.Substring(1) }
     )
+    # Compiler tags retain their meaning; read the editor's own version at those releases.
+    foreach ($baseline in $baselines) {
+      $taggedIdeProps = Invoke-VersionGit -Directory $Directory -Arguments @('show', "v${baseline}:$script:IdeVersionPath") -AllowFailure
+      if ($taggedIdeProps.ExitCode -eq 0) {
+        $ideBaselines += Get-PropsVersion $taggedIdeProps.Output
+      }
+    }
     # Incoming merges can restore stale version metadata from another branch.
     $lastBump = Get-GitText @('log', $remoteRef, '--first-parent', '--format=%H', '--max-count=1',
       "--grep=^Zero-Version-PR: ${Branch}#[0-9][0-9]*$")
     if ($lastBump) {
       $baselines += Get-PropsVersion (Get-GitText @('show', "${lastBump}:$script:VersionPath"))
+      # Older version commits predate the editor version file.
+      $previousIdeProps = Invoke-VersionGit -Directory $Directory -Arguments @('show', "${lastBump}:$script:IdeVersionPath") -AllowFailure
+      if ($previousIdeProps.ExitCode -eq 0) {
+        $ideBaselines += Get-PropsVersion $previousIdeProps.Output
+      }
     }
     $version = Get-NextVersion -Current (Get-PropsVersion $contents) -Branch $Branch -Baselines $baselines
+    $ideVersion = Get-NextVersion -Current (Get-PropsVersion $ideContents) -Branch $Branch -Baselines $ideBaselines
     [System.IO.File]::WriteAllText($propsPath,
       (Set-PropsVersion -Contents $contents -Version $version -Branch $Branch))
-    $null = Get-GitText @('add', '--', $script:VersionPath)
-    $null = Get-GitText @('commit', '-m', "chore: bump version to v$version", '-m', $marker)
+    [System.IO.File]::WriteAllText($idePropsPath,
+      (Set-PropsVersion -Contents $ideContents -Version $ideVersion -Branch $Branch))
+    $null = Get-GitText @('add', '--', $script:VersionPath, $script:IdeVersionPath)
+    $null = Get-GitText @('commit', '-m', "chore: bump compiler to v$version and IDE to v$ideVersion", '-m', $marker)
     $commit = Get-GitText @('rev-parse', 'HEAD')
     $tag = "v$version"
     $refspecs = @("HEAD:refs/heads/$Branch")
@@ -176,7 +196,7 @@ function Update-ZeroVersion {
     }
     $push = Invoke-VersionGit -Directory $Directory -Arguments (@('push', '--atomic', 'origin') + $refspecs) -AllowFailure
     if ($push.ExitCode -eq 0) {
-      return [pscustomobject]@{ version = $version; tag = $tag; commit = $commit; reused = $false }
+      return [pscustomobject]@{ version = $version; ideVersion = $ideVersion; tag = $tag; commit = $commit; reused = $false }
     }
     if ($Branch -eq 'master') { $null = Get-GitText @('tag', '-d', $tag) }
     if ($attempt -eq 11) { throw "Unable to push version after 12 attempts: $($push.Error)" }

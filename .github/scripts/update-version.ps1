@@ -13,7 +13,7 @@ try {
   $result = Update-ZeroVersion -Branch $TargetBranch -PullRequest $PullRequest -Directory $Directory
   if ($env:GITHUB_OUTPUT) {
     [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT,
-      "version=$($result.version)`ntag=$($result.tag)`ncommit=$($result.commit)`n")
+      "version=$($result.version)`nide_version=$($result.ideVersion)`ntag=$($result.tag)`ncommit=$($result.commit)`n")
   }
   $result | ConvertTo-Json -Compress
 } catch {

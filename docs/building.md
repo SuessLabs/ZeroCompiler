@@ -69,9 +69,10 @@ and inspects/executes `hello-linux64-cli` on Ubuntu. See [Linux x64](linux64.md)
 
 ## Build version
 
-The numeric version in `source/Directory.Build.props` uses
-`Major.Minor.Revision.Build` (initially `0.0.2.10`). `VersionSuffix=alpha1`
-adds a development suffix; the release workflow clears it on `master`. The SDK
+The compiler and CLI share the numeric version in `source/Directory.Build.props`
+(`0.0.4.6`). The IDE maintains its own version in `source/Zero.Ide/Version.props`
+(starting at `0.1.0.0`). Both use `Major.Minor.Revision.Build`. Each version source
+also has its own `VersionSuffix`; the release workflow clears both on `master`. The SDK
 derives numeric assembly/file versions and the informational version from these
 properties. `Zero.Version` and the CLI banner read the library's generated
 informational version, including commit metadata when the SDK supplies it.
@@ -79,19 +80,26 @@ informational version, including commit metadata when the SDK supplies it.
 CI/CD can supply a complete version without modifying source files:
 
 ```powershell
-.\build.bat -Version 0.0.2.11-ci.123
+.\build.bat -CompilerVersion 0.0.4.7-ci.123 -IdeVersion 0.1.0.1-ci.123
 
 # Or publish a stable release:
-.\build.ps1 -Version 0.0.3.0
+.\build.ps1 -CompilerVersion 0.0.5.0 -IdeVersion 0.1.1.0
 ```
 
 Please see [builds-AutoVersioning.md](builds-AutoVersioning.md) for more information on automatic-versioning on PRs.
 
-The build script passes the version to both solution build and native publish.
-Direct `dotnet` commands can use `-p:Version=0.0.2.11-ci.123`, or
-`-p:VersionPrefix=0.0.2.11 -p:VersionSuffix=ci.123`. Pass the same properties when
+The build script passes the independent versions to solution build and native
+publish. `-Version` remains an alias for `-CompilerVersion` and does not override
+the IDE version. Direct `dotnet` commands can use
+`-p:CompilerVersion=0.0.4.7-ci.123 -p:IdeVersion=0.1.0.1-ci.123`.
+The standard SDK `-p:Version=...` or `VersionPrefix`/`VersionSuffix` properties
+remain available when intentionally applying the same override to every project.
+Pass the same properties when
 building, testing, and publishing in separate CI steps. The public `Zero.Version`
 member is now a static property rather than a compile-time constant.
+Versions increment only on merged PRs into `develop` or `master`; local builds
+do not change them. The IDE About dialog reads the editor and compiler assembly
+versions independently.
 
 ## Running Samples
 
