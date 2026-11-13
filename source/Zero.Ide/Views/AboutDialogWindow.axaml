@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Zero.Ide.Views.AboutDialogWindow"
+        Title="About the Zero Project"
+        Width="560"
+        Background="#101722"
+        CanMaximize="False"
+        CanMinimize="False"
+        CanResize="False"
+        Icon="/Assets/zero-logo.ico"
+        ShowInTaskbar="False"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" />

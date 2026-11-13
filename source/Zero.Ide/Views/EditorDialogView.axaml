@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Zero.Ide.ViewModels"
+             x:Class="Zero.Ide.Views.EditorDialogView"
+             x:DataType="vm:EditorDialogViewModel">
+  <Grid Margin="24" RowDefinitions="*,Auto">
+    <ScrollViewer MaxHeight="400" HorizontalScrollBarVisibility="Disabled">
+      <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+    </ScrollViewer>
+
+    <StackPanel Grid.Row="1"
+                Margin="0,24,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="8">
+      <Button Content="Save"
+              MinWidth="80"
+              Command="{Binding CmdSave}"
+              IsDefault="{Binding IsSaveConfirmation}"
+              IsVisible="{Binding IsSaveConfirmation}" />
+      <Button Content="Don't Save"
+              MinWidth="80"
+              Command="{Binding CmdDiscard}"
+              IsVisible="{Binding IsSaveConfirmation}" />
+      <Button Content="Cancel"
+              MinWidth="80"
+              Command="{Binding CmdCancel}"
+              IsCancel="{Binding IsSaveConfirmation}"
+              IsVisible="{Binding IsSaveConfirmation}" />
+      <Button Content="OK"
+              MinWidth="80"
+              Command="{Binding CmdOk}"
+              IsCancel="{Binding !IsSaveConfirmation}"
+              IsDefault="{Binding !IsSaveConfirmation}"
+              IsVisible="{Binding !IsSaveConfirmation}" />
+    </StackPanel>
+  </Grid>
+</UserControl>

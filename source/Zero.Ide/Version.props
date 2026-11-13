@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Maintained independently from the shared compiler/CLI version on PR merges. -->
+    <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.1.0.0</VersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
+    <Version Condition="'$(IdeVersion)' != ''">$(IdeVersion)</Version>
+  </PropertyGroup>
+</Project>

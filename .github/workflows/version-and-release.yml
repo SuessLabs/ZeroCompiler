@@ -47,7 +47,7 @@ jobs:
       - name: Test version automation
         run: ./.github/scripts/test-version.ps1
 
-      - name: Increment and commit the shared version
+      - name: Increment and commit compiler and IDE versions
         id: version
         run: ./.github/scripts/update-version.ps1
 
@@ -69,14 +69,16 @@ jobs:
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
-        run: ./build.ps1 -Version $env:RELEASE_VERSION
+          IDE_VERSION: ${{ steps.version.outputs.ide_version }}
+        run: ./build.ps1 -CompilerVersion $env:RELEASE_VERSION -IdeVersion $env:IDE_VERSION
 
       - name: Test release
         if: env.TARGET_BRANCH == 'master'
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
-        run: dotnet test source/Zero.Tests/Zero.Tests.csproj --configuration Release --no-build --no-restore "-p:Version=$env:RELEASE_VERSION"
+          IDE_VERSION: ${{ steps.version.outputs.ide_version }}
+        run: dotnet test source/Zero.slnx --configuration Release --no-build --no-restore "-p:CompilerVersion=$env:RELEASE_VERSION" "-p:IdeVersion=$env:IDE_VERSION"
 
       - name: Package and publish GitHub Release
         if: env.TARGET_BRANCH == 'master'

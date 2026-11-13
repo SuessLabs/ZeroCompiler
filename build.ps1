@@ -10,15 +10,22 @@ param (
   [string]$OptimizationPreference = 'Size',
 
   [ValidateNotNullOrEmpty()]
-  [string]$Version
+  [Alias('Version')]
+  [string]$CompilerVersion,
+
+  [ValidateNotNullOrEmpty()]
+  [string]$IdeVersion
 )
 
 $ErrorActionPreference = 'Stop'
 
 $solution = Join-Path $PSScriptRoot 'source/Zero.slnx'
 $versionArguments = @()
-if ($PSBoundParameters.ContainsKey('Version')) {
-  $versionArguments += "-p:Version=$Version"
+if ($PSBoundParameters.ContainsKey('CompilerVersion')) {
+  $versionArguments += "-p:CompilerVersion=$CompilerVersion"
+}
+if ($PSBoundParameters.ContainsKey('IdeVersion')) {
+  $versionArguments += "-p:IdeVersion=$IdeVersion"
 }
 
 # Use a single MSBuild worker and avoid depending on existing build servers.
