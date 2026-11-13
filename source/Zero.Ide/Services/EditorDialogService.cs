@@ -61,6 +61,13 @@ public class EditorDialogService : IEditorDialogService
   public async Task ShowMessageAsync(string title, string message) =>
     await ShowDialogAsync(title, message, false);
 
+  public async Task ShowAboutAsync() =>
+    await _dialogService.ShowDialogAsync(nameof(AboutDialogView), new DialogParameters
+    {
+      { KnownDialogParameters.WindowName, nameof(AboutDialogWindow) },
+      { KnownDialogParameters.ShowNonModal, false },
+    });
+
   private Task<IDialogResult> ShowDialogAsync(string title, string message, bool confirmSave) =>
     _dialogService.ShowDialogAsync(nameof(EditorDialogView), new DialogParameters
     {

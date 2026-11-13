@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Zero.Ide.Controls"
+             xmlns:vm="using:Zero.Ide.ViewModels"
+             x:Class="Zero.Ide.Views.AboutDialogView"
+             x:DataType="vm:AboutDialogViewModel"
+             Background="#101722"
+             Foreground="#E9EFF7">
+  <StackPanel>
+    <Border Margin="28,24,28,0"
+            Padding="24,12"
+            Background="#F5F7FA"
+            CornerRadius="10">
+      <Image Width="400"
+             Height="112"
+             HorizontalAlignment="Center"
+             Source="/Assets/zero-logo.png"
+             AutomationProperties.Name="Zero project logo"
+             Stretch="Uniform" />
+    </Border>
+
+    <controls:DoomFireControl Height="128"
+                              Margin="28,12,28,0"
+                              ClipToBounds="True"
+                              IsHitTestVisible="False" />
+
+    <StackPanel Margin="28,20,28,24" Spacing="14">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Zero IDE"
+                   FontSize="26"
+                   FontWeight="SemiBold" />
+        <TextBlock Text="LOW-LEVEL ROOTS. A NEW GENERATION."
+                   FontSize="11"
+                   Foreground="#91A7BF"
+                   LetterSpacing="1.4" />
+      </StackPanel>
+      <Border Padding="14,10"
+              Background="#1B293A"
+              CornerRadius="6">
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+          <TextBlock Text="IDE VERSION"
+                     FontSize="10"
+                     Foreground="#91A7BF" />
+          <TextBlock Text="COMPILER VERSION"
+                     Grid.Column="1"
+                     FontSize="10"
+                     Foreground="#91A7BF" />
+          <TextBlock Text="{Binding IdeVersion}"
+                     Grid.Row="1"
+                     Margin="0,4,0,0"
+                     FontSize="16"
+                     Foreground="#75DCE9" />
+          <TextBlock Text="{Binding CompilerVersion}"
+                     Grid.Row="1"
+                     Grid.Column="1"
+                     Margin="0,4,0,0"
+                     FontSize="16"
+                     Foreground="#75DCE9" />
+        </Grid>
+      </Border>
+      <TextBlock Text="The Zero programming language and compiler project. A modern home for low-level code, with roots reaching back to 2001."
+                 FontSize="13"
+                 LineHeight="20"
+                 TextWrapping="Wrap" />
+      <TextBlock Text="Edit Zero assembly for Windows x86 and Linux x86-64. Built with Avalonia and Prism."
+                 FontSize="13"
+                 Foreground="#B0BED0"
+                 LineHeight="20"
+                 TextWrapping="Wrap" />
+      <StackPanel Spacing="4">
+        <TextBlock Text="Created by Damian Suess" FontSize="12" />
+        <TextBlock Text="{Binding Copyright}"
+                   FontSize="11"
+                   Foreground="#91A7BF"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+      <Grid Margin="0,4,0,0" ColumnDefinitions="*,Auto">
+        <TextBlock Text="Open source · MIT License"
+                   VerticalAlignment="Center"
+                   FontSize="11"
+                   Foreground="#91A7BF" />
+        <Button Content="Close"
+                Grid.Column="1"
+                MinWidth="96"
+                Command="{Binding CmdClose}"
+                IsCancel="True"
+                IsDefault="True" />
+      </Grid>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

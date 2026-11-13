@@ -38,7 +38,7 @@ public class MainWindowViewModel : ViewModelBase
     CmdSave = CreateCommand(async () => { await SaveAsync(false); });
     CmdSaveAs = CreateCommand(async () => { await SaveAsync(true); });
     CmdExit = new DelegateCommand(() => _dialogs.CloseWindow(), () => !IsBusy).ObservesProperty(() => IsBusy);
-    CmdAbout = CreateCommand(() => _dialogs.ShowMessageAsync("About Zero IDE", "Zero IDE\nA source editor for the Zero compiler.\n\nXeno Innovations, Inc."));
+    CmdAbout = CreateCommand(_dialogs.ShowAboutAsync);
     CmdBuild = new DelegateCommand(() => { }, () => false);
     CmdRebuild = new DelegateCommand(() => { }, () => false);
     CmdClean = new DelegateCommand(() => { }, () => false);

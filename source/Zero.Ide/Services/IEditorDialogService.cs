@@ -23,5 +23,7 @@ public interface IEditorDialogService
 
   Task<IStorageFile?> SaveFileAsync(string suggestedName);
 
+  Task ShowAboutAsync();
+
   Task ShowMessageAsync(string title, string message);
 }
