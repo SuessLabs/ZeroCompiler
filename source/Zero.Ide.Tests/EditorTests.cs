@@ -15,6 +15,33 @@ namespace Zero.Ide.Tests;
 public class EditorTests
 {
   [TestMethod]
+  public void DocumentEditsAndUndoUpdateModifiedState()
+  {
+    var editor = new EditorViewModel();
+    editor.Load("mov eax, 1", "sample.zasm");
+    editor.Document.Insert(editor.Document.TextLength, "\nret");
+    Assert.IsTrue(editor.IsModified);
+    Assert.AreEqual("mov eax, 1\nret", editor.Text);
+    editor.Document.UndoStack.Undo();
+    Assert.IsFalse(editor.IsModified);
+    Assert.AreEqual("mov eax, 1", editor.Text);
+  }
+
+  [TestMethod]
+  public void LoadingAnotherFileReplacesDocumentAndClearsUndoHistory()
+  {
+    var editor = new EditorViewModel();
+    editor.Document.Insert(0, "previous file");
+    var previous = editor.Document;
+    editor.Load("new file", "new.zasm");
+    Assert.AreNotSame(previous, editor.Document);
+    Assert.IsFalse(editor.Document.UndoStack.CanUndo);
+    Assert.AreEqual("new file", editor.Text);
+    previous.Insert(0, "old edit");
+    Assert.IsFalse(editor.IsModified);
+  }
+
+  [TestMethod]
   public void RevertingTextClearsModifiedState()
   {
     var editor = new EditorViewModel();

@@ -1,14 +1,25 @@
 // Copyright Xeno Innovations, Inc. 2026
 // See the LICENSE file in the project root for more information.
 
+using System;
+using AvaloniaEdit.Document;
+
 namespace Zero.Ide.ViewModels;
 
 public class EditorViewModel : ViewModelBase
 {
+  private TextDocument _document = new();
   private string _fileName = "Untitled";
   private int _revision;
   private string _savedText = string.Empty;
-  private string _text = string.Empty;
+
+  public EditorViewModel()
+  {
+    _document.UndoStack.SizeLimit = 1000;
+    _document.TextChanged += OnTextChanged;
+  }
+
+  public TextDocument Document => _document;
 
   public string FileName
   {
@@ -27,18 +38,24 @@ public class EditorViewModel : ViewModelBase
 
   public string Text
   {
-    get => _text;
+    get => Document.Text;
     set
     {
-      if (SetProperty(ref _text, value ?? string.Empty))
-        RaisePropertyChanged(nameof(IsModified));
+      var text = value ?? string.Empty;
+      if (Document.Text != text)
+        Document.Text = text;
     }
   }
 
   public void Load(string text, string fileName)
   {
     _savedText = text;
-    Text = text;
+    _document.TextChanged -= OnTextChanged;
+    _document = new TextDocument(text);
+    _document.UndoStack.SizeLimit = 1000;
+    _document.TextChanged += OnTextChanged;
+    RaisePropertyChanged(nameof(Document));
+    RaisePropertyChanged(nameof(Text));
     FileName = fileName;
     Revision++;
 
@@ -50,6 +67,12 @@ public class EditorViewModel : ViewModelBase
     _savedText = savedText;
     FileName = fileName;
 
+    RaisePropertyChanged(nameof(IsModified));
+  }
+
+  private void OnTextChanged(object? sender, EventArgs e)
+  {
+    RaisePropertyChanged(nameof(Text));
     RaisePropertyChanged(nameof(IsModified));
   }
 }
