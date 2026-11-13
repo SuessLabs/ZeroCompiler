@@ -10,7 +10,7 @@ namespace Zero.Formats.Pe;
 internal sealed class PeExecutableWriter : IExecutableWriter
 {
   private readonly PeWriter _writer = new();
-  private PeWriter.PePlan _plan = null!;
+  private PePlan _plan = null!;
 
   public ExecutableLayout Plan(AssemblyProgram program)
   {
