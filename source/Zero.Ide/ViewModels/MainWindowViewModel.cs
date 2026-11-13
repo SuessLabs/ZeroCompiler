@@ -39,6 +39,7 @@ public class MainWindowViewModel : ViewModelBase
     CmdSaveAs = CreateCommand(async () => { await SaveAsync(true); });
     CmdExit = new DelegateCommand(() => _dialogs.CloseWindow(), () => !IsBusy).ObservesProperty(() => IsBusy);
     CmdAbout = CreateCommand(_dialogs.ShowAboutAsync);
+    CmdOptions = CreateCommand(_dialogs.ShowOptionsAsync);
     CmdBuild = new DelegateCommand(() => { }, () => false);
     CmdRebuild = new DelegateCommand(() => { }, () => false);
     CmdClean = new DelegateCommand(() => { }, () => false);
@@ -50,6 +51,7 @@ public class MainWindowViewModel : ViewModelBase
   public DelegateCommand CmdExit { get; }
   public DelegateCommand CmdNew { get; }
   public DelegateCommand CmdOpen { get; }
+  public DelegateCommand CmdOptions { get; }
   public DelegateCommand CmdRebuild { get; }
   public DelegateCommand CmdSave { get; }
   public DelegateCommand CmdSaveAs { get; }

@@ -81,6 +81,10 @@
         <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
       </MenuItem>
 
+      <MenuItem Header="_Tools">
+        <MenuItem Command="{Binding CmdOptions}" Header="_Options..." />
+      </MenuItem>
+
       <MenuItem Header="_Help">
         <MenuItem Command="{Binding CmdAbout}" Header="_About" />
       </MenuItem>

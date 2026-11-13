@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Zero.Ide.ViewModels"
+             x:Class="Zero.Ide.Views.OptionsDialogView"
+             x:DataType="vm:OptionsDialogViewModel">
+  <Grid Margin="24" RowDefinitions="Auto,*,Auto">
+    <StackPanel Spacing="6">
+      <TextBlock Text="Options"
+                 FontSize="24"
+                 FontWeight="SemiBold" />
+      <TextBlock Text="Customize your Zero IDE workspace." Opacity="0.7" />
+    </StackPanel>
+
+    <Border Grid.Row="1"
+            Margin="0,24"
+            Padding="24"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6">
+      <StackPanel HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Spacing="8">
+        <TextBlock Text="No settings available yet."
+                   HorizontalAlignment="Center"
+                   FontWeight="SemiBold" />
+        <TextBlock Text="Editor settings will appear here as they are added."
+                   Opacity="0.7"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Button Content="Close"
+            Grid.Row="2"
+            MinWidth="96"
+            HorizontalAlignment="Right"
+            Command="{Binding CmdClose}"
+            IsCancel="True"
+            IsDefault="True" />
+  </Grid>
+</UserControl>
