@@ -29,6 +29,9 @@
     <KeyBinding Command="{Binding CmdOpen}" Gesture="Ctrl+O" />
     <KeyBinding Command="{Binding CmdSave}" Gesture="Ctrl+S" />
     <KeyBinding Command="{Binding CmdSaveAs}" Gesture="Ctrl+Shift+S" />
+    <KeyBinding Command="{Binding CmdBuildAndRun}" Gesture="F5" />
+    <KeyBinding Command="{Binding CmdBuild}" Gesture="Ctrl+B" />
+    <KeyBinding Command="{Binding CmdRebuild}" Gesture="Ctrl+Shift+B" />
   </Window.KeyBindings>
 
   <DockPanel>
@@ -73,10 +76,16 @@
                   InputGesture="Ctrl+V" />
       </MenuItem>
 
-      <MenuItem Header="_Build" ToolTip.Tip="Compiler integration is planned for a later phase.">
-        <MenuItem Command="{Binding CmdBuild}" Header="_Build" />
-        <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" />
+      <MenuItem Header="_Build">
+        <MenuItem Command="{Binding CmdBuildAndRun}" Header="Build and _Execute" InputGesture="F5" />
+        <MenuItem Command="{Binding CmdBuild}"
+                  Header="_Build"
+                  InputGesture="Ctrl+B"
+                  ToolTip.Tip="Build (Ctrl+B)" />
+        <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" InputGesture="Ctrl+Shift+B" />
         <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
+        <Separator />
+        <MenuItem Command="{Binding CmdBuildOutput}" Header="Build _Output..." />
       </MenuItem>
 
       <MenuItem Header="_Tools">
@@ -156,10 +165,10 @@
 
           <Separator Classes="toolbar-divider" />
 
-          <Button AutomationProperties.Name="Clean and Build"
+          <Button AutomationProperties.Name="Build and Execute"
                   Classes="toolbar-icon play"
-                  Command="{Binding CmdRebuild}"
-                  ToolTip.Tip="Clean and Build (compiler integration is planned for a later phase)">
+                  Command="{Binding CmdBuildAndRun}"
+                  ToolTip.Tip="Build and Execute (F5)">
             <Path Data="{StaticResource IconPlay}" />
           </Button>
 
@@ -178,8 +187,11 @@
                    Margin="12,0"
                    VerticalAlignment="Center"
                    AutomationProperties.Name="Build Status"
+                   Classes.build-failed="{Binding HasBuildFailed}"
+                   Classes.run-failed="{Binding HasRunFailed}"
                    FontSize="12"
-                   FontWeight="SemiBold" />
+                   FontWeight="SemiBold"
+                   ToolTip.Tip="{Binding BuildOutput}" />
 
         <TextBox Text="{Binding Editor.SearchText, Mode=TwoWay}"
                  Grid.Column="2"
@@ -220,5 +232,4 @@
 
     <views:EditorView x:Name="EditorPane" IsEnabled="{Binding !IsBusy}" />
   </DockPanel>
-
 </Window>

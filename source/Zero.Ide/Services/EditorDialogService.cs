@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Prism.Dialogs;
+using Zero.Ide.Models;
 using Zero.Ide.Views;
 
 namespace Zero.Ide.Services;
@@ -26,8 +27,6 @@ public class EditorDialogService : IEditorDialogService
     (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
     ?? throw new InvalidOperationException("The editor window is not available.");
 
-  public void CloseWindow() => Owner.Close();
-
   public async Task<string?> BrowseCompilerAsync()
   {
     var desktop = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
@@ -38,15 +37,18 @@ public class EditorDialogService : IEditorDialogService
       Title = "Select Zero compiler executable",
       AllowMultiple = false,
       FileTypeFilter = OperatingSystem.IsWindows()
-        ? [new FilePickerFileType("Executables") { Patterns = ["*.exe"] }, FilePickerFileTypes.All]
+        ? [new FilePickerFileType("Executables") { Patterns = ["*" + BuildConstants.WindowsExecutableExtension] }, FilePickerFileTypes.All]
         : [FilePickerFileTypes.All],
     });
 
     if (files.Count == 0)
       return null;
 
-    return files[0].TryGetLocalPath() ?? throw new InvalidOperationException("Select a local compiler executable.");
+    return files[0].TryGetLocalPath()
+      ?? throw new InvalidOperationException("Select a local compiler executable.");
   }
+
+  public void CloseWindow() => Owner.Close();
 
   public async Task<SaveChangesChoice> ConfirmSaveAsync(string fileName)
   {
@@ -65,7 +67,15 @@ public class EditorDialogService : IEditorDialogService
     {
       Title = "Open source file",
       AllowMultiple = false,
-      FileTypeFilter = [new FilePickerFileType("Zero source") { Patterns = ["*.zasm", "*.zh", "*.zero"] }, FilePickerFileTypes.All],
+      FileTypeFilter = [new FilePickerFileType("Zero source")
+      {
+        Patterns =
+        [
+          SourceFileExtensions.AssemblyPattern,
+          SourceFileExtensions.HeaderPattern,
+          SourceFileExtensions.ZeroPattern,
+        ],
+      }, FilePickerFileTypes.All],
     });
 
     return files.Count > 0 ? files[0] : null;
@@ -75,13 +85,17 @@ public class EditorDialogService : IEditorDialogService
     Owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
     {
       Title = "Save source file",
-      SuggestedFileName = suggestedName == "Untitled" ? "Untitled.zasm" : suggestedName,
+      SuggestedFileName = suggestedName == "Untitled" ? "Untitled" + SourceFileExtensions.Assembly : suggestedName,
       ShowOverwritePrompt = true,
-      FileTypeChoices = [new FilePickerFileType("Zero assembly") { Patterns = ["*.zasm"] }, FilePickerFileTypes.All],
+      FileTypeChoices =
+      [
+        new FilePickerFileType("Zero assembly")
+        {
+          Patterns = [SourceFileExtensions.AssemblyPattern]
+        },
+        FilePickerFileTypes.All,
+      ],
     });
-
-  public async Task ShowMessageAsync(string title, string message) =>
-    await ShowDialogAsync(title, message, false);
 
   public async Task ShowAboutAsync() =>
     await _dialogService.ShowDialogAsync(nameof(AboutDialogView), new DialogParameters
@@ -89,6 +103,9 @@ public class EditorDialogService : IEditorDialogService
       { KnownDialogParameters.WindowName, nameof(AboutDialogWindow) },
       { KnownDialogParameters.ShowNonModal, false },
     });
+
+  public async Task ShowMessageAsync(string title, string message) =>
+      await ShowDialogAsync(title, message, false);
 
   public async Task ShowOptionsAsync() =>
     await _dialogService.ShowDialogAsync(nameof(OptionsDialogView), new DialogParameters

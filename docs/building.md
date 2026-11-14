@@ -92,13 +92,18 @@ Linux desktop deployment also requires Avalonia's X11/native dependencies.
 
 ## IDE settings
 
-The toolbar provides icon buttons for New, Open, Save, Undo, Redo, and Clean and
-Build. Hover over a button for its name and shortcut. The build configuration
-selector offers Debug and Release; compiler integration is planned for a later
-phase, so the Play/Clean and Build button remains disabled. The centered status
-shows `Zero IDE` when idle and is ready to display `Building...` during builds.
+The toolbar provides icon buttons for New, Open, Save, Undo, Redo, and Build and
+Execute. Hover over a button for its name and shortcut. The build configuration
+selector offers Debug and Release. Play or F5 builds and launches the current
+file after successful compilation. **Build > Build** (Ctrl+B) compiles without
+launching. Ctrl+Shift+B performs Clean and Build without launching.
+The centered status shows `Idle`,
+`Building...`, or `Build failure`. Failures remain visible until a successful
+build or clean. Diagnostics appear on failure and can be reopened through
+**Build > Build Output**.
 The search box on the right searches the current file: press Enter to select the
 next case-insensitive literal match, wrapping to the start of the document.
+The editor highlights the caret's current line using the selected color theme.
 
 Use **Tools > Options** to select the compiler executable and configure editor
 appearance and indentation. The tree groups Compiler, Editor > Appearance, and
@@ -143,9 +148,27 @@ WordWrap="false"
 TrimTrailingWhitespaceOnSave="false"
 ```
 
-The compiler path is optional and must point to an existing executable when set.
-It is stored for the forthcoming external compiler integration; Build commands
-are still placeholders.
+Set the compiler path to the Zero CLI executable under **Tools > Options > Compiler**
+before building. Builds save the current file first (including enabled cleanup);
+canceling the save cancels the build. The compiler runs asynchronously with the
+source folder as its working directory, preserving relative include resolution.
+Play and F5 launch the compiled binary directly with the source folder as its
+working directory; the IDE remains editable while the program runs. Windows x86
+output requires Windows; Linux x64 output requires an x64 Linux host. An incompatible
+target or launch error displays `Run failure`, preserving the successful build
+and its diagnostics. Build-only and Clean and Build commands never execute output.
+
+Artifacts are written beneath the source folder in
+`.zeroide/<Debug|Release>/<source-file>/`. Windows PE executables use
+`<source-name>.exe`; Linux ELF executables use `<source-name>` with no extension.
+The builder inspects the generated executable to select its final name, including
+when cross-compiling. On Linux, the compiler's executable permissions are preserved.
+Switching targets replaces the previous artifact, and Clean also removes legacy
+`.bin` artifacts for that source and configuration.
+Debug/Release currently separate output folders; the CLI does not yet
+provide configuration-specific optimization or debug-symbol flags. Clean removes
+only that file's artifact for the selected configuration. The `.zeroide` folders
+are ignored by Git.
 
 ## Build version
 
