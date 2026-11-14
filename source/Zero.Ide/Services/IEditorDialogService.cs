@@ -17,6 +17,8 @@ public interface IEditorDialogService
 {
   void CloseWindow();
 
+  Task<string?> BrowseCompilerAsync();
+
   Task<SaveChangesChoice> ConfirmSaveAsync(string fileName);
 
   Task<IStorageFile?> OpenFileAsync();

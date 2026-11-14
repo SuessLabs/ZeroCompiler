@@ -90,6 +90,37 @@ Linux x86. The project reports this explicitly rather than producing an
 unrunnable package. Linux x64, Arm32, and Arm64 are supported runtime targets;
 Linux desktop deployment also requires Avalonia's X11/native dependencies.
 
+## IDE settings
+
+Use **Tools > Options** to select the compiler executable and configure editor
+appearance and indentation. The tree groups Compiler, Editor > Appearance, and
+Editor > Indentation settings. Apply saves and updates the editor immediately;
+OK also closes the dialog. Cancel discards edits made since the last Apply.
+
+Settings are stored per user in `Zero/Zero.Ide/settings.ini` beneath .NET's
+`ApplicationData` folder. On Windows this is
+`%APPDATA%\Zero\Zero.Ide\settings.ini`. The full path is shown in the dialog.
+Settings load at startup; a missing file uses the editor defaults. Invalid
+numeric or Boolean entries fall back individually. Saves preserve unknown keys
+and replace the INI file only after writing the new contents successfully.
+
+```ini
+[Compiler]
+Path="C:\Tools\Zero\zcc.exe"
+
+[Editor]
+FontFamily="Cascadia Code, Consolas, Menlo, monospace"
+FontSize="14"
+IndentationSize="2"
+ConvertTabsToSpaces="true"
+ShowLineNumbers="true"
+WordWrap="false"
+```
+
+The compiler path is optional and must point to an existing executable when set.
+It is stored for the forthcoming external compiler integration; Build commands
+are still placeholders.
+
 ## Build version
 
 The compiler and CLI share the numeric version in `source/Directory.Build.props`
@@ -125,7 +156,6 @@ do not change them. The IDE About dialog reads the editor and compiler assembly
 versions independently.
 
 ## Running Samples
-
 
 ### Console Assembly Sample
 

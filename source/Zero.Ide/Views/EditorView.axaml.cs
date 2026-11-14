@@ -4,11 +4,13 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Styling;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using Prism.Commands;
 using Zero.Ide.Highlighting;
+using Zero.Ide.Models;
 using Zero.Ide.ViewModels;
 
 namespace Zero.Ide.Views;
@@ -27,8 +29,6 @@ public partial class EditorView : UserControl
     CmdPaste = new DelegateCommand(() => Editor.Paste(), () => IsEnabled && !Editor.IsReadOnly);
 
     InitializeComponent();
-    Editor.Options.IndentationSize = 2;
-    Editor.Options.ConvertTabsToSpaces = true;
     Editor.Options.CutCopyWholeLine = false;
 
     Editor.DocumentChanged += (_, _) => ObserveUndoStack();
@@ -73,6 +73,7 @@ public partial class EditorView : UserControl
     _viewModel?.PropertyChanged -= OnDocumentChanged;
     _viewModel = DataContext as EditorViewModel;
     _viewModel?.PropertyChanged += OnDocumentChanged;
+    ApplySettings();
   }
 
   private void ObserveUndoStack()
@@ -85,6 +86,7 @@ public partial class EditorView : UserControl
 
   private void OnDocumentChanged(object? sender, PropertyChangedEventArgs e)
   {
+    if (e.PropertyName == nameof(EditorViewModel.Settings)) ApplySettings();
     if (e.PropertyName != nameof(EditorViewModel.Revision)) return;
     Editor.CaretOffset = 0;
     Editor.ScrollTo(1, 1, AvaloniaEdit.Rendering.VisualYPosition.LineTop, 0, 0);
@@ -105,4 +107,15 @@ public partial class EditorView : UserControl
 
   private void UpdateHighlighting() =>
     Editor.SyntaxHighlighting = ZasmHighlighting.Create(ActualThemeVariant == ThemeVariant.Dark);
+
+  private void ApplySettings()
+  {
+    var settings = _viewModel?.Settings ?? IdeSettings.Default;
+    Editor.FontFamily = new FontFamily(settings.FontFamily);
+    Editor.FontSize = settings.FontSize;
+    Editor.ShowLineNumbers = settings.ShowLineNumbers;
+    Editor.WordWrap = settings.WordWrap;
+    Editor.Options.IndentationSize = settings.IndentationSize;
+    Editor.Options.ConvertTabsToSpaces = settings.ConvertTabsToSpaces;
+  }
 }

@@ -3,39 +3,135 @@
              xmlns:vm="using:Zero.Ide.ViewModels"
              x:Class="Zero.Ide.Views.OptionsDialogView"
              x:DataType="vm:OptionsDialogViewModel">
-  <Grid Margin="24" RowDefinitions="Auto,*,Auto">
+  <Grid Margin="24" RowDefinitions="Auto,*,Auto,Auto">
     <StackPanel Spacing="6">
       <TextBlock Text="Options"
                  FontSize="24"
                  FontWeight="SemiBold" />
-      <TextBlock Text="Customize your Zero IDE workspace." Opacity="0.7" />
+      <TextBlock Text="Configure the compiler and your editor." Opacity="0.7" />
     </StackPanel>
 
     <Border Grid.Row="1"
-            Margin="0,24"
-            Padding="24"
+            Margin="0,20,0,0"
             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
             BorderThickness="1"
             CornerRadius="6">
-      <StackPanel HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  Spacing="8">
-        <TextBlock Text="No settings available yet."
-                   HorizontalAlignment="Center"
-                   FontWeight="SemiBold" />
-        <TextBlock Text="Editor settings will appear here as they are added."
-                   Opacity="0.7"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap" />
-      </StackPanel>
+      <Grid ColumnDefinitions="180,*">
+        <Border Padding="8,12"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="0,0,1,0">
+          <TreeView ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}">
+            <TreeView.Styles>
+              <Style Selector="TreeViewItem">
+                <Setter Property="IsExpanded" Value="True" />
+              </Style>
+            </TreeView.Styles>
+            <TreeView.ItemTemplate>
+              <TreeDataTemplate DataType="vm:OptionsCategory" ItemsSource="{Binding Children}">
+                <TextBlock Text="{Binding Title}" />
+              </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+        </Border>
+
+        <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="24,20" Spacing="20">
+            <TextBlock Text="{Binding PageTitle}"
+                       FontSize="19"
+                       FontWeight="SemiBold" />
+
+            <StackPanel IsVisible="{Binding ShowCompiler}" Spacing="10">
+              <TextBlock Text="Compiler executable" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Text="{Binding CompilerPath, Mode=TwoWay}" Watermark="Full path to zcc or zero" />
+                <Button Content="Browse..."
+                        Grid.Column="1"
+                        Margin="8,0,0,0"
+                        Command="{Binding CmdBrowseCompiler}" />
+              </Grid>
+              <TextBlock Text="Choose the Zero compiler executable for future builds. This path is optional."
+                         FontSize="12"
+                         Opacity="0.7"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel IsVisible="{Binding ShowAppearance}" Spacing="12">
+              <TextBlock Text="Text and display" FontWeight="SemiBold" />
+              <StackPanel Spacing="6">
+                <TextBlock Text="Font family (comma-separated fallbacks are supported)" FontSize="12" />
+                <TextBox Text="{Binding FontFamily, Mode=TwoWay}" />
+              </StackPanel>
+              <Grid ColumnDefinitions="*,120">
+                <TextBlock Text="Font size" VerticalAlignment="Center" />
+                <NumericUpDown Grid.Column="1"
+                               FormatString="0.#"
+                               Increment="1"
+                               Maximum="48"
+                               Minimum="8"
+                               Value="{Binding FontSize, Mode=TwoWay}" />
+              </Grid>
+              <CheckBox Content="Show line numbers" IsChecked="{Binding ShowLineNumbers, Mode=TwoWay}" />
+              <CheckBox Content="Word wrap" IsChecked="{Binding WordWrap, Mode=TwoWay}" />
+            </StackPanel>
+
+            <StackPanel IsVisible="{Binding ShowIndentation}" Spacing="12">
+              <TextBlock Text="Tabs and indentation" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,120">
+                <TextBlock Text="Indentation size" VerticalAlignment="Center" />
+                <NumericUpDown Grid.Column="1"
+                               FormatString="0"
+                               Increment="1"
+                               Maximum="8"
+                               Minimum="1"
+                               Value="{Binding IndentationSize, Mode=TwoWay}" />
+              </Grid>
+              <CheckBox Content="Insert spaces instead of tabs" IsChecked="{Binding ConvertTabsToSpaces, Mode=TwoWay}" />
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
     </Border>
 
-    <Button Content="Close"
-            Grid.Row="2"
-            MinWidth="96"
-            HorizontalAlignment="Right"
-            Command="{Binding CmdClose}"
-            IsCancel="True"
-            IsDefault="True" />
+    <StackPanel Grid.Row="2"
+                Margin="0,10,0,0"
+                Spacing="4">
+      <TextBlock Text="{Binding ErrorMessage}"
+                 Foreground="IndianRed"
+                 TextWrapping="Wrap" />
+      <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" />
+    </StackPanel>
+
+    <Grid Grid.Row="3"
+          Margin="0,12,0,0"
+          ColumnDefinitions="*,Auto">
+      <StackPanel Margin="0,0,16,0"
+                  VerticalAlignment="Center"
+                  Spacing="3">
+        <TextBlock Text="Settings file (.ini)"
+                   FontSize="11"
+                   Opacity="0.7" />
+        <TextBlock Text="{Binding SettingsFilePath}"
+                   FontSize="11"
+                   Opacity="0.7"
+                   TextTrimming="CharacterEllipsis"
+                   ToolTip.Tip="{Binding SettingsFilePath}" />
+      </StackPanel>
+      <StackPanel Grid.Column="1"
+                  VerticalAlignment="Bottom"
+                  Orientation="Horizontal"
+                  Spacing="8">
+        <Button Content="OK"
+                MinWidth="80"
+                Command="{Binding CmdOk}"
+                IsDefault="True" />
+        <Button Content="Cancel"
+                MinWidth="80"
+                Command="{Binding CmdCancel}"
+                IsCancel="True" />
+        <Button Content="Apply"
+                MinWidth="80"
+                Command="{Binding CmdApply}" />
+      </StackPanel>
+    </Grid>
   </Grid>
 </UserControl>
