@@ -30,6 +30,7 @@ public partial class App : PrismApplication
     containerRegistry.RegisterSingleton<IEditorDialogService, EditorDialogService>();
     containerRegistry.RegisterSingleton<ICompilerService, CompilerService>();
     containerRegistry.RegisterSingleton<IProgramRunner, ProgramRunner>();
+    containerRegistry.RegisterSingleton<IUpdateService, UpdateService>();
 
     var settings = new IniSettingsService();
     containerRegistry.RegisterInstance<ISettingsService>(settings);

@@ -15,11 +15,13 @@ public enum SaveChangesChoice
 
 public interface IEditorDialogService
 {
-  void CloseWindow();
-
   Task<string?> BrowseCompilerAsync();
 
+  void CloseWindow();
+
   Task<SaveChangesChoice> ConfirmSaveAsync(string fileName);
+
+  Task<bool> ConfirmUpdateAsync(string currentVersion, string latestVersion);
 
   Task<IStorageFile?> OpenFileAsync();
 
