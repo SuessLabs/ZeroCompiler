@@ -1,5 +1,9 @@
 # Build Zero
 
+For the separate CLI and IDE installers, see [Installer builds](../installer/README.md).
+These use the shared `Zero/bin`, `Zero/include`, `Zero/samples`, `Zero/docs`, and
+`Zero/ide` layout and leave the existing portable build below unchanged.
+
 ## Building the Native compiler
 
 Run `.\build.bat` (or `.\build.ps1`) to build the solution and publish a

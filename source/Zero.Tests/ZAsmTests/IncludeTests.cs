@@ -77,6 +77,19 @@ public sealed class IncludeTests
   }
 
   [TestMethod]
+  public void InstalledBinLayoutResolvesSharedHeadersOutsideWorkingDirectory()
+  {
+    _options.CompilerDirectory = Path.Combine(_workspace.FullName, "installed", "bin");
+    var header = Write("installed/include/sub/file.zh", "nop");
+    var main = Write("source/main.zasm", "using \"sub/file.zh\"");
+
+    var lines = new SourceLoader().Load(main, _options);
+
+    Assert.HasCount(1, lines);
+    Assert.AreEqual(header, lines[0].FilePath);
+  }
+
+  [TestMethod]
   public void LabelsResolveAcrossIncludeBoundaries()
   {
     Write("first/code.zh", "helper: push message\nret");

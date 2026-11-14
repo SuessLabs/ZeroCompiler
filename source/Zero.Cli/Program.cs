@@ -147,7 +147,7 @@ internal class Program
         --target <target>          Select windows-x86 or linux-x64.
 
       Includes search the current working directory, then -I directories in order,
-      then the include folder beside the compiler. The same options work with zero.
+      then include beside the compiler, then ../include when installed in bin.
 
       Copyright 2003-2026 Xeno Innovations, Inc.
       """);
