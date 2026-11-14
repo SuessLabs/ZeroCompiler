@@ -94,9 +94,11 @@ Linux desktop deployment also requires Avalonia's X11/native dependencies.
 
 The toolbar provides icon buttons for New, Open, Save, Undo, Redo, and Clean and
 Build. Hover over a button for its name and shortcut. The build configuration
-selector offers Debug and Release; compiler integration is planned for a later
-phase, so the Play/Clean and Build button remains disabled. The centered status
-shows `Zero IDE` when idle and is ready to display `Building...` during builds.
+selector offers Debug and Release. Play performs Clean and Build; **Build > Build**
+(F6) compiles the current `.zasm` file. The centered status shows `Idle`,
+`Building...`, or `Build failure`. Failures remain visible until a successful
+build or clean. Diagnostics appear on failure and can be reopened through
+**Build > Build Output**.
 The search box on the right searches the current file: press Enter to select the
 next case-insensitive literal match, wrapping to the start of the document.
 
@@ -143,9 +145,19 @@ WordWrap="false"
 TrimTrailingWhitespaceOnSave="false"
 ```
 
-The compiler path is optional and must point to an existing executable when set.
-It is stored for the forthcoming external compiler integration; Build commands
-are still placeholders.
+Set the compiler path to the Zero CLI executable under **Tools > Options > Compiler**
+before building. Builds save the current file first (including enabled cleanup);
+canceling the save cancels the build. The compiler runs asynchronously with the
+source folder as its working directory, preserving relative include resolution.
+Play compiles the source; it does not run the resulting program.
+
+Artifacts are written beneath the source folder as
+`.zeroide/<Debug|Release>/<source-file>/<source-name>.bin`. The target-neutral
+`.bin` extension contains PE or ELF output according to the source's `#TARGET`
+directive. Debug/Release currently separate output folders; the CLI does not yet
+provide configuration-specific optimization or debug-symbol flags. Clean removes
+only that file's artifact for the selected configuration. The `.zeroide` folders
+are ignored by Git.
 
 ## Build version
 

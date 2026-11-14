@@ -10,6 +10,9 @@
     <Setter Property="Background" Value="{DynamicResource IdeChromeBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
   </Style>
+  <Style Selector="TextBlock.build-failed">
+    <Setter Property="Foreground" Value="IndianRed" />
+  </Style>
   <Style Selector="MenuItem">
     <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
   </Style>

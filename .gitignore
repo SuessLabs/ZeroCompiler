@@ -93,6 +93,7 @@ TestResult.xml
 !/[Oo]utput/readme.md
 
 ## USER DEFINED
+.zeroide/
 /[Dd]ocs/*.csv
 /[Dd]ocs/backup
 /[Tt]ools

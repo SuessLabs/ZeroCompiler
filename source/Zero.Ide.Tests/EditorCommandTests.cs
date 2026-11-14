@@ -44,14 +44,8 @@ public class EditorCommandTests
     CollectionAssert.AreEqual(new[] { "Debug", "Release" }, new System.Collections.Generic.List<string>(shell.BuildConfigurations));
     shell.BuildConfiguration = "Release";
     Assert.AreEqual("Release", shell.BuildConfiguration);
-    Assert.AreEqual("Zero IDE", shell.BuildStatus);
-    var notifications = 0;
-    shell.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(shell.BuildStatus)) notifications++; };
-    shell.IsBuilding = true;
-    Assert.AreEqual("Building...", shell.BuildStatus);
-    shell.IsBuilding = false;
-    Assert.AreEqual("Zero IDE", shell.BuildStatus);
-    Assert.AreEqual(2, notifications);
+    Assert.AreEqual("Idle", shell.BuildStatus);
+    Assert.IsFalse(shell.IsBuilding);
     Assert.IsFalse(shell.CmdRebuild.CanExecute());
   }
 

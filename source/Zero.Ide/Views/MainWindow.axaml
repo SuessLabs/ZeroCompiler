@@ -29,6 +29,7 @@
     <KeyBinding Command="{Binding CmdOpen}" Gesture="Ctrl+O" />
     <KeyBinding Command="{Binding CmdSave}" Gesture="Ctrl+S" />
     <KeyBinding Command="{Binding CmdSaveAs}" Gesture="Ctrl+Shift+S" />
+    <KeyBinding Command="{Binding CmdBuild}" Gesture="F6" />
   </Window.KeyBindings>
 
   <DockPanel>
@@ -73,10 +74,14 @@
                   InputGesture="Ctrl+V" />
       </MenuItem>
 
-      <MenuItem Header="_Build" ToolTip.Tip="Compiler integration is planned for a later phase.">
-        <MenuItem Command="{Binding CmdBuild}" Header="_Build" />
+      <MenuItem Header="_Build">
+        <MenuItem Command="{Binding CmdBuild}"
+                  Header="_Build"
+                  InputGesture="F6" />
         <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" />
         <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
+        <Separator />
+        <MenuItem Command="{Binding CmdBuildOutput}" Header="Build _Output..." />
       </MenuItem>
 
       <MenuItem Header="_Tools">
@@ -159,7 +164,7 @@
           <Button AutomationProperties.Name="Clean and Build"
                   Classes="toolbar-icon play"
                   Command="{Binding CmdRebuild}"
-                  ToolTip.Tip="Clean and Build (compiler integration is planned for a later phase)">
+                  ToolTip.Tip="Clean and Build">
             <Path Data="{StaticResource IconPlay}" />
           </Button>
 
@@ -178,8 +183,10 @@
                    Margin="12,0"
                    VerticalAlignment="Center"
                    AutomationProperties.Name="Build Status"
+                   Classes.build-failed="{Binding HasBuildFailed}"
                    FontSize="12"
-                   FontWeight="SemiBold" />
+                   FontWeight="SemiBold"
+                   ToolTip.Tip="{Binding BuildOutput}" />
 
         <TextBox Text="{Binding Editor.SearchText, Mode=TwoWay}"
                  Grid.Column="2"
@@ -220,5 +227,4 @@
 
     <views:EditorView x:Name="EditorPane" IsEnabled="{Binding !IsBusy}" />
   </DockPanel>
-
 </Window>

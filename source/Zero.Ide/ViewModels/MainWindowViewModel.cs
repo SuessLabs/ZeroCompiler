@@ -14,19 +14,23 @@ namespace Zero.Ide.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+  private readonly ICompilerService? _compilerService;
   private readonly IEditorDialogService _dialogs;
   private readonly ISettingsService? _settings;
   private string _buildConfiguration = "Debug";
+  private string _buildOutput = string.Empty;
+  private EditorBuildState _buildState;
   private IStorageFile? _file;
-  private bool _isBuilding;
   private bool _isBusy;
   private string _status = "Ready";
 
-  public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null)
+  public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null,
+    ICompilerService? compilerService = null)
   {
     Editor = editor;
     _dialogs = dialogs;
     _settings = settings;
+    _compilerService = compilerService;
     settings?.SettingsChanged += (_, _) => NotifyThemeChanged();
 
     Editor.PropertyChanged += (_, _) => RaisePropertyChanged(nameof(Title));
@@ -51,9 +55,11 @@ public class MainWindowViewModel : ViewModelBase
     CmdThemeLight = CreateCommand(() => SelectThemeAsync(IdeTheme.Light));
     CmdThemeDark = CreateCommand(() => SelectThemeAsync(IdeTheme.Dark));
     CmdThemeCoolSlate = CreateCommand(() => SelectThemeAsync(IdeTheme.CoolSlate));
-    CmdBuild = new DelegateCommand(() => { }, () => false);
-    CmdRebuild = new DelegateCommand(() => { }, () => false);
-    CmdClean = new DelegateCommand(() => { }, () => false);
+    CmdBuild = CreateCommand(() => BuildAsync(false), () => _compilerService is not null);
+    CmdRebuild = CreateCommand(() => BuildAsync(true), () => _compilerService is not null);
+    CmdClean = CreateCommand(CleanAsync, () => _compilerService is not null);
+    CmdBuildOutput = CreateCommand(() => _dialogs.ShowMessageAsync("Build output", BuildOutput),
+      () => !string.IsNullOrEmpty(BuildOutput)).ObservesProperty(() => BuildOutput);
   }
 
   public string BuildConfiguration
@@ -69,9 +75,31 @@ public class MainWindowViewModel : ViewModelBase
   }
 
   public IReadOnlyList<string> BuildConfigurations { get; } = Array.AsReadOnly<string>(["Debug", "Release"]);
-  public string BuildStatus => IsBuilding ? "Building..." : "Zero IDE";
+
+  public string BuildOutput { get => _buildOutput; private set => SetProperty(ref _buildOutput, value); }
+
+  public EditorBuildState BuildState
+  {
+    get => _buildState;
+    private set
+    {
+      if (!SetProperty(ref _buildState, value)) return;
+      RaisePropertyChanged(nameof(BuildStatus));
+      RaisePropertyChanged(nameof(IsBuilding));
+      RaisePropertyChanged(nameof(HasBuildFailed));
+    }
+  }
+
+  public string BuildStatus => BuildState switch
+  {
+    EditorBuildState.Building => "Building...",
+    EditorBuildState.Failed => "Build failure",
+    _ => "Idle",
+  };
+
   public DelegateCommand CmdAbout { get; }
   public DelegateCommand CmdBuild { get; }
+  public DelegateCommand CmdBuildOutput { get; }
   public DelegateCommand CmdClean { get; }
   public DelegateCommand CmdExit { get; }
   public DelegateCommand CmdNew { get; }
@@ -85,16 +113,8 @@ public class MainWindowViewModel : ViewModelBase
   public DelegateCommand CmdThemeLight { get; }
   public DelegateCommand CmdThemeSystem { get; }
   public EditorViewModel Editor { get; }
-
-  // The compiler integration will set this while its build operation is running.
-  public bool IsBuilding
-  {
-    get => _isBuilding;
-    set
-    {
-      if (SetProperty(ref _isBuilding, value)) RaisePropertyChanged(nameof(BuildStatus));
-    }
-  }
+  public bool HasBuildFailed => BuildState == EditorBuildState.Failed;
+  public bool IsBuilding => BuildState == EditorBuildState.Building;
 
   public bool IsBusy
   {
@@ -137,6 +157,63 @@ public class MainWindowViewModel : ViewModelBase
     }
   }
 
+  private async Task BuildAsync(bool cleanFirst)
+  {
+    try
+    {
+      if (string.IsNullOrWhiteSpace(Editor.Settings.CompilerPath))
+        throw new InvalidOperationException("Select the Zero CLI executable in Tools > Options > Compiler before building.");
+
+      if ((_file is null || Editor.IsModified) && !await SaveAsync(false))
+        return;
+
+      var sourcePath = _file?.TryGetLocalPath() ?? throw new InvalidOperationException("Building requires a local .zasm file.");
+
+      if (!string.Equals(Path.GetExtension(sourcePath), ".zasm", StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException("Only .zasm source files can be built.");
+
+      BuildState = EditorBuildState.Building;
+      Status = $"Building {Editor.FileName} ({BuildConfiguration})";
+      BuildOutput = Status;
+
+      var result = await _compilerService!.BuildAsync(Editor.Settings.CompilerPath, sourcePath, BuildConfiguration, cleanFirst);
+
+      BuildOutput = result.Output + Environment.NewLine + $"Compiler exit code: {result.ExitCode}";
+
+      if (!result.Succeeded)
+      {
+        BuildState = EditorBuildState.Failed;
+        Status = "Build failed";
+        await _dialogs.ShowMessageAsync("Build failure", BuildOutput);
+        return;
+      }
+
+      BuildState = EditorBuildState.Idle;
+      Status = $"Build succeeded: {result.OutputPath}";
+    }
+    catch (Exception ex)
+    {
+      await ReportBuildFailureAsync(ex);
+    }
+  }
+
+  private async Task CleanAsync()
+  {
+    try
+    {
+      var sourcePath = _file?.TryGetLocalPath()
+        ?? throw new InvalidOperationException("Open or save a local .zasm file before cleaning.");
+
+      _compilerService!.Clean(sourcePath, BuildConfiguration);
+      BuildState = EditorBuildState.Idle;
+      BuildOutput = Status = $"Cleaned {Editor.FileName} ({BuildConfiguration})";
+    }
+    catch (Exception ex)
+    {
+      await ReportBuildFailureAsync(ex);
+    }
+  }
+
   private async Task<bool> ConfirmSaveAsync()
   {
     if (!Editor.IsModified)
@@ -150,9 +227,12 @@ public class MainWindowViewModel : ViewModelBase
     };
   }
 
-  private DelegateCommand CreateCommand(Func<Task> action) =>
+  private DelegateCommand CreateCommand(Func<Task> action, Func<bool>? canExecute = null) =>
       new DelegateCommand(async () =>
     {
+      if (IsBusy || canExecute?.Invoke() == false)
+        return;
+
       IsBusy = true;
 
       try
@@ -168,7 +248,7 @@ public class MainWindowViewModel : ViewModelBase
       {
         IsBusy = false;
       }
-    }, () => !IsBusy).ObservesProperty(() => IsBusy);
+    }, () => !IsBusy && canExecute?.Invoke() != false).ObservesProperty(() => IsBusy);
 
   private void NotifyThemeChanged()
   {
@@ -195,6 +275,15 @@ public class MainWindowViewModel : ViewModelBase
     _file = file;
     Editor.Load(text, file.Name);
     Status = $"Opened {file.Name}";
+  }
+
+  private async Task ReportBuildFailureAsync(Exception exception)
+  {
+    BuildState = EditorBuildState.Failed;
+    Status = "Build failed";
+    BuildOutput = exception.Message;
+
+    await _dialogs.ShowMessageAsync("Build failure", BuildOutput);
   }
 
   private async Task<bool> SaveAsync(bool saveAs)

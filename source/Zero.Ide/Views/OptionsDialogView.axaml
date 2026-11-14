@@ -50,7 +50,7 @@
                         Margin="8,0,0,0"
                         Command="{Binding CmdBrowseCompiler}" />
               </Grid>
-              <TextBlock Text="Choose the Zero compiler executable for future builds. This path is optional."
+              <TextBlock Text="Choose the Zero CLI executable used to compile .zasm files. Required for building."
                          FontSize="12"
                          Opacity="0.7"
                          TextWrapping="Wrap" />
