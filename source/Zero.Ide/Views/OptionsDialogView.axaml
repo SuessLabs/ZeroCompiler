@@ -89,6 +89,15 @@
               <CheckBox Content="Word wrap" IsChecked="{Binding WordWrap, Mode=TwoWay}" />
             </StackPanel>
 
+            <StackPanel IsVisible="{Binding ShowCodeCleanup}" Spacing="12">
+              <CheckBox Content="Trim Trailing Whitespace"
+                        IsChecked="{Binding TrimTrailingWhitespaceOnSave, Mode=TwoWay}" />
+              <TextBlock Text="Remove spaces and tabs from the end of each line when saving."
+                         FontSize="12"
+                         Opacity="0.7"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+
             <StackPanel IsVisible="{Binding ShowIndentation}" Spacing="12">
               <TextBlock Text="Tabs and indentation" FontWeight="SemiBold" />
               <Grid ColumnDefinitions="*,120">

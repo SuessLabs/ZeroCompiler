@@ -13,17 +13,26 @@ public sealed record IdeSettings
   public IdeTheme Theme { get; init; } = IdeTheme.System;
 
   public string CompilerPath { get; init; } = string.Empty;
+
   public string FontFamily { get; init; } = "Cascadia Code, Consolas, Menlo, monospace";
+
   public double FontSize { get; init; } = 14;
+
   public int IndentationSize { get; init; } = 2;
+
   public bool ConvertTabsToSpaces { get; init; } = true;
+
   public bool ShowLineNumbers { get; init; } = true;
+
   public bool WordWrap { get; init; }
+
+  public bool TrimTrailingWhitespaceOnSave { get; init; }
 
   public void Validate()
   {
     if (!Enum.IsDefined(Theme))
       throw new ArgumentException("Select a supported color theme.");
+
     if (CompilerPath.Contains('\r') || CompilerPath.Contains('\n'))
       throw new ArgumentException("The compiler path must be a single line.");
 

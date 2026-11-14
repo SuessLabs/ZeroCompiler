@@ -192,6 +192,9 @@ public class MainWindowViewModel : ViewModelBase
     if (file is null)
       return false;
 
+    if (Editor.Settings.TrimTrailingWhitespaceOnSave)
+      Editor.TrimTrailingWhitespace();
+
     var text = Editor.Text;
 
     await using (var stream = await file.OpenWriteAsync())

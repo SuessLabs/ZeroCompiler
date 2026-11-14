@@ -116,6 +116,29 @@ public class EditorViewModel : ViewModelBase
     RaisePropertyChanged(nameof(IsModified));
   }
 
+  public void TrimTrailingWhitespace()
+  {
+    // Edit in place so caret/selection anchors survive and cleanup is one undo step.
+    Document.BeginUpdate();
+    try
+    {
+      for (var index = Document.LineCount; index >= 1; index--)
+      {
+        var line = Document.GetLineByNumber(index);
+        var end = line.EndOffset;
+        var trimmedEnd = end;
+        while (trimmedEnd > line.Offset && char.IsWhiteSpace(Document.GetCharAt(trimmedEnd - 1)))
+          trimmedEnd--;
+
+        if (trimmedEnd < end) Document.Remove(trimmedEnd, end - trimmedEnd);
+      }
+    }
+    finally
+    {
+      Document.EndUpdate();
+    }
+  }
+
   private DelegateCommand CreateEditorCommand(Func<IEditorActions, bool> canExecute, Action<IEditorActions> execute) =>
     new(() =>
     {

@@ -40,6 +40,7 @@ public class SettingsTests
     options.OnDialogOpened(new DialogParameters());
     options.FontSize = 18;
     options.WordWrap = true;
+    options.TrimTrailingWhitespaceOnSave = true;
     options.SelectedTheme = options.Themes.Single(t => t.Value == IdeTheme.CoolSlate);
     options.CmdApply.Execute();
 
@@ -47,6 +48,7 @@ public class SettingsTests
     Assert.IsTrue(changed);
     Assert.AreEqual(18, editor.Settings.FontSize);
     Assert.IsTrue(editor.Settings.WordWrap);
+    Assert.IsTrue(editor.Settings.TrimTrailingWhitespaceOnSave);
     Assert.AreEqual(IdeTheme.CoolSlate, editor.Settings.Theme);
     Assert.AreEqual(service.Current, new IniSettingsService(_filePath).Current);
     Assert.AreEqual("mov eax, 1", editor.Text);
@@ -64,6 +66,7 @@ public class SettingsTests
     options.OnDialogOpened(new DialogParameters());
     options.FontSize = 20;
     options.CompilerPath = "not saved";
+    options.TrimTrailingWhitespaceOnSave = true;
     options.SelectedTheme = options.Themes.Single(t => t.Value == IdeTheme.Dark);
     options.CmdCancel.Execute();
 
@@ -133,6 +136,7 @@ public class SettingsTests
       ShowLineNumbers = false,
       WordWrap = true,
       Theme = IdeTheme.CoolSlate,
+      TrimTrailingWhitespaceOnSave = true,
     };
 
     var service = new IniSettingsService(_filePath);
@@ -154,6 +158,22 @@ public class SettingsTests
     _directory = Path.Combine(Path.GetTempPath(), "Zero.Ide.Settings.Tests", Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(_directory);
     _filePath = Path.Combine(_directory, "settings.ini");
+  }
+
+  [TestMethod]
+  [DataRow("true", true)]
+  [DataRow("FALSE", false)]
+  [DataRow("invalid", false)]
+  public void CleanupPreferenceLoadsAndOptionsReflectIt(string value, bool expected)
+  {
+    File.WriteAllText(_filePath, $"[CodeCleanup]\nTrimTrailingWhitespaceOnSave={value}\n");
+    var settings = new IniSettingsService(_filePath);
+    var options = new OptionsDialogViewModel(settings, Mock.Of<IEditorDialogService>());
+    options.OnDialogOpened(new DialogParameters());
+    options.SelectedCategory = options.Categories.Single(c => c.Key == "editor").Children.Single(c => c.Key == "cleanup");
+    Assert.IsTrue(options.ShowCodeCleanup);
+    Assert.AreEqual("Code Cleanup", options.PageTitle);
+    Assert.AreEqual(expected, options.TrimTrailingWhitespaceOnSave);
   }
 
   [TestMethod]
