@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Zero.Ide.Models;
 
 namespace Zero.Ide.Services;
 
@@ -15,7 +16,9 @@ public sealed class CompilerService : ICompilerService
     if (string.IsNullOrWhiteSpace(compilerPath) ||
         !Path.IsPathFullyQualified(compilerPath) ||
         !File.Exists(compilerPath))
+    {
       throw new InvalidOperationException("Select the Zero CLI executable in Tools > Options > Compiler before building.");
+    }
 
     sourcePath = Path.GetFullPath(sourcePath);
     var outputPath = GetOutputPath(sourcePath, configuration);
@@ -80,20 +83,20 @@ public sealed class CompilerService : ICompilerService
   /// <exception cref="ArgumentException"></exception>
   private static string GetOutputPath(string sourcePath, string configuration)
   {
-    if (configuration is not ("Debug" or "Release"))
+    if (!BuildConstants.IsSupportedConfiguration(configuration))
       throw new ArgumentException("Choose Debug or Release.");
 
     sourcePath = Path.GetFullPath(sourcePath);
 
-    if (!string.Equals(Path.GetExtension(sourcePath), ".zasm", StringComparison.OrdinalIgnoreCase))
-      throw new ArgumentException("Only .zasm source files can be built.");
+    if (!string.Equals(Path.GetExtension(sourcePath), SourceFileExtensions.Assembly, StringComparison.OrdinalIgnoreCase))
+      throw new ArgumentException($"Only {SourceFileExtensions.Assembly} source files can be built.");
 
     // A target-neutral extension works for both PE and ELF output selected by #TARGET.
     return Path.Combine(
       Path.GetDirectoryName(sourcePath)!,
-      ".zeroide",
+      BuildConstants.OutputDirectoryName,
       configuration,
       Path.GetFileName(sourcePath),
-      Path.GetFileNameWithoutExtension(sourcePath) + ".bin");
+      Path.GetFileNameWithoutExtension(sourcePath) + BuildConstants.BinaryExtension);
   }
 }

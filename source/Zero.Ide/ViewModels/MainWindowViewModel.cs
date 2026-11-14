@@ -17,7 +17,7 @@ public class MainWindowViewModel : ViewModelBase
   private readonly ICompilerService? _compilerService;
   private readonly IEditorDialogService _dialogs;
   private readonly ISettingsService? _settings;
-  private string _buildConfiguration = "Debug";
+  private string _buildConfiguration = BuildConstants.DebugConfiguration;
   private string _buildOutput = string.Empty;
   private EditorBuildState _buildState;
   private IStorageFile? _file;
@@ -67,14 +67,14 @@ public class MainWindowViewModel : ViewModelBase
     get => _buildConfiguration;
     set
     {
-      if (value is not ("Debug" or "Release"))
+      if (!BuildConstants.IsSupportedConfiguration(value))
         throw new ArgumentException("Choose Debug or Release.");
 
       SetProperty(ref _buildConfiguration, value);
     }
   }
 
-  public IReadOnlyList<string> BuildConfigurations { get; } = Array.AsReadOnly<string>(["Debug", "Release"]);
+  public IReadOnlyList<string> BuildConfigurations => BuildConstants.Configurations;
 
   public string BuildOutput { get => _buildOutput; private set => SetProperty(ref _buildOutput, value); }
 
@@ -167,10 +167,10 @@ public class MainWindowViewModel : ViewModelBase
       if ((_file is null || Editor.IsModified) && !await SaveAsync(false))
         return;
 
-      var sourcePath = _file?.TryGetLocalPath() ?? throw new InvalidOperationException("Building requires a local .zasm file.");
+      var sourcePath = _file?.TryGetLocalPath() ?? throw new InvalidOperationException($"Building requires a local {SourceFileExtensions.Assembly} file.");
 
-      if (!string.Equals(Path.GetExtension(sourcePath), ".zasm", StringComparison.OrdinalIgnoreCase))
-        throw new InvalidOperationException("Only .zasm source files can be built.");
+      if (!string.Equals(Path.GetExtension(sourcePath), SourceFileExtensions.Assembly, StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException($"Only {SourceFileExtensions.Assembly} source files can be built.");
 
       BuildState = EditorBuildState.Building;
       Status = $"Building {Editor.FileName} ({BuildConfiguration})";
@@ -202,7 +202,7 @@ public class MainWindowViewModel : ViewModelBase
     try
     {
       var sourcePath = _file?.TryGetLocalPath()
-        ?? throw new InvalidOperationException("Open or save a local .zasm file before cleaning.");
+        ?? throw new InvalidOperationException($"Open or save a local {SourceFileExtensions.Assembly} file before cleaning.");
 
       _compilerService!.Clean(sourcePath, BuildConfiguration);
       BuildState = EditorBuildState.Idle;

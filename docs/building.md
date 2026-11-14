@@ -95,7 +95,8 @@ Linux desktop deployment also requires Avalonia's X11/native dependencies.
 The toolbar provides icon buttons for New, Open, Save, Undo, Redo, and Clean and
 Build. Hover over a button for its name and shortcut. The build configuration
 selector offers Debug and Release. Play performs Clean and Build; **Build > Build**
-(F6) compiles the current `.zasm` file. The centered status shows `Idle`,
+(F5 or Ctrl+B) compiles the current `.zasm` file. Ctrl+Shift+B performs Clean and
+Build. The centered status shows `Idle`,
 `Building...`, or `Build failure`. Failures remain visible until a successful
 build or clean. Diagnostics appear on failure and can be reopened through
 **Build > Build Output**.

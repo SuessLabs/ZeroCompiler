@@ -29,7 +29,9 @@
     <KeyBinding Command="{Binding CmdOpen}" Gesture="Ctrl+O" />
     <KeyBinding Command="{Binding CmdSave}" Gesture="Ctrl+S" />
     <KeyBinding Command="{Binding CmdSaveAs}" Gesture="Ctrl+Shift+S" />
-    <KeyBinding Command="{Binding CmdBuild}" Gesture="F6" />
+    <KeyBinding Command="{Binding CmdBuild}" Gesture="F5" />
+    <KeyBinding Command="{Binding CmdBuild}" Gesture="Ctrl+B" />
+    <KeyBinding Command="{Binding CmdRebuild}" Gesture="Ctrl+Shift+B" />
   </Window.KeyBindings>
 
   <DockPanel>
@@ -77,8 +79,9 @@
       <MenuItem Header="_Build">
         <MenuItem Command="{Binding CmdBuild}"
                   Header="_Build"
-                  InputGesture="F6" />
-        <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" />
+                  InputGesture="Ctrl+B"
+                  ToolTip.Tip="Build (F5 or Ctrl+B)" />
+        <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" InputGesture="Ctrl+Shift+B" />
         <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
         <Separator />
         <MenuItem Command="{Binding CmdBuildOutput}" Header="Build _Output..." />
@@ -164,7 +167,7 @@
           <Button AutomationProperties.Name="Clean and Build"
                   Classes="toolbar-icon play"
                   Command="{Binding CmdRebuild}"
-                  ToolTip.Tip="Clean and Build">
+                  ToolTip.Tip="Clean and Build (Ctrl+Shift+B)">
             <Path Data="{StaticResource IconPlay}" />
           </Button>
 

@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Prism.Dialogs;
+using Zero.Ide.Models;
 using Zero.Ide.Views;
 
 namespace Zero.Ide.Services;
@@ -65,7 +66,10 @@ public class EditorDialogService : IEditorDialogService
     {
       Title = "Open source file",
       AllowMultiple = false,
-      FileTypeFilter = [new FilePickerFileType("Zero source") { Patterns = ["*.zasm", "*.zh", "*.zero"] }, FilePickerFileTypes.All],
+      FileTypeFilter = [new FilePickerFileType("Zero source")
+      {
+        Patterns = [SourceFileExtensions.AssemblyPattern, SourceFileExtensions.HeaderPattern, SourceFileExtensions.ZeroPattern],
+      }, FilePickerFileTypes.All],
     });
 
     return files.Count > 0 ? files[0] : null;
@@ -75,9 +79,9 @@ public class EditorDialogService : IEditorDialogService
     Owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
     {
       Title = "Save source file",
-      SuggestedFileName = suggestedName == "Untitled" ? "Untitled.zasm" : suggestedName,
+      SuggestedFileName = suggestedName == "Untitled" ? "Untitled" + SourceFileExtensions.Assembly : suggestedName,
       ShowOverwritePrompt = true,
-      FileTypeChoices = [new FilePickerFileType("Zero assembly") { Patterns = ["*.zasm"] }, FilePickerFileTypes.All],
+      FileTypeChoices = [new FilePickerFileType("Zero assembly") { Patterns = [SourceFileExtensions.AssemblyPattern] }, FilePickerFileTypes.All],
     });
 
   public async Task ShowMessageAsync(string title, string message) =>
