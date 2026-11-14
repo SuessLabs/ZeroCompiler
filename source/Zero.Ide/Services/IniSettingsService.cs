@@ -132,7 +132,7 @@ public sealed class IniSettingsService : ISettingsService
   {
     if (!values.TryGetValue(section, out var entries))
     {
-      entries = [with(StringComparer.OrdinalIgnoreCase)];
+      entries = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
       values.Add(section, entries);
     }
 
