@@ -18,9 +18,12 @@ SetCompressor /SOLID lzma
 
 InstallDir "$PROGRAMFILES64\SuessLabs\Zero"
 InstallDirRegKey HKLM "Software\SuessLabs\Zero\Cli" "InstallLocation"
+
 !define MUI_ABORTWARNING
 !insertmacro MUI_PAGE_WELCOME
+
 Page custom UpdatePageCreate
+
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
@@ -41,6 +44,10 @@ Function .onInit
   SetShellVarContext all
 
   Call ValidateRoot
+
+!ifndef CLI_INSTALLER
+  Call WaitForIdeExit
+!endif
   
   ReadRegStr $0 HKLM "Software\SuessLabs\Zero\${PRODUCT}" "DisplayVersion"
 

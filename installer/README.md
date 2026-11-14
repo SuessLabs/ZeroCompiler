@@ -100,6 +100,13 @@ Release automation publishes both installers and SHA256SUMS alongside the portab
 ZIP. Existing releases containing only ZIP files report no matching installer.
 Run `./installer/tests/test-update-check.ps1` to test without accessing GitHub.
 
+The IDE also offers **Help > Check for Updates**. After confirmation it downloads
+and verifies the combined IDE + CLI installer, prompts to save work, requests
+elevation, and closes. Setup accepts `/WAITPID=<ide-process-id>` and waits up to
+two minutes for that IDE process to exit before continuing. It refuses to proceed
+if waiting fails or times out. `/D` still selects the shared root and must be last.
+Ordinary setup launches omit `/WAITPID` and behave as before.
+
 Uninstall the IDE first, then CLI. IDE uninstall leaves CLI intact. CLI uninstall
 is blocked while the IDE is registered. Uninstall removes only files listed in
 the built payload, preserving extra user files. Do not edit installed samples;

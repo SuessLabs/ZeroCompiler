@@ -16,23 +16,27 @@ public class MainWindowViewModel : ViewModelBase
 {
   private readonly ICompilerService? _compilerService;
   private readonly IEditorDialogService _dialogs;
-  private readonly ISettingsService? _settings;
   private readonly IProgramRunner? _programRunner;
+  private readonly ISettingsService? _settings;
+  private readonly IUpdateService? _updates;
+
   private string _buildConfiguration = BuildConstants.DebugConfiguration;
   private string _buildOutput = string.Empty;
   private EditorBuildState _buildState;
+  private bool _closingForUpdate;
   private IStorageFile? _file;
   private bool _isBusy;
   private string _status = "Ready";
 
   public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null,
-    ICompilerService? compilerService = null, IProgramRunner? programRunner = null)
+    ICompilerService? compilerService = null, IProgramRunner? programRunner = null, IUpdateService? updates = null)
   {
     Editor = editor;
     _dialogs = dialogs;
     _settings = settings;
     _compilerService = compilerService;
     _programRunner = programRunner;
+    _updates = updates;
     settings?.SettingsChanged += (_, _) => NotifyThemeChanged();
 
     Editor.PropertyChanged += (_, _) => RaisePropertyChanged(nameof(Title));
@@ -52,6 +56,7 @@ public class MainWindowViewModel : ViewModelBase
     CmdSaveAs = CreateCommand(async () => { await SaveAsync(true); });
     CmdExit = new DelegateCommand(() => _dialogs.CloseWindow(), () => !IsBusy).ObservesProperty(() => IsBusy);
     CmdAbout = CreateCommand(_dialogs.ShowAboutAsync);
+    CmdCheckForUpdates = CreateCommand(CheckForUpdatesAsync, () => _updates is not null);
     CmdOptions = CreateCommand(_dialogs.ShowOptionsAsync);
     CmdThemeSystem = CreateCommand(() => SelectThemeAsync(IdeTheme.System));
     CmdThemeLight = CreateCommand(() => SelectThemeAsync(IdeTheme.Light));
@@ -106,6 +111,7 @@ public class MainWindowViewModel : ViewModelBase
   public DelegateCommand CmdBuild { get; }
   public DelegateCommand CmdBuildAndRun { get; }
   public DelegateCommand CmdBuildOutput { get; }
+  public DelegateCommand CmdCheckForUpdates { get; }
   public DelegateCommand CmdClean { get; }
   public DelegateCommand CmdExit { get; }
   public DelegateCommand CmdNew { get; }
@@ -144,6 +150,7 @@ public class MainWindowViewModel : ViewModelBase
 
   public async Task<bool> CanCloseAsync()
   {
+    if (_closingForUpdate) return true;
     if (IsBusy)
       return false;
 
@@ -217,6 +224,59 @@ public class MainWindowViewModel : ViewModelBase
     catch (Exception ex)
     {
       await ReportBuildFailureAsync(ex);
+    }
+  }
+
+  private async Task CheckForUpdatesAsync()
+  {
+    if (!_updates!.IsSupported)
+    {
+      await _dialogs.ShowMessageAsync("Check for updates", "Installing updates from the IDE currently requires Windows x64. Use your platform's installer or package manager to update the IDE and compiler.");
+      return;
+    }
+
+    try
+    {
+      Status = "Checking for updates...";
+      var update = await _updates.CheckAsync();
+
+      if (update is null)
+      {
+        Status = "Zero IDE is up to date";
+        await _dialogs.ShowMessageAsync("Check for updates", "You are running the latest available Zero IDE installer version.");
+        return;
+      }
+
+      if (!await _dialogs.ConfirmUpdateAsync(_updates.CurrentVersion, update.Version))
+      {
+        Status = "Update canceled";
+        return;
+      }
+
+      Status = "Downloading and verifying update...";
+      var download = await _updates.DownloadAsync(update);
+      if (!await ConfirmSaveAsync())
+      {
+        Status = "Update canceled";
+        return;
+      }
+
+      _updates.LaunchInstaller(download);
+      // The installer waits for our PID before touching IDE or compiler files.
+      _closingForUpdate = true;
+      Status = "Starting update installer...";
+      _dialogs.CloseWindow();
+    }
+    catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+    {
+      _closingForUpdate = false;
+      Status = "Update canceled"; // UAC was declined; leave the document open.
+    }
+    catch (Exception ex)
+    {
+      _closingForUpdate = false;
+      Status = "Update failed";
+      await _dialogs.ShowMessageAsync("Unable to update Zero IDE", ex.Message);
     }
   }
 
