@@ -10,33 +10,38 @@ using Zero.Ide.Services;
 using Zero.Ide.ViewModels;
 using Zero.Ide.Views;
 
-namespace Zero.Ide
+namespace Zero.Ide;
+
+public partial class App : PrismApplication
 {
-  public partial class App : PrismApplication
+  public override void Initialize()
   {
-    public override void Initialize()
-    {
-      AvaloniaXamlLoader.Load(this);
-      base.Initialize();
-    }
+    AvaloniaXamlLoader.Load(this);
+    base.Initialize();
+  }
 
-    protected override AvaloniaObject CreateShell() => Container.Resolve<MainWindow>();
+  protected override AvaloniaObject CreateShell() => Container.Resolve<MainWindow>();
 
-    protected override void RegisterTypes(IContainerRegistry containerRegistry)
-    {
-      containerRegistry.RegisterSingleton<IEditorDialogService, EditorDialogService>();
-      containerRegistry.RegisterSingleton<EditorViewModel>();
-      containerRegistry.RegisterSingleton<MainWindowViewModel>();
+  protected override void RegisterTypes(IContainerRegistry containerRegistry)
+  {
+    // Services
+    containerRegistry.RegisterSingleton<IEditorDialogService, EditorDialogService>();
+    containerRegistry.RegisterInstance<ISettingsService>(new IniSettingsService());
 
-      containerRegistry.RegisterDialog<EditorDialogView, EditorDialogViewModel>();
-      containerRegistry.RegisterDialogWindow<EditorDialogWindow>(nameof(EditorDialogWindow));
-      containerRegistry.RegisterDialog<AboutDialogView, AboutDialogViewModel>();
-      containerRegistry.RegisterDialogWindow<AboutDialogWindow>(nameof(AboutDialogWindow));
-      containerRegistry.RegisterDialog<OptionsDialogView, OptionsDialogViewModel>();
-      containerRegistry.RegisterDialogWindow<OptionsDialogWindow>(nameof(OptionsDialogWindow));
+    // ViewModels
+    containerRegistry.RegisterSingleton<EditorViewModel>();
+    containerRegistry.RegisterSingleton<MainWindowViewModel>();
 
-      ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
-      ViewModelLocationProvider.Register<EditorView, EditorViewModel>();
-    }
+    // Dialogs
+    containerRegistry.RegisterDialog<EditorDialogView, EditorDialogViewModel>();
+    containerRegistry.RegisterDialogWindow<EditorDialogWindow>(nameof(EditorDialogWindow));
+    containerRegistry.RegisterDialog<AboutDialogView, AboutDialogViewModel>();
+    containerRegistry.RegisterDialogWindow<AboutDialogWindow>(nameof(AboutDialogWindow));
+    containerRegistry.RegisterDialog<OptionsDialogView, OptionsDialogViewModel>();
+    containerRegistry.RegisterDialogWindow<OptionsDialogWindow>(nameof(OptionsDialogWindow));
+
+    // Windows
+    ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
+    ViewModelLocationProvider.Register<EditorView, EditorViewModel>();
   }
 }

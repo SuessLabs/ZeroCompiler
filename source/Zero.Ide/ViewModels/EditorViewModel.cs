@@ -3,23 +3,31 @@
 
 using System;
 using AvaloniaEdit.Document;
+using Zero.Ide.Models;
+using Zero.Ide.Services;
 
 namespace Zero.Ide.ViewModels;
 
 public class EditorViewModel : ViewModelBase
 {
+  private readonly ISettingsService? _settingsService;
   private TextDocument _document = new();
   private string _fileName = "Untitled";
   private int _revision;
   private string _savedText = string.Empty;
 
-  public EditorViewModel()
+  public EditorViewModel(ISettingsService? settingsService = null)
   {
+    _settingsService = settingsService;
+    if (_settingsService is not null)
+      _settingsService.SettingsChanged += (_, _) => RaisePropertyChanged(nameof(Settings));
     _document.UndoStack.SizeLimit = 1000;
     _document.TextChanged += OnTextChanged;
   }
 
   public TextDocument Document => _document;
+
+  public IdeSettings Settings => _settingsService?.Current ?? IdeSettings.Default;
 
   public string FileName
   {

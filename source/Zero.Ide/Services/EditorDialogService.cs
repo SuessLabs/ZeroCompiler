@@ -2,6 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -27,6 +28,26 @@ public class EditorDialogService : IEditorDialogService
 
   public void CloseWindow() => Owner.Close();
 
+  public async Task<string?> BrowseCompilerAsync()
+  {
+    var desktop = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+    var owner = desktop?.Windows.LastOrDefault(window => window.IsActive) ?? Owner;
+
+    var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+    {
+      Title = "Select Zero compiler executable",
+      AllowMultiple = false,
+      FileTypeFilter = OperatingSystem.IsWindows()
+        ? [new FilePickerFileType("Executables") { Patterns = ["*.exe"] }, FilePickerFileTypes.All]
+        : [FilePickerFileTypes.All],
+    });
+
+    if (files.Count == 0)
+      return null;
+
+    return files[0].TryGetLocalPath() ?? throw new InvalidOperationException("Select a local compiler executable.");
+  }
+
   public async Task<SaveChangesChoice> ConfirmSaveAsync(string fileName)
   {
     var result = await ShowDialogAsync("Unsaved changes", $"Save changes to {fileName}?", true);
@@ -46,6 +67,7 @@ public class EditorDialogService : IEditorDialogService
       AllowMultiple = false,
       FileTypeFilter = [new FilePickerFileType("Zero source") { Patterns = ["*.zasm", "*.zh", "*.zero"] }, FilePickerFileTypes.All],
     });
+
     return files.Count > 0 ? files[0] : null;
   }
 
