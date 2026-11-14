@@ -24,8 +24,7 @@ public class MainWindowViewModel : ViewModelBase
     Editor = editor;
     _dialogs = dialogs;
     _settings = settings;
-    if (settings is not null)
-      settings.SettingsChanged += (_, _) => NotifyThemeChanged();
+    settings?.SettingsChanged += (_, _) => NotifyThemeChanged();
 
     Editor.PropertyChanged += (_, _) => RaisePropertyChanged(nameof(Title));
 
@@ -92,7 +91,9 @@ public class MainWindowViewModel : ViewModelBase
   {
     try
     {
-      if (_settings is null) throw new InvalidOperationException("Settings are unavailable.");
+      if (_settings is null)
+        throw new InvalidOperationException("Settings are unavailable.");
+
       _settings.Save(_settings.Current with { Theme = theme });
       return Task.CompletedTask;
     }

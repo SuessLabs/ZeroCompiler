@@ -6,8 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using AvaloniaEdit;
-using AvaloniaEdit.Document;
-using Prism.Commands;
+using Zero.Ide.Adapters;
 using Zero.Ide.Highlighting;
 using Zero.Ide.Models;
 using Zero.Ide.Themes;
@@ -17,7 +16,7 @@ namespace Zero.Ide.Views;
 
 public partial class EditorView : UserControl
 {
-  private UndoStack? _undoStack;
+  private AvaloniaEditActions? _editorActions;
   private EditorViewModel? _viewModel;
 
   public EditorView()
@@ -25,43 +24,33 @@ public partial class EditorView : UserControl
     InitializeComponent();
     Editor.Options.CutCopyWholeLine = false;
 
-    Editor.DocumentChanged += (_, _) => ObserveUndoStack();
-    Editor.TextArea.SelectionChanged += (_, _) => UpdateCommands();
     ActualThemeVariantChanged += (_, _) => UpdateHighlighting();
     DataContextChanged += (_, _) => ConnectViewModel();
 
-    PropertyChanged += (_, change) =>
-    {
-      if (change.Property == IsEnabledProperty)
-        UpdateCommands();
-    };
-
     UpdateHighlighting();
-    ObserveUndoStack();
     ConnectViewModel();
   }
 
-  public DelegateCommand CmdCopy => new(() => Editor.Copy(), () => IsEnabled && Editor.CanCopy);
-  public DelegateCommand CmdCut => new(() => Editor.Cut(), () => IsEnabled && Editor.CanCut);
-  public DelegateCommand CmdPaste => new(() => Editor.Paste(), () => IsEnabled && !Editor.IsReadOnly);
-  public DelegateCommand CmdRedo => new(() => Editor.Redo(), () => IsEnabled && Editor.CanRedo);
-  public DelegateCommand CmdUndo => new(() => Editor.Undo(), () => IsEnabled && Editor.CanUndo);
   public TextEditor Editor => SourceEditor;
 
   protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
   {
     base.OnAttachedToVisualTree(e);
+    _editorActions = new AvaloniaEditActions(Editor);
     ConnectViewModel();
-    ObserveUndoStack();
   }
 
   protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
   {
     _viewModel?.PropertyChanged -= OnDocumentChanged;
-    _undoStack?.PropertyChanged -= OnUndoStackChanged;
+    if (_editorActions is not null)
+    {
+      _viewModel?.DetachEditorActions(_editorActions);
+      _editorActions.Dispose();
+    }
 
     _viewModel = null;
-    _undoStack = null;
+    _editorActions = null;
 
     base.OnDetachedFromVisualTree(e);
   }
@@ -80,17 +69,11 @@ public partial class EditorView : UserControl
   private void ConnectViewModel()
   {
     _viewModel?.PropertyChanged -= OnDocumentChanged;
+    if (_editorActions is not null) _viewModel?.DetachEditorActions(_editorActions);
     _viewModel = DataContext as EditorViewModel;
     _viewModel?.PropertyChanged += OnDocumentChanged;
+    if (_editorActions is not null) _viewModel?.AttachEditorActions(_editorActions);
     ApplySettings();
-  }
-
-  private void ObserveUndoStack()
-  {
-    _undoStack?.PropertyChanged -= OnUndoStackChanged;
-    _undoStack = Editor.Document?.UndoStack;
-    _undoStack?.PropertyChanged += OnUndoStackChanged;
-    UpdateCommands();
   }
 
   private void OnDocumentChanged(object? sender, PropertyChangedEventArgs e)
@@ -104,19 +87,6 @@ public partial class EditorView : UserControl
     Editor.CaretOffset = 0;
     Editor.ScrollTo(1, 1, AvaloniaEdit.Rendering.VisualYPosition.LineTop, 0, 0);
     Editor.TextArea.Focus();
-    UpdateCommands();
-  }
-
-  private void OnUndoStackChanged(object? sender, PropertyChangedEventArgs e) =>
-    UpdateCommands();
-
-  private void UpdateCommands()
-  {
-    CmdUndo.RaiseCanExecuteChanged();
-    CmdRedo.RaiseCanExecuteChanged();
-    CmdCut.RaiseCanExecuteChanged();
-    CmdCopy.RaiseCanExecuteChanged();
-    CmdPaste.RaiseCanExecuteChanged();
   }
 
   private void UpdateHighlighting() =>

@@ -3,6 +3,7 @@
 
 using System;
 using AvaloniaEdit.Document;
+using Prism.Commands;
 using Zero.Ide.Models;
 using Zero.Ide.Services;
 
@@ -12,22 +13,32 @@ public class EditorViewModel : ViewModelBase
 {
   private readonly ISettingsService? _settingsService;
   private TextDocument _document = new();
+  private IEditorActions? _editorActions;
   private string _fileName = "Untitled";
   private int _revision;
   private string _savedText = string.Empty;
 
   public EditorViewModel(ISettingsService? settingsService = null)
   {
+    CmdUndo = CreateEditorCommand(actions => actions.CanUndo, actions => actions.Undo());
+    CmdRedo = CreateEditorCommand(actions => actions.CanRedo, actions => actions.Redo());
+    CmdCut = CreateEditorCommand(actions => actions.CanCut, actions => actions.Cut());
+    CmdCopy = CreateEditorCommand(actions => actions.CanCopy, actions => actions.Copy());
+    CmdPaste = CreateEditorCommand(actions => actions.CanPaste, actions => actions.Paste());
+
     _settingsService = settingsService;
-    if (_settingsService is not null)
-      _settingsService.SettingsChanged += (_, _) => RaisePropertyChanged(nameof(Settings));
+
+    _settingsService?.SettingsChanged += (_, _) => RaisePropertyChanged(nameof(Settings));
     _document.UndoStack.SizeLimit = 1000;
     _document.TextChanged += OnTextChanged;
   }
 
+  public DelegateCommand CmdCopy { get; }
+  public DelegateCommand CmdCut { get; }
+  public DelegateCommand CmdPaste { get; }
+  public DelegateCommand CmdRedo { get; }
+  public DelegateCommand CmdUndo { get; }
   public TextDocument Document => _document;
-
-  public IdeSettings Settings => _settingsService?.Current ?? IdeSettings.Default;
 
   public string FileName
   {
@@ -44,6 +55,8 @@ public class EditorViewModel : ViewModelBase
     private set => SetProperty(ref _revision, value);
   }
 
+  public IdeSettings Settings => _settingsService?.Current ?? IdeSettings.Default;
+
   public string Text
   {
     get => Document.Text;
@@ -55,6 +68,30 @@ public class EditorViewModel : ViewModelBase
     }
   }
 
+  public void AttachEditorActions(IEditorActions actions)
+  {
+    ArgumentNullException.ThrowIfNull(actions);
+    if (ReferenceEquals(_editorActions, actions))
+      return;
+
+    _editorActions?.StateChanged -= OnEditorStateChanged;
+    _editorActions = actions;
+    _editorActions.StateChanged += OnEditorStateChanged;
+
+    RefreshEditorCommands();
+  }
+
+  public void DetachEditorActions(IEditorActions actions)
+  {
+    // A previously detached view must not disconnect a newer editor.
+    if (!ReferenceEquals(_editorActions, actions))
+      return;
+
+    _editorActions.StateChanged -= OnEditorStateChanged;
+    _editorActions = null;
+    RefreshEditorCommands();
+  }
+
   public void Load(string text, string fileName)
   {
     _savedText = text;
@@ -62,6 +99,7 @@ public class EditorViewModel : ViewModelBase
     _document = new TextDocument(text);
     _document.UndoStack.SizeLimit = 1000;
     _document.TextChanged += OnTextChanged;
+
     RaisePropertyChanged(nameof(Document));
     RaisePropertyChanged(nameof(Text));
     FileName = fileName;
@@ -78,9 +116,27 @@ public class EditorViewModel : ViewModelBase
     RaisePropertyChanged(nameof(IsModified));
   }
 
+  private DelegateCommand CreateEditorCommand(Func<IEditorActions, bool> canExecute, Action<IEditorActions> execute) =>
+    new(() =>
+    {
+      if (_editorActions is { } actions && canExecute(actions))
+        execute(actions);
+    }, () => _editorActions is { } actions && canExecute(actions));
+
+  private void OnEditorStateChanged(object? sender, EventArgs e) => RefreshEditorCommands();
+
   private void OnTextChanged(object? sender, EventArgs e)
   {
     RaisePropertyChanged(nameof(Text));
     RaisePropertyChanged(nameof(IsModified));
+  }
+
+  private void RefreshEditorCommands()
+  {
+    CmdUndo.RaiseCanExecuteChanged();
+    CmdRedo.RaiseCanExecuteChanged();
+    CmdCut.RaiseCanExecuteChanged();
+    CmdCopy.RaiseCanExecuteChanged();
+    CmdPaste.RaiseCanExecuteChanged();
   }
 }
