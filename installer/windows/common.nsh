@@ -8,6 +8,7 @@ SetCompressor /SOLID lzma
 !include "FileFunc.nsh"
 !include "WordFunc.nsh"
 !include "x64.nsh"
+!include "update-check.nsh"
 
 !if "${PRODUCT}" == "Cli"
   !define PRODUCT_DIR "bin"
@@ -19,6 +20,7 @@ InstallDir "$PROGRAMFILES64\SuessLabs\Zero"
 InstallDirRegKey HKLM "Software\SuessLabs\Zero\Cli" "InstallLocation"
 !define MUI_ABORTWARNING
 !insertmacro MUI_PAGE_WELCOME
+Page custom UpdatePageCreate
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY

@@ -88,6 +88,18 @@ already installed is retained. PATH updates preserve unexpanded entries, avoid
 duplicates, and remove an entry only if Zero added it. Reopen terminals afterward.
 PowerShell is used for PATH operations, without any downloaded NSIS plug-ins.
 
+The Windows setup wizard has an optional **Check for updates** page. Its button
+queries the latest stable GitHub release at `SuessLabs/ZeroCompiler`, compares the
+matching Windows x64 installer asset against this package's version, and offers
+to open the release download page. CLI and IDE versions are compared independently.
+Checking never downloads or runs another installer. Click Next to use the bundled
+version, even when a newer one exists. Offline errors, API rate limits, and missing
+assets do not block installation. Silent setup (including the IDE's embedded CLI)
+skips the page and makes no update request. No background updater is installed.
+Release automation publishes both installers and SHA256SUMS alongside the portable
+ZIP. Existing releases containing only ZIP files report no matching installer.
+Run `./installer/tests/test-update-check.ps1` to test without accessing GitHub.
+
 Uninstall the IDE first, then CLI. IDE uninstall leaves CLI intact. CLI uninstall
 is blocked while the IDE is registered. Uninstall removes only files listed in
 the built payload, preserving extra user files. Do not edit installed samples;
@@ -121,5 +133,5 @@ locations are fixed. Apple packages do not provide an uninstaller; package recei
 are not a dependency manager. Keep the CLI when removing the IDE.
 
 These are unsigned development packages. Public distribution still needs platform
-testing and, where applicable, signing/notarization. No installer checks for or
-downloads updates; users run a newer installer or use their package manager.
+testing and, where applicable, signing/notarization. Updates remain user initiated:
+use the Windows setup check, run a newer installer, or use the package manager.
