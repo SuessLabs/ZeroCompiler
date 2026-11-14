@@ -16,6 +16,10 @@ namespace Zero.Ide.Services;
 
 public class EditorDialogService : IEditorDialogService
 {
+  public const string ConfirmSaveKey = "confirmSave";
+  public const string MessageKey = "message";
+  public const string TitleKey = "title";
+
   private readonly IDialogService _dialogService;
 
   public EditorDialogService(IDialogService dialogService)
@@ -59,6 +63,19 @@ public class EditorDialogService : IEditorDialogService
       ButtonResult.No => SaveChangesChoice.Discard,
       _ => SaveChangesChoice.Cancel,
     };
+  }
+
+  public async Task<bool> ConfirmUpdateAsync(string currentVersion, string latestVersion)
+  {
+    var result = await _dialogService.ShowDialogAsync(nameof(EditorDialogView), new DialogParameters
+    {
+      { TitleKey, "Update Zero IDE" },
+      { MessageKey, $"Zero IDE {latestVersion} is available (current: {currentVersion}). Download and start the installer to update the IDE and bundled compiler? You will be prompted to save your work, then the IDE will close. Windows will ask for administrator permission." },
+      { ConfirmSaveKey, true },
+      { KnownDialogParameters.WindowName, nameof(EditorDialogWindow) },
+    });
+
+    return result.Result == ButtonResult.Yes;
   }
 
   public async Task<IStorageFile?> OpenFileAsync()
@@ -117,9 +134,9 @@ public class EditorDialogService : IEditorDialogService
   private Task<IDialogResult> ShowDialogAsync(string title, string message, bool confirmSave) =>
     _dialogService.ShowDialogAsync(nameof(EditorDialogView), new DialogParameters
     {
-      { "title", title },
-      { "message", message },
-      { "confirmSave", confirmSave },
+      { TitleKey, title },
+      { MessageKey, message },
+      { ConfirmSaveKey, confirmSave },
       { KnownDialogParameters.WindowName, nameof(EditorDialogWindow) },
     });
 }

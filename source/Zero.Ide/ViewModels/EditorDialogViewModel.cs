@@ -8,9 +8,10 @@ namespace Zero.Ide.ViewModels;
 
 public class EditorDialogViewModel : ViewModelBase, IDialogAware
 {
-  private string _title = string.Empty;
-  private string _message = string.Empty;
   private bool _isSaveConfirmation;
+  private bool _isUpdateConfirmation;
+  private string _message = string.Empty;
+  private string _title = string.Empty;
 
   public EditorDialogViewModel()
   {
@@ -25,10 +26,18 @@ public class EditorDialogViewModel : ViewModelBase, IDialogAware
   public DelegateCommand CmdOk { get; }
   public DelegateCommand CmdSave { get; }
 
+  public bool IsConfirmation => IsSaveConfirmation || IsUpdateConfirmation;
+
   public bool IsSaveConfirmation
   {
     get => _isSaveConfirmation;
     private set => SetProperty(ref _isSaveConfirmation, value);
+  }
+
+  public bool IsUpdateConfirmation
+  {
+    get => _isUpdateConfirmation;
+    private set => SetProperty(ref _isUpdateConfirmation, value);
   }
 
   public string Message
@@ -57,5 +66,7 @@ public class EditorDialogViewModel : ViewModelBase, IDialogAware
     Title = parameters.GetValue<string>("title");
     Message = parameters.GetValue<string>("message");
     IsSaveConfirmation = parameters.GetValue<bool>("confirmSave");
+    IsUpdateConfirmation = parameters.GetValue<bool>("confirmUpdate");
+    RaisePropertyChanged(nameof(IsConfirmation));
   }
 }

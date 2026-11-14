@@ -77,12 +77,16 @@
       </MenuItem>
 
       <MenuItem Header="_Build">
-        <MenuItem Command="{Binding CmdBuildAndRun}" Header="Build and _Execute" InputGesture="F5" />
+        <MenuItem Command="{Binding CmdBuildAndRun}"
+                  Header="Build and _Execute"
+                  InputGesture="F5" />
         <MenuItem Command="{Binding CmdBuild}"
                   Header="_Build"
                   InputGesture="Ctrl+B"
                   ToolTip.Tip="Build (Ctrl+B)" />
-        <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" InputGesture="Ctrl+Shift+B" />
+        <MenuItem Command="{Binding CmdRebuild}"
+                  Header="_Rebuild"
+                  InputGesture="Ctrl+Shift+B" />
         <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
         <Separator />
         <MenuItem Command="{Binding CmdBuildOutput}" Header="Build _Output..." />
@@ -116,6 +120,8 @@
       </MenuItem>
 
       <MenuItem Header="_Help">
+        <MenuItem Command="{Binding CmdCheckForUpdates}" Header="Check for _Updates..." />
+        <Separator />
         <MenuItem Command="{Binding CmdAbout}" Header="_About" />
       </MenuItem>
     </Menu>

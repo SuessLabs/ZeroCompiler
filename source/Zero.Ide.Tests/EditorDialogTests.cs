@@ -43,6 +43,31 @@ public class EditorDialogTests
   }
 
   [TestMethod]
+  [DataRow(ButtonResult.Yes, true)]
+  [DataRow(ButtonResult.Cancel, false)]
+  [DataRow(ButtonResult.None, false)]
+  public async Task UpdateConfirmationRequiresExplicitAcceptanceAsync(ButtonResult result, bool expected)
+  {
+    var prism = new Mock<IDialogService>();
+    DialogCallback? callback = null;
+    prism.Setup(d => d.ShowDialog(nameof(EditorDialogView), It.IsAny<IDialogParameters>(), It.IsAny<DialogCallback>()))
+      .Callback<string, IDialogParameters, DialogCallback>((_, parameters, value) =>
+      {
+        var viewModel = new EditorDialogViewModel();
+        viewModel.OnDialogOpened(parameters);
+        Assert.IsTrue(viewModel.IsUpdateConfirmation);
+        Assert.IsTrue(viewModel.IsConfirmation);
+        Assert.IsFalse(viewModel.IsSaveConfirmation);
+        Assert.Contains("0.1.0.12", viewModel.Message);
+        callback = value;
+      });
+    var pending = new EditorDialogService(prism.Object).ConfirmUpdateAsync("0.1.0.9", "0.1.0.12");
+    Assert.IsNotNull(callback);
+    await callback.Value.Invoke(new DialogResult(result));
+    Assert.AreEqual(expected, await pending);
+  }
+
+  [TestMethod]
   public async Task MessagesUsePrismAndWaitForDismissalAsync()
   {
     var prism = new Mock<IDialogService>();

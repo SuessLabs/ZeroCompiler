@@ -180,6 +180,29 @@ provide configuration-specific optimization or debug-symbol flags. Clean removes
 only that file's artifact for the selected configuration. The `.zeroide` folders
 are ignored by Git.
 
+## IDE updates
+
+Choose **Help > Check for Updates** to check the latest stable GitHub release.
+On Windows x64, the IDE compares the IDE setup asset's version with its own
+assembly version, independently of the compiler release tag. If a newer installer
+is available, choose **Update** to download the combined IDE + CLI setup. The IDE
+verifies the published SHA-256 digest (or the release's `SHA256SUMS`) and file size
+before starting it. Missing installers, network failures, and checksum failures
+leave the IDE open; releases containing only ZIP files cannot be installed this way.
+
+After downloading, unsaved work receives the normal Save / Don't Save / Cancel
+prompt. Canceling that prompt, canceling Save As, or declining administrator
+permission leaves the IDE open and does not install anything. Once setup starts,
+the IDE closes and setup waits for its process to exit before showing the wizard.
+The existing shared installation directory is preserved, and the IDE setup runs
+the bundled CLI installer as usual. Follow setup to finish the upgrade, then reopen
+the IDE. Other running IDE instances must also be closed before replacing files.
+
+Updates run only when requested from the menu. Linux/macOS users should update
+through their installer or package manager. Downloaded Windows setup files are
+kept in the user's temporary `SuessLabs/Zero/Updates` folder. The IDE never asks
+for GitHub credentials and only fetches published assets from `SuessLabs/ZeroCompiler`.
+
 ## Build version
 
 The compiler and CLI share the numeric version in `source/Directory.Build.props`
