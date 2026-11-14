@@ -25,24 +25,52 @@ CLI and IDE payloads into a fresh staging directory; the IDE needs no installed
 Installer builds require three- or four-component numeric release versions.
 
 ```powershell
-# Windows x64: install NSIS 3.11+ and put makensis on PATH, or pass its full path.
-./installer/build-installers.ps1 -MakeNsis 'C:/Program Files (x86)/NSIS/makensis.exe'
+# Download verified, pinned packaging dependencies into the Git-ignored tools folder.
+./ud.ps1
 
-# Debian/Ubuntu and RPM distributions: install nFPM and the Native AOT toolchain.
-./installer/build-installers.ps1 -Runtime linux-x64
-./installer/build-installers.ps1 -Runtime linux-arm64
+# Build, validate samples, and generate both installers (also runs ud.ps1).
+./publish.ps1
+
+# Windows packaging only: automatically uses tools/nsis/<version>/.../makensis.exe.
+./installer/build-installers.ps1
+
+# Linux: ud.ps1 downloads nFPM for the host. Install the Native AOT toolchain first.
+./publish.ps1 -Runtime linux-x64
+./publish.ps1 -Runtime linux-arm64
 
 # macOS: install Xcode command line tools (pkgbuild, productbuild, clang).
-./installer/build-installers.ps1 -Runtime osx-arm64
-./installer/build-installers.ps1 -Runtime osx-x64
+./publish.ps1 -Runtime osx-arm64
+./publish.ps1 -Runtime osx-x64
 
 # Override independent versions, or publish payloads without invoking packaging tools.
 ./installer/build-installers.ps1 -CompilerVersion 0.0.5.0 -IdeVersion 0.1.1.0 -StageOnly
 ```
 
-Artifacts and SHA256SUMS appear in `output/installers/<runtime>/`. `staging.json`
-records the exact payload directories and versions. Existing `build.ps1` and its
-portable publish output are unchanged. Build and test before packaging releases.
+Installers and their `SHA256SUMS` appear directly in `publish/`, alongside the
+portable compiler output. Staged payloads remain under `output/installers/<runtime>/`;
+`staging.json` there records their paths and versions. Both directories are ignored
+by Git. The installer checksum file covers installer packages, not the portable
+compiler executables. Standalone packaging can override `-Destination`.
+
+`publish.ps1` defaults to the host runtime and forwards `-Configuration`, `-Runtime`,
+`-OptimizationPreference`, `-CompilerVersion` (alias `-Version`), and `-IdeVersion`.
+It stops on dependency/build/packaging failure and reuses the compiler just built by
+`build.ps1`, avoiding a second Native AOT publish. It does not upload releases or
+install the generated packages. Run unit tests separately before releasing.
+
+`ud.ps1` downloads only packaging tools for the host: NSIS on Windows and nFPM on
+Linux. Versions, source URLs, and SHA-256 hashes are pinned in
+`installer/dependencies.json`; update that file when upgrading a tool. Archives are
+cached in `tools/downloads`, with extracted executables under `tools/nsis` or
+`tools/nfpm`. Subsequent runs verify and reuse cached archives without downloading;
+`./ud.ps1 -Force` downloads and extracts them again. Builds use explicit local tool
+paths without changing PATH or installing NSIS globally. Custom tools remain
+available through packaging's `-MakeNsis` and `-Nfpm` parameters.
+
+PowerShell 7, the .NET 10 SDK, and native toolchains remain system prerequisites:
+Visual Studio C++/Windows SDK on Windows, clang and development libraries on Linux,
+and Xcode command line tools on macOS. Apple packaging tools are used in place;
+they are not copied into `tools`. NuGet packages are restored normally by the build.
 
 ## Windows / NSIS
 

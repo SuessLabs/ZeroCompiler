@@ -4,6 +4,12 @@ For the separate CLI and IDE installers, see [Installer builds](../installer/REA
 These use the shared `Zero/bin`, `Zero/include`, `Zero/samples`, `Zero/docs`, and
 `Zero/ide` layout and leave the existing portable build below unchanged.
 
+With PowerShell 7, run `./ud.ps1` to fetch pinned packaging tools into the
+Git-ignored `tools/` folder. Run `./publish.ps1` to prepare those dependencies,
+run `build.ps1` (including sample validation), and generate both installers in
+`publish/`. Installer staging stays under `output/installers/`. Subsequent runs
+reuse verified cached downloads. Neither script installs the generated packages.
+
 ## Building the Native compiler
 
 Run `.\build.bat` (or `.\build.ps1`) to build the solution and publish a

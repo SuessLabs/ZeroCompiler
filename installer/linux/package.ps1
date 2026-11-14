@@ -4,7 +4,8 @@ param(
   [Parameter(Mandatory)][string]$CompilerVersion,
   [Parameter(Mandatory)][string]$IdeVersion,
   [Parameter(Mandatory)][string]$Runtime,
-  [Parameter(Mandatory)][string]$Destination
+  [Parameter(Mandatory)][string]$Destination,
+  [string]$Nfpm = 'nfpm'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -63,7 +64,7 @@ Categories=Development;IDE;
 
   foreach ($format in @('deb', 'rpm'))
   {
-    & nfpm package --config $configPath --packager $format --target (Join-Path $Destination "zero-$product-$version-$Runtime.$format")
+    & $Nfpm package --config $configPath --packager $format --target (Join-Path $Destination "zero-$product-$version-$Runtime.$format")
 
     if ($LASTEXITCODE -ne 0)
     {

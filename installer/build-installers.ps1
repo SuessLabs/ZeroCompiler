@@ -1,3 +1,4 @@
+#Requires -Version 7.0
 [CmdletBinding()]
 param(
   [ValidateSet('win-x64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64')]
@@ -5,16 +6,23 @@ param(
   [ValidateSet('Release', 'Debug')][string]$Configuration = 'Release',
   [string]$CompilerVersion,
   [string]$IdeVersion,
-  [string]$MakeNsis = 'makensis',
+  [string]$MakeNsis,
+  [string]$Nfpm,
+  [string]$Destination,
+  [string]$CliPublishDirectory,
+  [ValidateSet('Size', 'Speed')][string]$OptimizationPreference = 'Size',
   [switch]$StageOnly
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$destination = Join-Path $repo "output/installers/$Runtime"
+. (Join-Path $PSScriptRoot 'dependencies.ps1')
+if (!$Destination) { $Destination = Join-Path $repo 'publish' }
+$destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Destination)
+$stagingDirectory = Join-Path $repo "output/installers/$Runtime"
 
 # Fresh staging avoids shipping files left over from a different runtime or version.
-$work = Join-Path $destination ([guid]::NewGuid().ToString('N'))
+$work = Join-Path $stagingDirectory ([guid]::NewGuid().ToString('N'))
 $cli = Join-Path $work 'cli'
 $ide = Join-Path $work 'ide'
 
@@ -70,8 +78,31 @@ if (($windows -and !$IsWindows) -or ($Runtime.StartsWith('linux-') -and !$IsLinu
 }
 
 $rawCli = Join-Path $work 'publish-cli'
-Invoke-Checked 'dotnet' (@('publish', (Join-Path $repo 'source/Zero.Cli/Zero.Cli.csproj'), '-c', $Configuration,
-  '-r', $Runtime, '--self-contained', 'true', '-o', $rawCli, '--disable-build-servers', '--maxcpucount:1') + $versions)
+if (!$StageOnly)
+{
+  if ($windows)
+  {
+    if (!$MakeNsis) { $MakeNsis = (Get-ZeroToolDefinition 'nsis').Executable }
+    if (!(Get-Command $MakeNsis -CommandType Application -ErrorAction SilentlyContinue)) { throw 'NSIS is missing. Run ./ud.ps1 first, or pass -MakeNsis.' }
+  }
+  elseif ($IsLinux)
+  {
+    if (!$Nfpm) { $Nfpm = (Get-ZeroToolDefinition 'nfpm').Executable }
+    if (!(Get-Command $Nfpm -CommandType Application -ErrorAction SilentlyContinue)) { throw 'nFPM is missing. Run ./ud.ps1 first, or pass -Nfpm.' }
+  }
+}
+New-Item -ItemType Directory $destination -Force | Out-Null
+if ($CliPublishDirectory)
+{
+  $rawCli = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($CliPublishDirectory)
+  $cliName = if ($windows) { 'zcc.exe' } else { 'zcc' }
+  if (!(Test-Path -LiteralPath (Join-Path $rawCli $cliName) -PathType Leaf)) { throw "Published CLI not found in $rawCli. Run build.ps1 first." }
+}
+else
+{
+  Invoke-Checked 'dotnet' (@('publish', (Join-Path $repo 'source/Zero.Cli/Zero.Cli.csproj'), '-c', $Configuration,
+    '-r', $Runtime, '--self-contained', 'true', '-o', $rawCli, '--disable-build-servers', '--maxcpucount:1', "-p:OptimizationPreference=$OptimizationPreference") + $versions)
+}
 
 New-Item -ItemType Directory -Path "$cli/bin", "$cli/docs", "$ide/ide" -Force | Out-Null
 
@@ -97,7 +128,7 @@ if ($windows)
 }
 
 @{ Runtime = $Runtime; CompilerVersion = $CompilerVersion; IdeVersion = $IdeVersion; Cli = $cli; Ide = $ide } |
-  ConvertTo-Json | Set-Content "$destination/staging.json" -Encoding utf8
+  ConvertTo-Json | Set-Content "$stagingDirectory/staging.json" -Encoding utf8
 
 if ($StageOnly)
 {
@@ -134,7 +165,7 @@ if ($windows)
 }
 elseif ($IsLinux)
 {
-  & "$PSScriptRoot/linux/package.ps1" -Cli $cli -Ide $ide -CompilerVersion $CompilerVersion -IdeVersion $IdeVersion -Runtime $Runtime -Destination $destination
+  & "$PSScriptRoot/linux/package.ps1" -Cli $cli -Ide $ide -CompilerVersion $CompilerVersion -IdeVersion $IdeVersion -Runtime $Runtime -Destination $destination -Nfpm $Nfpm
 }
 else
 {
@@ -142,7 +173,7 @@ else
   & "$PSScriptRoot/macos/package.ps1" -Cli $cli -Ide $ide -CompilerVersion $CompilerVersion -IdeVersion $IdeVersion -Destination $destination
 }
 
-Get-ChildItem $destination -File | Where-Object Extension -in @('.exe', '.deb', '.rpm', '.pkg') | ForEach-Object {
+Get-ChildItem $destination -File | Where-Object Name -Match '^(Zero\.(Cli|IDE)-.*-Setup\.exe|Zero\.(Cli|IDE)-.*\.pkg|zero-(cli|ide)-.*\.(deb|rpm))$' | ForEach-Object {
   $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
   "$hash  $($_.Name)"
 } | Set-Content "$destination/SHA256SUMS" -Encoding utf8

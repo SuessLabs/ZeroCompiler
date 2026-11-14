@@ -96,5 +96,5 @@ TestResult.xml
 .zeroide/
 /[Dd]ocs/*.csv
 /[Dd]ocs/backup
-/[Tt]ools
+/[Tt]ools/
 /[Ss]andbox
