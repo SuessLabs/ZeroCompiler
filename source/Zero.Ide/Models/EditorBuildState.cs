@@ -8,4 +8,5 @@ public enum EditorBuildState
   Idle,
   Building,
   Failed,
+  RunFailed,
 }

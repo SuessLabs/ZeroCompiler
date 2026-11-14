@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:area="using:AvaloniaEdit.Editing"
+        xmlns:render="using:AvaloniaEdit.Rendering"
         xmlns:edit="using:AvaloniaEdit">
   <Style Selector="Window">
     <Setter Property="Background" Value="{DynamicResource IdeWindowBrush}" />
@@ -10,7 +11,7 @@
     <Setter Property="Background" Value="{DynamicResource IdeChromeBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
   </Style>
-  <Style Selector="TextBlock.build-failed">
+  <Style Selector="TextBlock.build-failed, TextBlock.run-failed">
     <Setter Property="Foreground" Value="IndianRed" />
   </Style>
   <Style Selector="MenuItem">
@@ -88,5 +89,9 @@
   <Style Selector="area|TextArea">
     <Setter Property="SelectionBrush" Value="{DynamicResource IdeSelectionBrush}" />
     <Setter Property="SelectionForeground" Value="{DynamicResource IdeTextBrush}" />
+  </Style>
+  <Style Selector="render|TextView">
+    <Setter Property="CurrentLineBackground" Value="{DynamicResource IdeCurrentLineBrush}" />
+    <Setter Property="CurrentLineBorder" Value="{x:Null}" />
   </Style>
 </Styles>

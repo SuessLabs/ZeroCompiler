@@ -17,6 +17,7 @@ public class MainWindowViewModel : ViewModelBase
   private readonly ICompilerService? _compilerService;
   private readonly IEditorDialogService _dialogs;
   private readonly ISettingsService? _settings;
+  private readonly IProgramRunner? _programRunner;
   private string _buildConfiguration = BuildConstants.DebugConfiguration;
   private string _buildOutput = string.Empty;
   private EditorBuildState _buildState;
@@ -25,12 +26,13 @@ public class MainWindowViewModel : ViewModelBase
   private string _status = "Ready";
 
   public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null,
-    ICompilerService? compilerService = null)
+    ICompilerService? compilerService = null, IProgramRunner? programRunner = null)
   {
     Editor = editor;
     _dialogs = dialogs;
     _settings = settings;
     _compilerService = compilerService;
+    _programRunner = programRunner;
     settings?.SettingsChanged += (_, _) => NotifyThemeChanged();
 
     Editor.PropertyChanged += (_, _) => RaisePropertyChanged(nameof(Title));
@@ -56,6 +58,7 @@ public class MainWindowViewModel : ViewModelBase
     CmdThemeDark = CreateCommand(() => SelectThemeAsync(IdeTheme.Dark));
     CmdThemeCoolSlate = CreateCommand(() => SelectThemeAsync(IdeTheme.CoolSlate));
     CmdBuild = CreateCommand(() => BuildAsync(false), () => _compilerService is not null);
+    CmdBuildAndRun = CreateCommand(() => BuildAsync(false, true), () => _compilerService is not null && _programRunner is not null);
     CmdRebuild = CreateCommand(() => BuildAsync(true), () => _compilerService is not null);
     CmdClean = CreateCommand(CleanAsync, () => _compilerService is not null);
     CmdBuildOutput = CreateCommand(() => _dialogs.ShowMessageAsync("Build output", BuildOutput),
@@ -87,6 +90,7 @@ public class MainWindowViewModel : ViewModelBase
       RaisePropertyChanged(nameof(BuildStatus));
       RaisePropertyChanged(nameof(IsBuilding));
       RaisePropertyChanged(nameof(HasBuildFailed));
+      RaisePropertyChanged(nameof(HasRunFailed));
     }
   }
 
@@ -94,11 +98,13 @@ public class MainWindowViewModel : ViewModelBase
   {
     EditorBuildState.Building => "Building...",
     EditorBuildState.Failed => "Build failure",
+    EditorBuildState.RunFailed => "Run failure",
     _ => "Idle",
   };
 
   public DelegateCommand CmdAbout { get; }
   public DelegateCommand CmdBuild { get; }
+  public DelegateCommand CmdBuildAndRun { get; }
   public DelegateCommand CmdBuildOutput { get; }
   public DelegateCommand CmdClean { get; }
   public DelegateCommand CmdExit { get; }
@@ -114,6 +120,7 @@ public class MainWindowViewModel : ViewModelBase
   public DelegateCommand CmdThemeSystem { get; }
   public EditorViewModel Editor { get; }
   public bool HasBuildFailed => BuildState == EditorBuildState.Failed;
+  public bool HasRunFailed => BuildState == EditorBuildState.RunFailed;
   public bool IsBuilding => BuildState == EditorBuildState.Building;
 
   public bool IsBusy
@@ -157,7 +164,7 @@ public class MainWindowViewModel : ViewModelBase
     }
   }
 
-  private async Task BuildAsync(bool cleanFirst)
+  private async Task BuildAsync(bool cleanFirst, bool runAfterBuild = false)
   {
     try
     {
@@ -190,6 +197,22 @@ public class MainWindowViewModel : ViewModelBase
 
       BuildState = EditorBuildState.Idle;
       Status = $"Build succeeded: {result.OutputPath}";
+      if (runAfterBuild)
+      {
+        try
+        {
+          _programRunner!.Run(result.OutputPath, Path.GetDirectoryName(sourcePath)!);
+          Status = $"Started {result.OutputPath}";
+          BuildOutput += Environment.NewLine + Status;
+        }
+        catch (Exception ex)
+        {
+          BuildState = EditorBuildState.RunFailed;
+          Status = "Run failed";
+          BuildOutput += Environment.NewLine + ex.Message;
+          await _dialogs.ShowMessageAsync("Run failure", ex.Message);
+        }
+      }
     }
     catch (Exception ex)
     {

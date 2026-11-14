@@ -19,10 +19,93 @@ namespace Zero.Ide.Tests;
 public class BuildTests
 {
   [TestMethod]
+  public async Task BuildAndRunLaunchesOnlyAfterSuccessfulCompilationAsync()
+  {
+    var file = CreateFile("sample.zasm");
+    var compiler = new Mock<ICompilerService>(MockBehavior.Strict);
+    var runner = new Mock<IProgramRunner>(MockBehavior.Strict);
+    var sequence = new MockSequence();
+
+    compiler.InSequence(sequence)
+      .Setup(c => c.BuildAsync("compiler", file.Object.Path.LocalPath, "Debug", false))
+      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.bin"));
+
+    runner.InSequence(sequence).Setup(r => r.Run("sample.bin", Path.GetDirectoryName(file.Object.Path.LocalPath)!));
+    var shell = new MainWindowViewModel(CreateEditor(), CreateDialogs(file.Object).Object,
+      compilerService: compiler.Object, programRunner: runner.Object);
+
+    await ExecuteAsync(shell, shell.CmdBuildAndRun);
+    runner.Verify(r => r.Run("sample.bin", It.IsAny<string>()), Times.Once);
+    Assert.AreEqual("Idle", shell.BuildStatus);
+    Assert.IsFalse(shell.IsBusy);
+    Assert.Contains("Started", shell.Status);
+  }
+
+  [TestMethod]
+  [DataRow(true)]
+  [DataRow(false)]
+  public async Task BuildAndRunDoesNotLaunchAfterFailureOrSaveCancellationAsync(bool cancelSave)
+  {
+    var file = CreateFile("sample.zasm");
+    var compiler = new Mock<ICompilerService>();
+    compiler.Setup(c => c.BuildAsync(
+      compilerPath: It.IsAny<string>(),
+      sourcePath: It.IsAny<string>(),
+      configuration: It.IsAny<string>(),
+      cleanFirst: false))
+      .ReturnsAsync(new CompilerResult(2, "Assembly error", "sample.bin"));
+
+    var runner = new Mock<IProgramRunner>();
+    var shell = new MainWindowViewModel(
+      CreateEditor(),
+      CreateDialogs(cancelSave ? null : file.Object).Object,
+      compilerService: compiler.Object, programRunner: runner.Object);
+
+    await ExecuteAsync(shell, shell.CmdBuildAndRun);
+    runner.Verify(r => r.Run(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    Assert.AreEqual(cancelSave ? "Idle" : "Build failure", shell.BuildStatus);
+  }
+
+  [TestMethod]
+  public async Task RunFailurePreservesSuccessfulBuildDiagnosticsAndAllowsRetryAsync()
+  {
+    var file = CreateFile("sample.zasm");
+    var compiler = new Mock<ICompilerService>();
+    compiler.Setup(c => c.BuildAsync(
+      It.IsAny<string>(),
+      It.IsAny<string>(),
+      It.IsAny<string>(),
+      false))
+      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.bin"));
+
+    var runner = new Mock<IProgramRunner>();
+    runner.Setup(r => r.Run(It.IsAny<string>(), It.IsAny<string>())).Throws(new InvalidOperationException("Incompatible host"));
+    var dialogs = CreateDialogs(file.Object);
+    var shell = new MainWindowViewModel(CreateEditor(), dialogs.Object, compilerService: compiler.Object, programRunner: runner.Object);
+
+    await ExecuteAsync(shell, shell.CmdBuildAndRun);
+
+    Assert.AreEqual("Run failure", shell.BuildStatus);
+    Assert.IsTrue(shell.HasRunFailed);
+    Assert.IsFalse(shell.HasBuildFailed);
+    Assert.IsFalse(shell.IsBusy);
+    Assert.Contains("Compiled sample", shell.BuildOutput);
+    Assert.Contains("Incompatible host", shell.BuildOutput);
+
+    dialogs.Verify(d => d.ShowMessageAsync("Run failure", "Incompatible host"), Times.Once);
+    await ExecuteAsync(shell, shell.CmdBuild);
+
+    Assert.AreEqual("Idle", shell.BuildStatus);
+    Assert.IsFalse(shell.HasRunFailed);
+    runner.Verify(r => r.Run(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+  }
+
+  [TestMethod]
   public void ContainerInjectsCompilerServiceIntoBuildCommands()
   {
     var container = new DryIocContainerExtension();
     container.RegisterInstance<ICompilerService>(Mock.Of<ICompilerService>());
+    container.RegisterInstance<IProgramRunner>(Mock.Of<IProgramRunner>());
     container.RegisterInstance<IEditorDialogService>(Mock.Of<IEditorDialogService>());
     container.RegisterInstance<ISettingsService>(Mock.Of<ISettingsService>(s => s.Current == IdeSettings.Default));
     container.RegisterSingleton<EditorViewModel>();
@@ -32,6 +115,7 @@ public class BuildTests
     Assert.IsTrue(shell.CmdBuild.CanExecute());
     Assert.IsTrue(shell.CmdRebuild.CanExecute());
     Assert.IsTrue(shell.CmdClean.CanExecute());
+    Assert.IsTrue(shell.CmdBuildAndRun.CanExecute());
   }
 
   [TestMethod]

@@ -23,6 +23,7 @@ public partial class EditorView : UserControl
   {
     InitializeComponent();
     Editor.Options.CutCopyWholeLine = false;
+    Editor.Options.HighlightCurrentLine = true;
 
     ActualThemeVariantChanged += (_, _) => UpdateHighlighting();
     DataContextChanged += (_, _) => ConnectViewModel();
