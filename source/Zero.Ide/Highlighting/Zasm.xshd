@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SyntaxDefinition name="ZASM" extensions=".zasm;.zh" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="#6A9955" />
+  <Color name="String" foreground="#CE9178" />
+  <Color name="Directive" foreground="#C586C0" fontWeight="bold" />
+  <Color name="Instruction" foreground="#569CD6" />
+  <Color name="Register" foreground="#9CDCFE" />
+  <Color name="Number" foreground="#B5CEA8" />
+  <Color name="Label" foreground="#DCDCAA" />
+  <Color name="Data" foreground="#4EC9B0" />
+  <Color name="Target" foreground="#D7BA7D" />
+  <RuleSet ignoreCase="true">
+    <Rule color="Comment">;.*$</Rule>
+    <!-- ZASM escapes quotes by doubling them; semicolons inside strings are data. -->
+    <Rule color="String">"(?:[^"\r\n]|"")*"?|'(?:[^'\r\n]|'')*'?</Rule>
+    <Rule color="Directive">(?&lt;![\w.#])\#[a-z_][a-z0-9_]*\b</Rule>
+    <Keywords color="Directive"><Word>using</Word></Keywords>
+    <Rule color="Label">(?&lt;![\w.])[a-z_.][a-z0-9_.]*(?=\s*:)</Rule>
+    <Rule color="Label">^[\t ]*[a-z_.][a-z0-9_.]*(?=\s+(?:db|dw|dd|dq)\b)</Rule>
+    <Keywords color="Data">
+      <Word>db</Word><Word>dw</Word><Word>dd</Word><Word>dq</Word>
+      <Word>byte</Word><Word>word</Word><Word>dword</Word><Word>qword</Word><Word>ptr</Word>
+    </Keywords>
+    <!-- Compiler instruction constants are added by ZasmHighlighting when loading. -->
+    <Keywords color="Instruction">
+      <Word>inc</Word><Word>dec</Word><Word>neg</Word><Word>imul</Word><Word>div</Word><Word>idiv</Word>
+      <Word>je</Word><Word>jne</Word><Word>ja</Word><Word>jae</Word><Word>jb</Word><Word>jbe</Word>
+      <Word>jg</Word><Word>jge</Word><Word>jl</Word><Word>jle</Word><Word>jc</Word><Word>jnc</Word>
+      <Word>jo</Word><Word>jno</Word><Word>js</Word><Word>jns</Word><Word>loop</Word>
+      <Word>shl</Word><Word>shr</Word><Word>sar</Word><Word>sal</Word><Word>rol</Word><Word>ror</Word>
+      <Word>movzx</Word><Word>movsx</Word><Word>movsxd</Word><Word>xchg</Word><Word>leave</Word>
+      <Word>cld</Word><Word>std</Word><Word>rep</Word><Word>repe</Word><Word>repne</Word>
+    </Keywords>
+    <Rule color="Register">\b(?:[re]?(?:ax|bx|cx|dx|sp|bp|si|di)|[abcd][hl]|[sb]pl|[sd]il|rip|eip|r(?:[8-9]|1[0-5])[bwd]?|[xyz]mm(?:[0-9]|[12][0-9]|3[01])|[cdefgs]s)\b</Rule>
+    <Rule color="Target">\b(?:windows|linux|macos|stm32)-(?:x86|x64|arm64|arm)\b</Rule>
+    <Rule color="Number">(?&lt;![\w.])(?:0x[0-9a-f]+|[0-9a-f]+h|[+-]?\d+)(?![\w.])</Rule>
+  </RuleSet>
+</SyntaxDefinition>

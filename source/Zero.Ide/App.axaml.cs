@@ -32,6 +32,8 @@ namespace Zero.Ide
       containerRegistry.RegisterDialogWindow<EditorDialogWindow>(nameof(EditorDialogWindow));
       containerRegistry.RegisterDialog<AboutDialogView, AboutDialogViewModel>();
       containerRegistry.RegisterDialogWindow<AboutDialogWindow>(nameof(AboutDialogWindow));
+      containerRegistry.RegisterDialog<OptionsDialogView, OptionsDialogViewModel>();
+      containerRegistry.RegisterDialogWindow<OptionsDialogWindow>(nameof(OptionsDialogWindow));
 
       ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
       ViewModelLocationProvider.Register<EditorView, EditorViewModel>();

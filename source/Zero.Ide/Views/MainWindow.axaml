@@ -45,40 +45,34 @@
       </MenuItem>
 
       <MenuItem Header="_Edit" IsEnabled="{Binding !IsBusy}">
-        <MenuItem Click="OnEditClick"
+        <MenuItem Command="{Binding #EditorPane.CmdUndo}"
                   Header="_Undo"
-                  InputGesture="Ctrl+Z"
-                  IsEnabled="{Binding #EditorPane.Editor.CanUndo}"
-                  Tag="Undo" />
-        <MenuItem Click="OnEditClick"
+                  InputGesture="Ctrl+Z" />
+        <MenuItem Command="{Binding #EditorPane.CmdRedo}"
                   Header="_Redo"
-                  InputGesture="Ctrl+Y"
-                  IsEnabled="{Binding #EditorPane.Editor.CanRedo}"
-                  Tag="Redo" />
+                  InputGesture="Ctrl+Y" />
 
         <Separator />
 
-        <MenuItem Click="OnEditClick"
+        <MenuItem Command="{Binding #EditorPane.CmdCut}"
                   Header="Cu_t"
-                  InputGesture="Ctrl+X"
-                  IsEnabled="{Binding #EditorPane.Editor.CanCut}"
-                  Tag="Cut" />
-        <MenuItem Click="OnEditClick"
+                  InputGesture="Ctrl+X" />
+        <MenuItem Command="{Binding #EditorPane.CmdCopy}"
                   Header="_Copy"
-                  InputGesture="Ctrl+C"
-                  IsEnabled="{Binding #EditorPane.Editor.CanCopy}"
-                  Tag="Copy" />
-        <MenuItem Click="OnEditClick"
+                  InputGesture="Ctrl+C" />
+        <MenuItem Command="{Binding #EditorPane.CmdPaste}"
                   Header="_Paste"
-                  InputGesture="Ctrl+V"
-                  IsEnabled="{Binding #EditorPane.Editor.CanPaste}"
-                  Tag="Paste" />
+                  InputGesture="Ctrl+V" />
       </MenuItem>
 
       <MenuItem Header="_Build" ToolTip.Tip="Compiler integration is planned for a later phase.">
         <MenuItem Command="{Binding CmdBuild}" Header="_Build" />
         <MenuItem Command="{Binding CmdRebuild}" Header="_Rebuild" />
         <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
+      </MenuItem>
+
+      <MenuItem Header="_Tools">
+        <MenuItem Command="{Binding CmdOptions}" Header="_Options..." />
       </MenuItem>
 
       <MenuItem Header="_Help">
@@ -104,15 +98,11 @@
         <Separator Width="1" Margin="6,0" />
 
         <Button Content="Undo"
-                Click="OnEditClick"
-                Focusable="False"
-                IsEnabled="{Binding #EditorPane.Editor.CanUndo}"
-                Tag="Undo" />
+                Command="{Binding #EditorPane.CmdUndo}"
+                Focusable="False" />
         <Button Content="Redo"
-                Click="OnEditClick"
-                Focusable="False"
-                IsEnabled="{Binding #EditorPane.Editor.CanRedo}"
-                Tag="Redo" />
+                Command="{Binding #EditorPane.CmdRedo}"
+                Focusable="False" />
 
         <Separator Width="1" Margin="6,0" />
 

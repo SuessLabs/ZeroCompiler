@@ -3,7 +3,6 @@
 
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Zero.Ide.ViewModels;
 
@@ -21,23 +20,6 @@ namespace Zero.Ide.Views
 #if DEBUG
       this.AttachDevTools();
 #endif
-    }
-
-    // Text selection, clipboard and undo history belong to the editor control.
-    private void OnEditClick(object? sender, RoutedEventArgs e)
-    {
-      if (DataContext is MainWindowViewModel { IsBusy: true }) return;
-      var action = (sender as Control)?.Tag as string;
-      switch (action)
-      {
-        case "Undo": EditorPane.Editor.Undo(); break;
-        case "Redo": EditorPane.Editor.Redo(); break;
-        case "Cut": EditorPane.Editor.Cut(); break;
-        case "Copy": EditorPane.Editor.Copy(); break;
-        case "Paste": EditorPane.Editor.Paste(); break;
-      }
-
-      EditorPane.Editor.Focus();
     }
 
     private async void OnClosingAsync(object? sender, WindowClosingEventArgs e)

@@ -67,6 +67,29 @@ Native Linux x86-64 runtime tests run under Linux/WSL and skip other hosts. The
 PowerShell-only Linux CI workflow runs the tests, validates all sample formats,
 and inspects/executes `hello-linux64-cli` on Ubuntu. See [Linux x64](linux64.md).
 
+## IDE runtime targets
+
+`Zero.Ide` builds for `win-x64`, `linux-x64`, `linux-arm64`, `linux-arm`,
+`osx-x64` (Intel macOS), and `osx-arm64` (Apple Silicon macOS). Builds and
+publishes reject other runtime identifiers. A normal build selects the SDK
+host's runtime, which must be one of these six. Compiler/CLI targeting is
+configured separately.
+
+```powershell
+dotnet build source/Zero.Ide/Zero.Ide.csproj -r win-x64
+dotnet publish source/Zero.Ide/Zero.Ide.csproj -c Release -r linux-arm64 --self-contained true
+dotnet publish source/Zero.Ide/Zero.Ide.csproj -c Release -r osx-arm64 --self-contained true
+```
+
+IDE build output is separated by runtime under
+`output/Zero.Ide/{Configuration}/{RuntimeIdentifier}/`.
+
+Linux x86 cannot currently be produced: .NET 10 supplies no `linux-x86`
+runtime/app host, and the current SkiaSharp 2.88 native assets do not include
+Linux x86. The project reports this explicitly rather than producing an
+unrunnable package. Linux x64, Arm32, and Arm64 are supported runtime targets;
+Linux desktop deployment also requires Avalonia's X11/native dependencies.
+
 ## Build version
 
 The compiler and CLI share the numeric version in `source/Directory.Build.props`

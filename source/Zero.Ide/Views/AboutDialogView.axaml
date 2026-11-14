@@ -7,22 +7,45 @@
              Background="#101722"
              Foreground="#E9EFF7">
   <StackPanel>
-    <Border Margin="28,24,28,0"
-            Padding="24,12"
-            Background="#F5F7FA"
+    <Border Height="168"
+            Margin="28,24,28,0"
+            ClipToBounds="True"
             CornerRadius="10">
-      <Image Width="400"
-             Height="112"
-             HorizontalAlignment="Center"
-             Source="/Assets/zero-logo.png"
-             AutomationProperties.Name="Zero project logo"
-             Stretch="Uniform" />
-    </Border>
 
-    <controls:DoomFireControl Height="128"
-                              Margin="28,12,28,0"
-                              ClipToBounds="True"
-                              IsHitTestVisible="False" />
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+          <GradientStop Offset="0" Color="#F5F7FA" />
+          <GradientStop Offset="0.45" Color="#F4E5CA" />
+          <GradientStop Offset="0.76" Color="#6C3324" />
+          <GradientStop Offset="1" Color="#101722" />
+        </LinearGradientBrush>
+      </Border.Background>
+
+      <Grid>
+        <controls:DoomFireControl Height="112"
+                                  VerticalAlignment="Bottom"
+                                  ClipToBounds="True"
+                                  IsHitTestVisible="False">
+          <controls:DoomFireControl.OpacityMask>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+              <GradientStop Offset="0" Color="Transparent" />
+              <GradientStop Offset="0.35" Color="White" />
+              <GradientStop Offset="0.75" Color="White" />
+              <GradientStop Offset="1" Color="Transparent" />
+            </LinearGradientBrush>
+          </controls:DoomFireControl.OpacityMask>
+        </controls:DoomFireControl>
+
+        <Image Width="420"
+               Height="140"
+               Margin="20,16,20,0"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Top"
+               Source="/Assets/zero-logo.png"
+               AutomationProperties.Name="Zero project logo"
+               Stretch="Uniform" />
+      </Grid>
+    </Border>
 
     <StackPanel Margin="28,20,28,24" Spacing="14">
       <StackPanel Spacing="4">
@@ -58,6 +81,7 @@
                      Foreground="#75DCE9" />
         </Grid>
       </Border>
+
       <TextBlock Text="The Zero programming language and compiler project. A modern home for low-level code, with roots reaching back to 2001."
                  FontSize="13"
                  LineHeight="20"
@@ -67,6 +91,7 @@
                  Foreground="#B0BED0"
                  LineHeight="20"
                  TextWrapping="Wrap" />
+
       <StackPanel Spacing="4">
         <TextBlock Text="Created by Damian Suess" FontSize="12" />
         <TextBlock Text="{Binding Copyright}"
@@ -74,6 +99,7 @@
                    Foreground="#91A7BF"
                    TextWrapping="Wrap" />
       </StackPanel>
+
       <Grid Margin="0,4,0,0" ColumnDefinitions="*,Auto">
         <TextBlock Text="Open source · MIT License"
                    VerticalAlignment="Center"

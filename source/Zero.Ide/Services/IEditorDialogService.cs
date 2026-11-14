@@ -26,4 +26,6 @@ public interface IEditorDialogService
   Task ShowAboutAsync();
 
   Task ShowMessageAsync(string title, string message);
+
+  Task ShowOptionsAsync();
 }
