@@ -2,6 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -15,7 +16,9 @@ public class MainWindowViewModel : ViewModelBase
 {
   private readonly IEditorDialogService _dialogs;
   private readonly ISettingsService? _settings;
+  private string _buildConfiguration = "Debug";
   private IStorageFile? _file;
+  private bool _isBuilding;
   private bool _isBusy;
   private string _status = "Ready";
 
@@ -53,6 +56,20 @@ public class MainWindowViewModel : ViewModelBase
     CmdClean = new DelegateCommand(() => { }, () => false);
   }
 
+  public string BuildConfiguration
+  {
+    get => _buildConfiguration;
+    set
+    {
+      if (value is not ("Debug" or "Release"))
+        throw new ArgumentException("Choose Debug or Release.");
+
+      SetProperty(ref _buildConfiguration, value);
+    }
+  }
+
+  public IReadOnlyList<string> BuildConfigurations { get; } = Array.AsReadOnly<string>(["Debug", "Release"]);
+  public string BuildStatus => IsBuilding ? "Building..." : "Zero IDE";
   public DelegateCommand CmdAbout { get; }
   public DelegateCommand CmdBuild { get; }
   public DelegateCommand CmdClean { get; }
@@ -63,21 +80,32 @@ public class MainWindowViewModel : ViewModelBase
   public DelegateCommand CmdRebuild { get; }
   public DelegateCommand CmdSave { get; }
   public DelegateCommand CmdSaveAs { get; }
-  public DelegateCommand CmdThemeSystem { get; }
-  public DelegateCommand CmdThemeLight { get; }
-  public DelegateCommand CmdThemeDark { get; }
   public DelegateCommand CmdThemeCoolSlate { get; }
-  public bool IsSystemTheme => (_settings?.Current.Theme ?? IdeTheme.System) == IdeTheme.System;
-  public bool IsLightTheme => _settings?.Current.Theme == IdeTheme.Light;
-  public bool IsDarkTheme => _settings?.Current.Theme == IdeTheme.Dark;
-  public bool IsCoolSlateTheme => _settings?.Current.Theme == IdeTheme.CoolSlate;
+  public DelegateCommand CmdThemeDark { get; }
+  public DelegateCommand CmdThemeLight { get; }
+  public DelegateCommand CmdThemeSystem { get; }
   public EditorViewModel Editor { get; }
+
+  // The compiler integration will set this while its build operation is running.
+  public bool IsBuilding
+  {
+    get => _isBuilding;
+    set
+    {
+      if (SetProperty(ref _isBuilding, value)) RaisePropertyChanged(nameof(BuildStatus));
+    }
+  }
 
   public bool IsBusy
   {
     get => _isBusy;
     private set => SetProperty(ref _isBusy, value);
   }
+
+  public bool IsCoolSlateTheme => _settings?.Current.Theme == IdeTheme.CoolSlate;
+  public bool IsDarkTheme => _settings?.Current.Theme == IdeTheme.Dark;
+  public bool IsLightTheme => _settings?.Current.Theme == IdeTheme.Light;
+  public bool IsSystemTheme => (_settings?.Current.Theme ?? IdeTheme.System) == IdeTheme.System;
 
   public string Status
   {
@@ -86,30 +114,6 @@ public class MainWindowViewModel : ViewModelBase
   }
 
   public string Title => $"{Editor.FileName}{(Editor.IsModified ? " *" : string.Empty)} — Zero IDE";
-
-  private Task SelectThemeAsync(IdeTheme theme)
-  {
-    try
-    {
-      if (_settings is null)
-        throw new InvalidOperationException("Settings are unavailable.");
-
-      _settings.Save(_settings.Current with { Theme = theme });
-      return Task.CompletedTask;
-    }
-    finally
-    {
-      NotifyThemeChanged();
-    }
-  }
-
-  private void NotifyThemeChanged()
-  {
-    RaisePropertyChanged(nameof(IsSystemTheme));
-    RaisePropertyChanged(nameof(IsLightTheme));
-    RaisePropertyChanged(nameof(IsDarkTheme));
-    RaisePropertyChanged(nameof(IsCoolSlateTheme));
-  }
 
   public async Task<bool> CanCloseAsync()
   {
@@ -166,6 +170,14 @@ public class MainWindowViewModel : ViewModelBase
       }
     }, () => !IsBusy).ObservesProperty(() => IsBusy);
 
+  private void NotifyThemeChanged()
+  {
+    RaisePropertyChanged(nameof(IsSystemTheme));
+    RaisePropertyChanged(nameof(IsLightTheme));
+    RaisePropertyChanged(nameof(IsDarkTheme));
+    RaisePropertyChanged(nameof(IsCoolSlateTheme));
+  }
+
   private async Task OpenAsync()
   {
     if (!await ConfirmSaveAsync())
@@ -209,5 +221,21 @@ public class MainWindowViewModel : ViewModelBase
     Status = $"Saved {file.Name}";
 
     return true;
+  }
+
+  private Task SelectThemeAsync(IdeTheme theme)
+  {
+    try
+    {
+      if (_settings is null)
+        throw new InvalidOperationException("Settings are unavailable.");
+
+      _settings.Save(_settings.Current with { Theme = theme });
+      return Task.CompletedTask;
+    }
+    finally
+    {
+      NotifyThemeChanged();
+    }
   }
 }

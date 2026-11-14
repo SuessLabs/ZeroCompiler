@@ -33,6 +33,7 @@ internal sealed class AvaloniaEditActions : IEditorActions, IDisposable
   public bool CanCut => _editor.IsEffectivelyEnabled && !_editor.IsReadOnly && _editor.CanCut;
   public bool CanPaste => _editor.IsEffectivelyEnabled && !_editor.IsReadOnly;
   public bool CanRedo => _editor.IsEffectivelyEnabled && !_editor.IsReadOnly && _editor.CanRedo;
+  public bool CanSearch => _editor.IsEffectivelyEnabled;
   public bool CanUndo => _editor.IsEffectivelyEnabled && !_editor.IsReadOnly && _editor.CanUndo;
 
   public void Copy() => _editor.Copy();
@@ -46,8 +47,27 @@ internal sealed class AvaloniaEditActions : IEditorActions, IDisposable
     _editor.PropertyChanged -= OnEditorPropertyChanged;
 
     _undoStack?.PropertyChanged -= OnUndoStackChanged;
-
     _undoStack = null;
+  }
+
+  public void FindNext(string text)
+  {
+    if (string.IsNullOrEmpty(text))
+      return;
+
+    var documentText = _editor.Document.Text;
+    var start = _editor.SelectionStart + _editor.SelectionLength;
+    var match = documentText.IndexOf(text, start, StringComparison.OrdinalIgnoreCase);
+
+    if (match < 0)
+      match = documentText.IndexOf(text, StringComparison.OrdinalIgnoreCase);
+
+    if (match < 0)
+      return;
+
+    _editor.Select(match, text.Length);
+    var location = _editor.Document.GetLocation(match);
+    _editor.ScrollTo(location.Line, location.Column);
   }
 
   public void Paste() => _editor.Paste();

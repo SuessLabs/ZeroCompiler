@@ -92,6 +92,14 @@ Linux desktop deployment also requires Avalonia's X11/native dependencies.
 
 ## IDE settings
 
+The toolbar provides icon buttons for New, Open, Save, Undo, Redo, and Clean and
+Build. Hover over a button for its name and shortcut. The build configuration
+selector offers Debug and Release; compiler integration is planned for a later
+phase, so the Play/Clean and Build button remains disabled. The centered status
+shows `Zero IDE` when idle and is ready to display `Building...` during builds.
+The search box on the right searches the current file: press Enter to select the
+next case-insensitive literal match, wrapping to the start of the document.
+
 Use **Tools > Options** to select the compiler executable and configure editor
 appearance and indentation. The tree groups Compiler, Editor > Appearance, and
 Editor > Indentation settings. Apply saves and updates the editor immediately;
