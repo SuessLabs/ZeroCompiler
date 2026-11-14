@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:Zero.Ide.Models"
              xmlns:vm="using:Zero.Ide.ViewModels"
              x:Class="Zero.Ide.Views.OptionsDialogView"
              x:DataType="vm:OptionsDialogViewModel">
@@ -56,6 +57,20 @@
             </StackPanel>
 
             <StackPanel IsVisible="{Binding ShowAppearance}" Spacing="12">
+              <TextBlock Text="Color theme (IDE and editor)" FontWeight="SemiBold" />
+              <ComboBox HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding Themes}"
+                        SelectedItem="{Binding SelectedTheme, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate DataType="models:ThemeChoice">
+                    <TextBlock Text="{Binding Name}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Text="Use system setting follows your operating system's light or dark appearance."
+                         FontSize="12"
+                         Opacity="0.7"
+                         TextWrapping="Wrap" />
               <TextBlock Text="Text and display" FontWeight="SemiBold" />
               <StackPanel Spacing="6">
                 <TextBlock Text="Font family (comma-separated fallbacks are supported)" FontSize="12" />

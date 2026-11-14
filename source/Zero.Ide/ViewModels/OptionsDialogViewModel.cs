@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Dialogs;
 using Zero.Ide.Models;
 using Zero.Ide.Services;
+using Zero.Ide.Themes;
 
 namespace Zero.Ide.ViewModels;
 
@@ -23,6 +25,7 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
   private int _indentationSize;
   private bool _isBrowsing;
   private OptionsCategory? _selectedCategory;
+  private ThemeChoice _selectedTheme = IdeThemes.Choices[0];
   private bool _showLineNumbers;
   private string _statusMessage = string.Empty;
   private bool _wordWrap;
@@ -45,6 +48,8 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
   }
 
   public IReadOnlyList<OptionsCategory> Categories { get; }
+  public IReadOnlyList<ThemeChoice> Themes => IdeThemes.Choices;
+  public ThemeChoice SelectedTheme { get => _selectedTheme; set => SetProperty(ref _selectedTheme, value); }
 
   public DelegateCommand CmdApply => new DelegateCommand(
     () => Save(),
@@ -119,6 +124,7 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
   {
     var settings = _settings.Current;
     CompilerPath = settings.CompilerPath;
+    SelectedTheme = Themes.First(choice => choice.Value == settings.Theme);
     FontFamily = settings.FontFamily;
     FontSize = settings.FontSize;
     IndentationSize = settings.IndentationSize;
@@ -160,6 +166,7 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
       _settings.Save(new IdeSettings
       {
         CompilerPath = CompilerPath.Trim(),
+        Theme = SelectedTheme.Value,
         FontFamily = FontFamily.Trim(),
         FontSize = FontSize,
         IndentationSize = IndentationSize,

@@ -27,6 +27,7 @@ public sealed class IniSettingsService : ISettingsService
 
       Current = new IdeSettings
       {
+        Theme = ReadTheme(Get(values, "Appearance", "Theme", "")),
         CompilerPath = Get(values, "Compiler", "Path", defaults.CompilerPath),
         FontFamily = ReadFontFamily(Get(values, "Editor", "FontFamily", defaults.FontFamily)),
         FontSize = ReadNumber(Get(values, "Editor", "FontSize", ""), defaults.FontSize, 8, 48),
@@ -58,6 +59,7 @@ public sealed class IniSettingsService : ISettingsService
     var values = ReadValues();
 
     Set(values, "Compiler", "Path", settings.CompilerPath);
+    Set(values, "Appearance", "Theme", settings.Theme.ToString());
     Set(values, "Editor", "FontFamily", settings.FontFamily);
     Set(values, "Editor", "FontSize", settings.FontSize.ToString(CultureInfo.InvariantCulture));
     Set(values, "Editor", "IndentationSize", settings.IndentationSize.ToString(CultureInfo.InvariantCulture));
@@ -109,6 +111,9 @@ public sealed class IniSettingsService : ISettingsService
     values.TryGetValue(section, out var entries) && entries.TryGetValue(key, out var value) ? value : fallback;
 
   private static bool ReadBoolean(string text, bool fallback) => bool.TryParse(text, out var value) ? value : fallback;
+
+  private static IdeTheme ReadTheme(string text) =>
+    Enum.TryParse<IdeTheme>(text, true, out var theme) && Enum.IsDefined(theme) ? theme : IdeTheme.System;
 
   private static string ReadFontFamily(string text) => string.IsNullOrWhiteSpace(text) ? IdeSettings.Default.FontFamily : text;
 

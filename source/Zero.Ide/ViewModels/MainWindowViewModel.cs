@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Prism.Commands;
+using Zero.Ide.Models;
 using Zero.Ide.Services;
 
 namespace Zero.Ide.ViewModels;
@@ -13,14 +14,18 @@ namespace Zero.Ide.ViewModels;
 public class MainWindowViewModel : ViewModelBase
 {
   private readonly IEditorDialogService _dialogs;
+  private readonly ISettingsService? _settings;
   private IStorageFile? _file;
   private bool _isBusy;
   private string _status = "Ready";
 
-  public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs)
+  public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null)
   {
     Editor = editor;
     _dialogs = dialogs;
+    _settings = settings;
+    if (settings is not null)
+      settings.SettingsChanged += (_, _) => NotifyThemeChanged();
 
     Editor.PropertyChanged += (_, _) => RaisePropertyChanged(nameof(Title));
 
@@ -40,6 +45,10 @@ public class MainWindowViewModel : ViewModelBase
     CmdExit = new DelegateCommand(() => _dialogs.CloseWindow(), () => !IsBusy).ObservesProperty(() => IsBusy);
     CmdAbout = CreateCommand(_dialogs.ShowAboutAsync);
     CmdOptions = CreateCommand(_dialogs.ShowOptionsAsync);
+    CmdThemeSystem = CreateCommand(() => SelectThemeAsync(IdeTheme.System));
+    CmdThemeLight = CreateCommand(() => SelectThemeAsync(IdeTheme.Light));
+    CmdThemeDark = CreateCommand(() => SelectThemeAsync(IdeTheme.Dark));
+    CmdThemeCoolSlate = CreateCommand(() => SelectThemeAsync(IdeTheme.CoolSlate));
     CmdBuild = new DelegateCommand(() => { }, () => false);
     CmdRebuild = new DelegateCommand(() => { }, () => false);
     CmdClean = new DelegateCommand(() => { }, () => false);
@@ -55,6 +64,14 @@ public class MainWindowViewModel : ViewModelBase
   public DelegateCommand CmdRebuild { get; }
   public DelegateCommand CmdSave { get; }
   public DelegateCommand CmdSaveAs { get; }
+  public DelegateCommand CmdThemeSystem { get; }
+  public DelegateCommand CmdThemeLight { get; }
+  public DelegateCommand CmdThemeDark { get; }
+  public DelegateCommand CmdThemeCoolSlate { get; }
+  public bool IsSystemTheme => (_settings?.Current.Theme ?? IdeTheme.System) == IdeTheme.System;
+  public bool IsLightTheme => _settings?.Current.Theme == IdeTheme.Light;
+  public bool IsDarkTheme => _settings?.Current.Theme == IdeTheme.Dark;
+  public bool IsCoolSlateTheme => _settings?.Current.Theme == IdeTheme.CoolSlate;
   public EditorViewModel Editor { get; }
 
   public bool IsBusy
@@ -70,6 +87,28 @@ public class MainWindowViewModel : ViewModelBase
   }
 
   public string Title => $"{Editor.FileName}{(Editor.IsModified ? " *" : string.Empty)} — Zero IDE";
+
+  private Task SelectThemeAsync(IdeTheme theme)
+  {
+    try
+    {
+      if (_settings is null) throw new InvalidOperationException("Settings are unavailable.");
+      _settings.Save(_settings.Current with { Theme = theme });
+      return Task.CompletedTask;
+    }
+    finally
+    {
+      NotifyThemeChanged();
+    }
+  }
+
+  private void NotifyThemeChanged()
+  {
+    RaisePropertyChanged(nameof(IsSystemTheme));
+    RaisePropertyChanged(nameof(IsLightTheme));
+    RaisePropertyChanged(nameof(IsDarkTheme));
+    RaisePropertyChanged(nameof(IsCoolSlateTheme));
+  }
 
   public async Task<bool> CanCloseAsync()
   {
@@ -118,7 +157,7 @@ public class MainWindowViewModel : ViewModelBase
       catch (Exception ex)
       {
         Status = "Operation failed";
-        await _dialogs.ShowMessageAsync("File operation failed", ex.Message);
+        await _dialogs.ShowMessageAsync("Operation failed", ex.Message);
       }
       finally
       {

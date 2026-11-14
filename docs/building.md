@@ -97,6 +97,12 @@ appearance and indentation. The tree groups Compiler, Editor > Appearance, and
 Editor > Indentation settings. Apply saves and updates the editor immediately;
 OK also closes the dialog. Cancel discards edits made since the last Apply.
 
+Choose the IDE color theme under **Editor > Appearance**, or switch immediately
+using **Tools > Themes**. Light and Dark use Visual Studio-inspired neutral colors;
+Cool Slate uses a dark blue-gray palette. **Use system setting** is the default
+and follows operating system light/dark changes until you choose another theme.
+The selection applies to the editor, syntax highlighting, menus, and dialogs.
+
 Settings are stored per user in `Zero/Zero.Ide/settings.ini` beneath .NET's
 `ApplicationData` folder. On Windows this is
 `%APPDATA%\Zero\Zero.Ide\settings.ini`. The full path is shown in the dialog.
@@ -107,6 +113,9 @@ and replace the INI file only after writing the new contents successfully.
 ```ini
 [Compiler]
 Path="C:\Tools\Zero\zcc.exe"
+
+[Appearance]
+Theme="System"
 
 [Editor]
 FontFamily="Cascadia Code, Consolas, Menlo, monospace"

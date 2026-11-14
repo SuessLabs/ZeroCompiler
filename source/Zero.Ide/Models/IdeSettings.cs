@@ -10,6 +10,8 @@ public sealed record IdeSettings
 {
   public static IdeSettings Default { get; } = new();
 
+  public IdeTheme Theme { get; init; } = IdeTheme.System;
+
   public string CompilerPath { get; init; } = string.Empty;
   public string FontFamily { get; init; } = "Cascadia Code, Consolas, Menlo, monospace";
   public double FontSize { get; init; } = 14;
@@ -20,6 +22,8 @@ public sealed record IdeSettings
 
   public void Validate()
   {
+    if (!Enum.IsDefined(Theme))
+      throw new ArgumentException("Select a supported color theme.");
     if (CompilerPath.Contains('\r') || CompilerPath.Contains('\n'))
       throw new ArgumentException("The compiler path must be a single line.");
 
