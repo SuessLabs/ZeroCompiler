@@ -1,0 +1,49 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:edit="using:AvaloniaEdit"
+        xmlns:area="using:AvaloniaEdit.Editing">
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource IdeWindowBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
+  </Style>
+  <Style Selector="Menu">
+    <Setter Property="Background" Value="{DynamicResource IdeChromeBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
+  </Style>
+  <Style Selector="MenuItem">
+    <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
+  </Style>
+  <Style Selector="MenuFlyoutPresenter">
+    <Setter Property="Background" Value="{DynamicResource IdePanelBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource IdeBorderBrush}" />
+  </Style>
+  <Style Selector="Button, ComboBox, NumericUpDown, TextBox">
+    <Setter Property="Background" Value="{DynamicResource IdePanelBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource IdeBorderBrush}" />
+  </Style>
+  <Style Selector="Button:pointerover">
+    <Setter Property="Background" Value="{DynamicResource IdeHoverBrush}" />
+  </Style>
+  <Style Selector="TextBox">
+    <Setter Property="CaretBrush" Value="{DynamicResource IdeTextBrush}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource IdeSelectionBrush}" />
+  </Style>
+  <Style Selector="TreeView">
+    <Setter Property="Background" Value="{DynamicResource IdePanelBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
+  </Style>
+  <Style Selector="Border.toolbar, Border.status-bar">
+    <Setter Property="Background" Value="{DynamicResource IdeChromeBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource IdeBorderBrush}" />
+  </Style>
+  <Style Selector="edit|TextEditor">
+    <Setter Property="Background" Value="{DynamicResource IdeEditorBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource IdeTextBrush}" />
+    <Setter Property="LineNumbersForeground" Value="{DynamicResource IdeLineNumbersBrush}" />
+  </Style>
+  <Style Selector="area|TextArea">
+    <Setter Property="SelectionBrush" Value="{DynamicResource IdeSelectionBrush}" />
+    <Setter Property="SelectionForeground" Value="{DynamicResource IdeTextBrush}" />
+  </Style>
+</Styles>

@@ -27,6 +27,7 @@ public sealed class IniSettingsService : ISettingsService
 
       Current = new IdeSettings
       {
+        Theme = ReadTheme(Get(values, "Appearance", "Theme", "")),
         CompilerPath = Get(values, "Compiler", "Path", defaults.CompilerPath),
         FontFamily = ReadFontFamily(Get(values, "Editor", "FontFamily", defaults.FontFamily)),
         FontSize = ReadNumber(Get(values, "Editor", "FontSize", ""), defaults.FontSize, 8, 48),
@@ -34,6 +35,7 @@ public sealed class IniSettingsService : ISettingsService
         ConvertTabsToSpaces = ReadBoolean(Get(values, "Editor", "ConvertTabsToSpaces", ""), defaults.ConvertTabsToSpaces),
         ShowLineNumbers = ReadBoolean(Get(values, "Editor", "ShowLineNumbers", ""), defaults.ShowLineNumbers),
         WordWrap = ReadBoolean(Get(values, "Editor", "WordWrap", ""), defaults.WordWrap),
+        TrimTrailingWhitespaceOnSave = ReadBoolean(Get(values, "CodeCleanup", "TrimTrailingWhitespaceOnSave", ""), defaults.TrimTrailingWhitespaceOnSave),
       };
     }
     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -58,12 +60,14 @@ public sealed class IniSettingsService : ISettingsService
     var values = ReadValues();
 
     Set(values, "Compiler", "Path", settings.CompilerPath);
+    Set(values, "Appearance", "Theme", settings.Theme.ToString());
     Set(values, "Editor", "FontFamily", settings.FontFamily);
     Set(values, "Editor", "FontSize", settings.FontSize.ToString(CultureInfo.InvariantCulture));
     Set(values, "Editor", "IndentationSize", settings.IndentationSize.ToString(CultureInfo.InvariantCulture));
     Set(values, "Editor", "ConvertTabsToSpaces", settings.ConvertTabsToSpaces.ToString().ToLowerInvariant());
     Set(values, "Editor", "ShowLineNumbers", settings.ShowLineNumbers.ToString().ToLowerInvariant());
     Set(values, "Editor", "WordWrap", settings.WordWrap.ToString().ToLowerInvariant());
+    Set(values, "CodeCleanup", "TrimTrailingWhitespaceOnSave", settings.TrimTrailingWhitespaceOnSave.ToString().ToLowerInvariant());
 
     Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
     var temporaryPath = FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -108,9 +112,11 @@ public sealed class IniSettingsService : ISettingsService
   private static string Get(Dictionary<string, Dictionary<string, string>> values, string section, string key, string fallback) =>
     values.TryGetValue(section, out var entries) && entries.TryGetValue(key, out var value) ? value : fallback;
 
-  private static bool ReadBoolean(string text, bool fallback) => bool.TryParse(text, out var value) ? value : fallback;
+  private static bool ReadBoolean(string text, bool fallback) =>
+    bool.TryParse(text, out var value) ? value : fallback;
 
-  private static string ReadFontFamily(string text) => string.IsNullOrWhiteSpace(text) ? IdeSettings.Default.FontFamily : text;
+  private static string ReadFontFamily(string text) =>
+    string.IsNullOrWhiteSpace(text) ? IdeSettings.Default.FontFamily : text;
 
   private static int ReadInteger(string text, int fallback) =>
     int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value is >= 1 and <= 8 ? value : fallback;
@@ -119,11 +125,14 @@ public sealed class IniSettingsService : ISettingsService
     double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
       && double.IsFinite(value) && value >= minimum && value <= maximum ? value : fallback;
 
+  private static IdeTheme ReadTheme(string text) =>
+    Enum.TryParse<IdeTheme>(text, true, out var theme) && Enum.IsDefined(theme) ? theme : IdeTheme.System;
+
   private static void Set(Dictionary<string, Dictionary<string, string>> values, string section, string key, string value)
   {
     if (!values.TryGetValue(section, out var entries))
     {
-      entries = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+      entries = [with(StringComparer.OrdinalIgnoreCase)];
       values.Add(section, entries);
     }
 

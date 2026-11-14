@@ -7,6 +7,7 @@ using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Mvvm;
 using Zero.Ide.Services;
+using Zero.Ide.Themes;
 using Zero.Ide.ViewModels;
 using Zero.Ide.Views;
 
@@ -17,6 +18,7 @@ public partial class App : PrismApplication
   public override void Initialize()
   {
     AvaloniaXamlLoader.Load(this);
+    Resources.MergedDictionaries.Add(IdeThemes.CreateResources());
     base.Initialize();
   }
 
@@ -26,7 +28,11 @@ public partial class App : PrismApplication
   {
     // Services
     containerRegistry.RegisterSingleton<IEditorDialogService, EditorDialogService>();
-    containerRegistry.RegisterInstance<ISettingsService>(new IniSettingsService());
+
+    var settings = new IniSettingsService();
+    containerRegistry.RegisterInstance<ISettingsService>(settings);
+    RequestedThemeVariant = IdeThemes.GetVariant(settings.Current.Theme);
+    settings.SettingsChanged += (_, _) => RequestedThemeVariant = IdeThemes.GetVariant(settings.Current.Theme);
 
     // ViewModels
     containerRegistry.RegisterSingleton<EditorViewModel>();

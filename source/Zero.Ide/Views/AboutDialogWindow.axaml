@@ -3,7 +3,7 @@
         x:Class="Zero.Ide.Views.AboutDialogWindow"
         Title="About the Zero Project"
         Width="560"
-        Background="#101722"
+        Background="{DynamicResource IdeWindowBrush}"
         CanMaximize="False"
         CanMinimize="False"
         CanResize="False"

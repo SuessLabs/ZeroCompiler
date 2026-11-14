@@ -45,22 +45,22 @@
       </MenuItem>
 
       <MenuItem Header="_Edit" IsEnabled="{Binding !IsBusy}">
-        <MenuItem Command="{Binding #EditorPane.CmdUndo}"
+        <MenuItem Command="{Binding Editor.CmdUndo}"
                   Header="_Undo"
                   InputGesture="Ctrl+Z" />
-        <MenuItem Command="{Binding #EditorPane.CmdRedo}"
+        <MenuItem Command="{Binding Editor.CmdRedo}"
                   Header="_Redo"
                   InputGesture="Ctrl+Y" />
 
         <Separator />
 
-        <MenuItem Command="{Binding #EditorPane.CmdCut}"
+        <MenuItem Command="{Binding Editor.CmdCut}"
                   Header="Cu_t"
                   InputGesture="Ctrl+X" />
-        <MenuItem Command="{Binding #EditorPane.CmdCopy}"
+        <MenuItem Command="{Binding Editor.CmdCopy}"
                   Header="_Copy"
                   InputGesture="Ctrl+C" />
-        <MenuItem Command="{Binding #EditorPane.CmdPaste}"
+        <MenuItem Command="{Binding Editor.CmdPaste}"
                   Header="_Paste"
                   InputGesture="Ctrl+V" />
       </MenuItem>
@@ -73,6 +73,29 @@
 
       <MenuItem Header="_Tools">
         <MenuItem Command="{Binding CmdOptions}" Header="_Options..." />
+        <MenuItem Header="_Themes">
+          <MenuItem Command="{Binding CmdThemeSystem}"
+                    GroupName="IdeTheme"
+                    Header="Use _system setting"
+                    IsChecked="{Binding IsSystemTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+          <Separator />
+          <MenuItem Command="{Binding CmdThemeLight}"
+                    GroupName="IdeTheme"
+                    Header="_Light"
+                    IsChecked="{Binding IsLightTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+          <MenuItem Command="{Binding CmdThemeDark}"
+                    GroupName="IdeTheme"
+                    Header="_Dark"
+                    IsChecked="{Binding IsDarkTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+          <MenuItem Command="{Binding CmdThemeCoolSlate}"
+                    GroupName="IdeTheme"
+                    Header="_Cool Slate"
+                    IsChecked="{Binding IsCoolSlateTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+        </MenuItem>
       </MenuItem>
 
       <MenuItem Header="_Help">
@@ -83,6 +106,7 @@
     <Border Padding="8,6"
             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
             BorderThickness="0,1,0,1"
+            Classes="toolbar"
             DockPanel.Dock="Top">
       <StackPanel Orientation="Horizontal" Spacing="6">
         <Button Content="New"
@@ -98,10 +122,10 @@
         <Separator Width="1" Margin="6,0" />
 
         <Button Content="Undo"
-                Command="{Binding #EditorPane.CmdUndo}"
+                Command="{Binding Editor.CmdUndo}"
                 Focusable="False" />
         <Button Content="Redo"
-                Command="{Binding #EditorPane.CmdRedo}"
+                Command="{Binding Editor.CmdRedo}"
                 Focusable="False" />
 
         <Separator Width="1" Margin="6,0" />
@@ -115,6 +139,7 @@
     <Border Padding="12,6"
             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
             BorderThickness="0,1,0,0"
+            Classes="status-bar"
             DockPanel.Dock="Bottom">
       <TextBlock Text="{Binding Status}" FontSize="12" />
     </Border>

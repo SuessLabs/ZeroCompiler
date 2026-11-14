@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Dialogs;
 using Zero.Ide.Models;
 using Zero.Ide.Services;
+using Zero.Ide.Themes;
 
 namespace Zero.Ide.ViewModels;
 
@@ -23,8 +25,10 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
   private int _indentationSize;
   private bool _isBrowsing;
   private OptionsCategory? _selectedCategory;
+  private ThemeChoice _selectedTheme = IdeThemes.Choices[0];
   private bool _showLineNumbers;
   private string _statusMessage = string.Empty;
+  private bool _trimTrailingWhitespaceOnSave;
   private bool _wordWrap;
 
   public OptionsDialogViewModel(ISettingsService settings, IEditorDialogService dialogs)
@@ -37,7 +41,7 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
       new("compiler", "Compiler"),
       new("editor", "Editor")
       {
-        Children = [new("appearance", "Appearance"), new("indentation", "Indentation")],
+        Children = [new("appearance", "Appearance"), new("indentation", "Indentation"), new("cleanup", "Code Cleanup")],
       },
     ];
 
@@ -71,21 +75,13 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
     .ObservesProperty(() => IsBrowsing);
 
   public string CompilerPath { get => _compilerPath; set => SetProperty(ref _compilerPath, value); }
-
   public bool ConvertTabsToSpaces { get => _convertTabsToSpaces; set => SetProperty(ref _convertTabsToSpaces, value); }
-
   public string ErrorMessage { get => _errorMessage; private set => SetProperty(ref _errorMessage, value); }
-
   public string FontFamily { get => _fontFamily; set => SetProperty(ref _fontFamily, value); }
-
   public double FontSize { get => _fontSize; set => SetProperty(ref _fontSize, value); }
-
   public int IndentationSize { get => _indentationSize; set => SetProperty(ref _indentationSize, value); }
-
   public bool IsBrowsing { get => _isBrowsing; private set => SetProperty(ref _isBrowsing, value); }
-
   public string PageTitle => SelectedCategory?.Title ?? "Options";
-
   public DialogCloseListener RequestClose { get; }
 
   public OptionsCategory? SelectedCategory
@@ -98,15 +94,20 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
       RaisePropertyChanged(nameof(ShowCompiler));
       RaisePropertyChanged(nameof(ShowAppearance));
       RaisePropertyChanged(nameof(ShowIndentation));
+      RaisePropertyChanged(nameof(ShowCodeCleanup));
     }
   }
 
+  public ThemeChoice SelectedTheme { get => _selectedTheme; set => SetProperty(ref _selectedTheme, value); }
   public string SettingsFilePath => _settings.FilePath;
   public bool ShowAppearance => SelectedCategory?.Key is "editor" or "appearance";
+  public bool ShowCodeCleanup => SelectedCategory?.Key is "editor" or "cleanup";
   public bool ShowCompiler => SelectedCategory?.Key == "compiler";
   public bool ShowIndentation => SelectedCategory?.Key is "editor" or "indentation";
   public bool ShowLineNumbers { get => _showLineNumbers; set => SetProperty(ref _showLineNumbers, value); }
   public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
+  public IReadOnlyList<ThemeChoice> Themes => IdeThemes.Choices;
+  public bool TrimTrailingWhitespaceOnSave { get => _trimTrailingWhitespaceOnSave; set => SetProperty(ref _trimTrailingWhitespaceOnSave, value); }
   public bool WordWrap { get => _wordWrap; set => SetProperty(ref _wordWrap, value); }
 
   public bool CanCloseDialog() => !IsBrowsing;
@@ -119,12 +120,14 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
   {
     var settings = _settings.Current;
     CompilerPath = settings.CompilerPath;
+    SelectedTheme = Themes.First(choice => choice.Value == settings.Theme);
     FontFamily = settings.FontFamily;
     FontSize = settings.FontSize;
     IndentationSize = settings.IndentationSize;
     ConvertTabsToSpaces = settings.ConvertTabsToSpaces;
     ShowLineNumbers = settings.ShowLineNumbers;
     WordWrap = settings.WordWrap;
+    TrimTrailingWhitespaceOnSave = settings.TrimTrailingWhitespaceOnSave;
     SelectedCategory = Categories[0];
     ErrorMessage = _settings.LoadError ?? string.Empty;
     StatusMessage = string.Empty;
@@ -160,12 +163,14 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
       _settings.Save(new IdeSettings
       {
         CompilerPath = CompilerPath.Trim(),
+        Theme = SelectedTheme.Value,
         FontFamily = FontFamily.Trim(),
         FontSize = FontSize,
         IndentationSize = IndentationSize,
         ConvertTabsToSpaces = ConvertTabsToSpaces,
         ShowLineNumbers = ShowLineNumbers,
         WordWrap = WordWrap,
+        TrimTrailingWhitespaceOnSave = TrimTrailingWhitespaceOnSave,
       });
 
       StatusMessage = "Settings saved.";
