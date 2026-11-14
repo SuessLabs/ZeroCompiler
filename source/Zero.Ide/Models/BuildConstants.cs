@@ -8,10 +8,12 @@ namespace Zero.Ide.Models;
 
 public static class BuildConstants
 {
-  public const string BinaryExtension = ".bin";
   public const string DebugConfiguration = "Debug";
+  public const string LegacyBinaryExtension = ".bin";
   public const string OutputDirectoryName = ".zeroide";
   public const string ReleaseConfiguration = "Release";
+  public const string StagingExtension = ".building";
+  public const string WindowsExecutableExtension = ".exe";
 
   public static IReadOnlyList<string> Configurations { get; } =
     Array.AsReadOnly<string>([DebugConfiguration, ReleaseConfiguration]);

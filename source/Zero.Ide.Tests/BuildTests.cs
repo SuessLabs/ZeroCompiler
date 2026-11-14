@@ -28,14 +28,14 @@ public class BuildTests
 
     compiler.InSequence(sequence)
       .Setup(c => c.BuildAsync("compiler", file.Object.Path.LocalPath, "Debug", false))
-      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.bin"));
+      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.exe"));
 
-    runner.InSequence(sequence).Setup(r => r.Run("sample.bin", Path.GetDirectoryName(file.Object.Path.LocalPath)!));
+    runner.InSequence(sequence).Setup(r => r.Run("sample.exe", Path.GetDirectoryName(file.Object.Path.LocalPath)!));
     var shell = new MainWindowViewModel(CreateEditor(), CreateDialogs(file.Object).Object,
       compilerService: compiler.Object, programRunner: runner.Object);
 
     await ExecuteAsync(shell, shell.CmdBuildAndRun);
-    runner.Verify(r => r.Run("sample.bin", It.IsAny<string>()), Times.Once);
+    runner.Verify(r => r.Run("sample.exe", It.IsAny<string>()), Times.Once);
     Assert.AreEqual("Idle", shell.BuildStatus);
     Assert.IsFalse(shell.IsBusy);
     Assert.Contains("Started", shell.Status);
@@ -53,7 +53,7 @@ public class BuildTests
       sourcePath: It.IsAny<string>(),
       configuration: It.IsAny<string>(),
       cleanFirst: false))
-      .ReturnsAsync(new CompilerResult(2, "Assembly error", "sample.bin"));
+      .ReturnsAsync(new CompilerResult(2, "Assembly error", "sample.exe"));
 
     var runner = new Mock<IProgramRunner>();
     var shell = new MainWindowViewModel(
@@ -76,7 +76,7 @@ public class BuildTests
       It.IsAny<string>(),
       It.IsAny<string>(),
       false))
-      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.bin"));
+      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.exe"));
 
     var runner = new Mock<IProgramRunner>();
     runner.Setup(r => r.Run(It.IsAny<string>(), It.IsAny<string>())).Throws(new InvalidOperationException("Incompatible host"));
@@ -170,7 +170,7 @@ public class BuildTests
     Assert.IsFalse(await shell.CanCloseAsync());
 
     shell.CmdBuild.Execute(); // A programmatic re-entry must not start another process.
-    result.SetResult(new CompilerResult(0, "Compiled sample", "sample.bin"));
+    result.SetResult(new CompilerResult(0, "Compiled sample", "sample.exe"));
     await finished;
 
     Assert.AreEqual("Idle", shell.BuildStatus);
@@ -191,8 +191,8 @@ public class BuildTests
 
     compiler
       .SetupSequence(c => c.BuildAsync("compiler", file.Object.Path.LocalPath, "Debug", false))
-      .ReturnsAsync(new CompilerResult(2, "Assembly error: unknown instruction", "sample.bin"))
-      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.bin"));
+      .ReturnsAsync(new CompilerResult(2, "Assembly error: unknown instruction", "sample.exe"))
+      .ReturnsAsync(new CompilerResult(0, "Compiled sample", "sample.exe"));
 
     var shell = new MainWindowViewModel(CreateEditor(), dialogs.Object, compilerService: compiler.Object);
     await ExecuteAsync(shell, shell.CmdBuild);
@@ -287,19 +287,25 @@ public class BuildTests
       var source = Path.Combine(root, "sample.zasm");
       File.WriteAllText(source, "ret");
 
-      var debug = Path.Combine(root, ".zeroide", "Debug", "sample.zasm", "sample.bin");
-      var release = Path.Combine(root, ".zeroide", "Release", "sample.zasm", "sample.bin");
+      var debug = Path.Combine(root, ".zeroide", "Debug", "sample.zasm", "sample.exe");
+      var release = Path.Combine(root, ".zeroide", "Release", "sample.zasm", "sample.exe");
 
       Directory.CreateDirectory(Path.GetDirectoryName(debug)!);
       Directory.CreateDirectory(Path.GetDirectoryName(release)!);
       File.WriteAllText(debug, "debug");
       File.WriteAllText(release, "release");
+      var linuxDebug = Path.Combine(Path.GetDirectoryName(debug)!, "sample");
+      var legacyDebug = Path.Combine(Path.GetDirectoryName(debug)!, "sample.bin");
+      File.WriteAllText(linuxDebug, "linux");
+      File.WriteAllText(legacyDebug, "legacy");
 
       var service = new CompilerService();
       service.Clean(source, "Debug");
       service.Clean(source, "Debug"); // A repeated clean is harmless.
 
       Assert.IsFalse(File.Exists(debug));
+      Assert.IsFalse(File.Exists(linuxDebug));
+      Assert.IsFalse(File.Exists(legacyDebug));
       Assert.IsTrue(File.Exists(release));
       Assert.AreEqual("ret", File.ReadAllText(source));
       Assert.ThrowsExactly<ArgumentException>(() => service.Clean(source, "../../"));

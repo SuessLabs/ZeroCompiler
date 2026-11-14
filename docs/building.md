@@ -158,10 +158,14 @@ output requires Windows; Linux x64 output requires an x64 Linux host. An incompa
 target or launch error displays `Run failure`, preserving the successful build
 and its diagnostics. Build-only and Clean and Build commands never execute output.
 
-Artifacts are written beneath the source folder as
-`.zeroide/<Debug|Release>/<source-file>/<source-name>.bin`. The target-neutral
-`.bin` extension contains PE or ELF output according to the source's `#TARGET`
-directive. Debug/Release currently separate output folders; the CLI does not yet
+Artifacts are written beneath the source folder in
+`.zeroide/<Debug|Release>/<source-file>/`. Windows PE executables use
+`<source-name>.exe`; Linux ELF executables use `<source-name>` with no extension.
+The builder inspects the generated executable to select its final name, including
+when cross-compiling. On Linux, the compiler's executable permissions are preserved.
+Switching targets replaces the previous artifact, and Clean also removes legacy
+`.bin` artifacts for that source and configuration.
+Debug/Release currently separate output folders; the CLI does not yet
 provide configuration-specific optimization or debug-symbol flags. Clean removes
 only that file's artifact for the selected configuration. The `.zeroide` folders
 are ignored by Git.
