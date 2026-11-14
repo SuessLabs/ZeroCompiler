@@ -12,6 +12,50 @@ namespace Zero.Ide.Tests;
 public class EditorCommandTests
 {
   [TestMethod]
+  public void SearchCommandRequiresQueryAndAttachedEnabledEditor()
+  {
+    var editor = new EditorViewModel();
+    editor.SearchText = "#TARGET";
+    Assert.IsFalse(editor.CmdFindNext.CanExecute());
+    var actions = new Mock<IEditorActions>();
+    actions.SetupGet(a => a.CanSearch).Returns(true);
+    editor.AttachEditorActions(actions.Object);
+    Assert.IsTrue(editor.CmdFindNext.CanExecute());
+    editor.CmdFindNext.Execute();
+    actions.Verify(a => a.FindNext("#TARGET"), Times.Once);
+    var notifications = 0;
+    editor.CmdFindNext.CanExecuteChanged += (_, _) => notifications++;
+    editor.SearchText = string.Empty;
+    Assert.AreEqual(1, notifications);
+    Assert.IsFalse(editor.CmdFindNext.CanExecute());
+    editor.SearchText = "mov";
+    actions.SetupGet(a => a.CanSearch).Returns(false);
+    actions.Raise(a => a.StateChanged += null, EventArgs.Empty);
+    Assert.IsFalse(editor.CmdFindNext.CanExecute());
+    editor.CmdFindNext.Execute();
+    actions.Verify(a => a.FindNext("mov"), Times.Never);
+  }
+
+  [TestMethod]
+  public void ToolbarConfigurationAndBuildStatusRepresentBuildState()
+  {
+    var shell = new MainWindowViewModel(new EditorViewModel(), Mock.Of<IEditorDialogService>());
+    Assert.AreEqual("Debug", shell.BuildConfiguration);
+    CollectionAssert.AreEqual(new[] { "Debug", "Release" }, new System.Collections.Generic.List<string>(shell.BuildConfigurations));
+    shell.BuildConfiguration = "Release";
+    Assert.AreEqual("Release", shell.BuildConfiguration);
+    Assert.AreEqual("Zero IDE", shell.BuildStatus);
+    var notifications = 0;
+    shell.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(shell.BuildStatus)) notifications++; };
+    shell.IsBuilding = true;
+    Assert.AreEqual("Building...", shell.BuildStatus);
+    shell.IsBuilding = false;
+    Assert.AreEqual("Zero IDE", shell.BuildStatus);
+    Assert.AreEqual(2, notifications);
+    Assert.IsFalse(shell.CmdRebuild.CanExecute());
+  }
+
+  [TestMethod]
   public void CommandsAreDisabledWithoutAnAttachedEditor()
   {
     var editor = new EditorViewModel();

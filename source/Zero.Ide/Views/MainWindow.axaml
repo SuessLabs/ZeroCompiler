@@ -11,10 +11,18 @@
         Title="{Binding Title}"
         Width="1100"
         Height="750"
-        MinWidth="640"
+        MinWidth="800"
         MinHeight="400"
         Icon="/Assets/zero-logo.ico"
         mc:Ignorable="d">
+
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Zero.Ide/Themes/ToolbarIcons.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
 
   <Window.KeyBindings>
     <KeyBinding Command="{Binding CmdNew}" Gesture="Ctrl+N" />
@@ -108,32 +116,98 @@
             BorderThickness="0,1,0,1"
             Classes="toolbar"
             DockPanel.Dock="Top">
-      <StackPanel Orientation="Horizontal" Spacing="6">
-        <Button Content="New"
-                Command="{Binding CmdNew}"
-                ToolTip.Tip="New (Ctrl+N)" />
-        <Button Content="Open"
-                Command="{Binding CmdOpen}"
-                ToolTip.Tip="Open (Ctrl+O)" />
-        <Button Content="Save"
-                Command="{Binding CmdSave}"
-                ToolTip.Tip="Save (Ctrl+S)" />
+      <Grid ColumnDefinitions="*,Auto,*">
+        <StackPanel HorizontalAlignment="Left"
+                    Orientation="Horizontal"
+                    Spacing="6">
+          <Button AutomationProperties.Name="New File"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdNew}"
+                  ToolTip.Tip="New File (Ctrl+N)">
+            <Path Data="{StaticResource IconNewFile}" />
+          </Button>
+          <Button AutomationProperties.Name="Open File"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdOpen}"
+                  ToolTip.Tip="Open File (Ctrl+O)">
+            <Path Data="{StaticResource IconOpenFile}" />
+          </Button>
+          <Button AutomationProperties.Name="Save File"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdSave}"
+                  ToolTip.Tip="Save File (Ctrl+S)">
+            <Path Data="{StaticResource IconSaveFile}" />
+          </Button>
 
-        <Separator Width="1" Margin="6,0" />
+          <Separator Classes="toolbar-divider" />
 
-        <Button Content="Undo"
-                Command="{Binding Editor.CmdUndo}"
-                Focusable="False" />
-        <Button Content="Redo"
-                Command="{Binding Editor.CmdRedo}"
-                Focusable="False" />
+          <Button AutomationProperties.Name="Undo Edit"
+                  Classes="toolbar-icon"
+                  Command="{Binding Editor.CmdUndo}"
+                  ToolTip.Tip="Undo Edit (Ctrl+Z)">
+            <Path Data="{StaticResource IconUndo}" />
+          </Button>
+          <Button AutomationProperties.Name="Redo Edit"
+                  Classes="toolbar-icon"
+                  Command="{Binding Editor.CmdRedo}"
+                  ToolTip.Tip="Redo Edit (Ctrl+Y)">
+            <Path Data="{StaticResource IconRedo}" />
+          </Button>
 
-        <Separator Width="1" Margin="6,0" />
+          <Separator Classes="toolbar-divider" />
 
-        <Button Content="Build"
-                Command="{Binding CmdBuild}"
-                ToolTip.Tip="Compiler integration is planned for a later phase." />
-      </StackPanel>
+          <Button AutomationProperties.Name="Clean and Build"
+                  Classes="toolbar-icon play"
+                  Command="{Binding CmdRebuild}"
+                  ToolTip.Tip="Clean and Build (compiler integration is planned for a later phase)">
+            <Path Data="{StaticResource IconPlay}" />
+          </Button>
+
+          <ComboBox Width="104"
+                    MinHeight="30"
+                    Padding="8,4"
+                    AutomationProperties.Name="Build Configuration"
+                    IsEnabled="{Binding !IsBusy}"
+                    ItemsSource="{Binding BuildConfigurations}"
+                    SelectedItem="{Binding BuildConfiguration, Mode=TwoWay}"
+                    ToolTip.Tip="Build Configuration" />
+        </StackPanel>
+
+        <TextBlock Text="{Binding BuildStatus}"
+                   Grid.Column="1"
+                   Margin="12,0"
+                   VerticalAlignment="Center"
+                   AutomationProperties.Name="Build Status"
+                   FontSize="12"
+                   FontWeight="SemiBold" />
+
+        <TextBox Text="{Binding Editor.SearchText, Mode=TwoWay}"
+                 Grid.Column="2"
+                 Width="210"
+                 MinHeight="30"
+                 Padding="8,4"
+                 HorizontalAlignment="Right"
+                 VerticalContentAlignment="Center"
+                 AutomationProperties.Name="Search current file"
+                 IsEnabled="{Binding !IsBusy}"
+                 ToolTip.Tip="Search current file (Enter: next match)"
+                 Watermark="Search current file...">
+
+          <TextBox.InnerLeftContent>
+            <Path Width="14"
+                  Height="14"
+                  Margin="6,0,6,0"
+                  Data="{StaticResource IconSearch}"
+                  Stretch="Uniform"
+                  Stroke="{DynamicResource IdeSecondaryBrush}"
+                  StrokeThickness="1.7" />
+          </TextBox.InnerLeftContent>
+
+          <TextBox.KeyBindings>
+            <KeyBinding Command="{Binding Editor.CmdFindNext}" Gesture="Enter" />
+          </TextBox.KeyBindings>
+        </TextBox>
+      </Grid>
     </Border>
 
     <Border Padding="12,6"

@@ -17,6 +17,7 @@ public class EditorViewModel : ViewModelBase
   private string _fileName = "Untitled";
   private int _revision;
   private string _savedText = string.Empty;
+  private string _searchText = string.Empty;
 
   public EditorViewModel(ISettingsService? settingsService = null)
   {
@@ -25,6 +26,7 @@ public class EditorViewModel : ViewModelBase
     CmdCut = CreateEditorCommand(actions => actions.CanCut, actions => actions.Cut());
     CmdCopy = CreateEditorCommand(actions => actions.CanCopy, actions => actions.Copy());
     CmdPaste = CreateEditorCommand(actions => actions.CanPaste, actions => actions.Paste());
+    CmdFindNext = CreateEditorCommand(actions => actions.CanSearch && !string.IsNullOrEmpty(SearchText), actions => actions.FindNext(SearchText));
 
     _settingsService = settingsService;
 
@@ -35,9 +37,12 @@ public class EditorViewModel : ViewModelBase
 
   public DelegateCommand CmdCopy { get; }
   public DelegateCommand CmdCut { get; }
+  public DelegateCommand CmdFindNext { get; }
   public DelegateCommand CmdPaste { get; }
   public DelegateCommand CmdRedo { get; }
+
   public DelegateCommand CmdUndo { get; }
+
   public TextDocument Document => _document;
 
   public string FileName
@@ -53,6 +58,15 @@ public class EditorViewModel : ViewModelBase
   {
     get => _revision;
     private set => SetProperty(ref _revision, value);
+  }
+
+  public string SearchText
+  {
+    get => _searchText;
+    set
+    {
+      if (SetProperty(ref _searchText, value ?? string.Empty)) CmdFindNext.RaiseCanExecuteChanged();
+    }
   }
 
   public IdeSettings Settings => _settingsService?.Current ?? IdeSettings.Default;
@@ -161,5 +175,6 @@ public class EditorViewModel : ViewModelBase
     CmdCut.RaiseCanExecuteChanged();
     CmdCopy.RaiseCanExecuteChanged();
     CmdPaste.RaiseCanExecuteChanged();
+    CmdFindNext.RaiseCanExecuteChanged();
   }
 }

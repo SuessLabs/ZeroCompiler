@@ -9,15 +9,22 @@ public interface IEditorActions
 {
   event EventHandler? StateChanged;
 
-  bool CanUndo { get; }
-  bool CanRedo { get; }
-  bool CanCut { get; }
   bool CanCopy { get; }
+  bool CanCut { get; }
   bool CanPaste { get; }
+  bool CanRedo { get; }
+  bool CanSearch { get; }
+  bool CanUndo { get; }
+
+  void Copy();
+
+  void Cut();
+
+  void FindNext(string text);
+
+  void Paste();
+
+  void Redo();
 
   void Undo();
-  void Redo();
-  void Cut();
-  void Copy();
-  void Paste();
 }
