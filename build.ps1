@@ -3,7 +3,7 @@ param (
   [ValidateSet('Debug', 'Release')]
   [string]$Configuration = 'Release',
 
-  [ValidateSet('win-x64', 'win-arm64')]
+  [ValidateSet('win-x64', 'win-arm64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64')]
   [string]$Runtime = 'win-x64',
 
   [ValidateSet('Size', 'Speed')]
@@ -49,7 +49,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Publish a second command name for the same standalone Native AOT executable.
-Copy-Item -LiteralPath (Join-Path $publishDirectory 'zcc.exe') -Destination (Join-Path $publishDirectory 'zero.exe') -Force
+$extension = if ($Runtime.StartsWith('win-')) { '.exe' } else { '' }
+Copy-Item -LiteralPath (Join-Path $publishDirectory "zcc$extension") -Destination (Join-Path $publishDirectory "zero$extension") -Force
 
 # Copy directory
 $samplesDirectory = Join-Path $PSScriptRoot 'samples'

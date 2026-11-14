@@ -24,11 +24,12 @@ public sealed class IniSettingsService : ISettingsService
     {
       var values = ReadValues();
       var defaults = IdeSettings.Default;
+      var compilerPath = Get(values, "Compiler", "Path", defaults.CompilerPath);
 
       Current = new IdeSettings
       {
         Theme = ReadTheme(Get(values, "Appearance", "Theme", "")),
-        CompilerPath = Get(values, "Compiler", "Path", defaults.CompilerPath),
+        CompilerPath = string.IsNullOrWhiteSpace(compilerPath) ? defaults.CompilerPath : compilerPath,
         FontFamily = ReadFontFamily(Get(values, "Editor", "FontFamily", defaults.FontFamily)),
         FontSize = ReadNumber(Get(values, "Editor", "FontSize", ""), defaults.FontSize, 8, 48),
         IndentationSize = ReadInteger(Get(values, "Editor", "IndentationSize", ""), defaults.IndentationSize),

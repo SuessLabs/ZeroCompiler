@@ -88,6 +88,22 @@ public class SettingsTests
   }
 
   [TestMethod]
+  [DataRow("true", true)]
+  [DataRow("FALSE", false)]
+  [DataRow("invalid", false)]
+  public void CleanupPreferenceLoadsAndOptionsReflectIt(string value, bool expected)
+  {
+    File.WriteAllText(_filePath, $"[CodeCleanup]\nTrimTrailingWhitespaceOnSave={value}\n");
+    var settings = new IniSettingsService(_filePath);
+    var options = new OptionsDialogViewModel(settings, Mock.Of<IEditorDialogService>());
+    options.OnDialogOpened(new DialogParameters());
+    options.SelectedCategory = options.Categories.Single(c => c.Key == "editor").Children.Single(c => c.Key == "cleanup");
+    Assert.IsTrue(options.ShowCodeCleanup);
+    Assert.AreEqual("Code Cleanup", options.PageTitle);
+    Assert.AreEqual(expected, options.TrimTrailingWhitespaceOnSave);
+  }
+
+  [TestMethod]
   public void ContainerInjectsSharedSettingsIntoEditor()
   {
     var service = new IniSettingsService(_filePath);
@@ -161,19 +177,19 @@ public class SettingsTests
   }
 
   [TestMethod]
-  [DataRow("true", true)]
-  [DataRow("FALSE", false)]
-  [DataRow("invalid", false)]
-  public void CleanupPreferenceLoadsAndOptionsReflectIt(string value, bool expected)
+  public void InstalledLayoutFindsCompilerWithoutPathEnvironment()
   {
-    File.WriteAllText(_filePath, $"[CodeCleanup]\nTrimTrailingWhitespaceOnSave={value}\n");
-    var settings = new IniSettingsService(_filePath);
-    var options = new OptionsDialogViewModel(settings, Mock.Of<IEditorDialogService>());
-    options.OnDialogOpened(new DialogParameters());
-    options.SelectedCategory = options.Categories.Single(c => c.Key == "editor").Children.Single(c => c.Key == "cleanup");
-    Assert.IsTrue(options.ShowCodeCleanup);
-    Assert.AreEqual("Code Cleanup", options.PageTitle);
-    Assert.AreEqual(expected, options.TrimTrailingWhitespaceOnSave);
+    var root = Path.Combine(_directory, "installed");
+    var ide = Path.Combine(root, "ide");
+    var bin = Directory.CreateDirectory(Path.Combine(root, "bin"));
+
+    Directory.CreateDirectory(ide);
+
+    var compiler = Path.Combine(bin.FullName, OperatingSystem.IsWindows() ? "zero.exe" : "zero");
+    Assert.AreEqual(string.Empty, IdeSettings.FindInstalledCompiler(ide));
+
+    File.WriteAllText(compiler, string.Empty);
+    Assert.AreEqual(compiler, IdeSettings.FindInstalledCompiler(ide));
   }
 
   [TestMethod]

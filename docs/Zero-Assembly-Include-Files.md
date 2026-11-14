@@ -52,6 +52,7 @@ uses them for readability. Forward label references also work.
 1. The terminal's current working directory.
 2. Directories supplied with `-I` or `--include`, in command-line order.
 3. The `include` directory beside `zero.exe` or `zcc.exe`.
+4. The sibling `../include` directory when the compiler is installed in `Zero/bin`.
 
 For `using "subfolder/myfile.zh"`, the compiler checks that entire relative path
 under each directory. Nested headers follow the same order; their own containing

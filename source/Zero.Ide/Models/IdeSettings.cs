@@ -12,7 +12,14 @@ public sealed record IdeSettings
 
   public IdeTheme Theme { get; init; } = IdeTheme.System;
 
-  public string CompilerPath { get; init; } = string.Empty;
+  public string CompilerPath { get; init; } = FindInstalledCompiler(AppContext.BaseDirectory);
+
+  public static string FindInstalledCompiler(string ideDirectory)
+  {
+    var name = OperatingSystem.IsWindows() ? "zero.exe" : "zero";
+    var path = Path.GetFullPath(Path.Combine(ideDirectory, "..", "bin", name));
+    return File.Exists(path) ? path : string.Empty;
+  }
 
   public string FontFamily { get; init; } = "Cascadia Code, Consolas, Menlo, monospace";
 

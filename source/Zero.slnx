@@ -1,4 +1,20 @@
 <Solution>
+  <Folder Name="/Installer/">
+    <File Path="../installer/build-installers.ps1" />
+    <File Path="../installer/README.md" />
+  </Folder>
+  <Folder Name="/Installer/Linux/">
+    <File Path="../installer/linux/package.ps1" />
+  </Folder>
+  <Folder Name="/Installer/MacOS/">
+    <File Path="../installer/macos/package.ps1" />
+  </Folder>
+  <Folder Name="/Installer/Windows/">
+    <File Path="../installer/windows/cli.nsi" />
+    <File Path="../installer/windows/common.nsh" />
+    <File Path="../installer/windows/ide.nsi" />
+    <File Path="../installer/windows/Set-ZeroPath.ps1" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../docs/building.md" />
     <File Path=".editorconfig" />
