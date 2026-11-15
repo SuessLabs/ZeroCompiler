@@ -1,8 +1,8 @@
 ---
 name: Compiler Feature Request
 about: Suggest an idea for this project
-title: "[Zero] [Request] "
-labels: enhancement, not-reviewed
+title: "[Request] [Zero] "
+labels: Compiler, enhancement, not-reviewed
 assignees: ''
 type: Feature
 ---
