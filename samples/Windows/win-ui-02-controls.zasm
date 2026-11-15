@@ -1,6 +1,6 @@
 ; Windows x86 GUI: a label, an editable textbox, and a working button.
 ; From the published folder:
-;   .\zero.exe run samples\hello-win86-controls.zasm
+;   .\zero.exe run samples\Windows\win-ui-02-controls.zasm
 ; Click "Show message" to display the textbox's current text. Close the main
 ; window to exit. This is a native Win32 window; it does not require .NET Forms.
 

@@ -85,14 +85,14 @@ the Windows x86 assembly sample, and run the resulting executable:
 ./build.bat
 
 # From the publish folder:
-./zcc.exe run samples/hello-console.zasm
+./zcc.exe run samples/Windows/win-cli-03-console-write.zasm
 ```
 
 Use `zcc run <source> [output.exe]` to compile and execute, or omit `run` to
 compile only. The generated executable defaults to the source path with an
 `.exe` extension. The run command waits for the program and returns its exit code.
 The build publishes both `zcc.exe` and `zero.exe`; either name accepts the same
-commands, for example `zero run samples/hello-console.zasm`.
+commands, for example `zero run samples/Windows/win-cli-03-console-write.zasm`.
 
 ## File Types
 

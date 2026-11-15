@@ -79,7 +79,7 @@ Output:
 The addition happens in EAX. `printf` formats the calculated value as decimal
 text; it does not evaluate the expression in the string. If you change the numbers,
 update the descriptive text too. The shipped
-[arithmetic sample](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/v002-integer-math.zasm)
+[arithmetic sample](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/Windows/win-cli-02-integer-math.zasm)
 also multiplies using repeated addition because `MUL` is not implemented yet.
 
 ## Show a Windows MessageBox

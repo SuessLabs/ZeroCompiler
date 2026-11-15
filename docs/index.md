@@ -66,8 +66,12 @@ include/
     libc/
     syscalls/
 samples/
-  hello-using.zasm
-  ...
+  Linux/
+    linux64-cli-01-hello.zasm
+    ...
+  Windows/
+    win-cli-01-hello-using.zasm
+    ...
 ```
 
 Both executable names run the same compiler. There is no installer, and the native
@@ -226,11 +230,11 @@ and expected behavior.
 From the release folder, also try:
 
 ```powershell
-.\zero.exe run samples\hello-using.zasm
-.\zero.exe run samples\hello-db-vars.zasm
-.\zero.exe run samples\v002-integer-math.zasm
-.\zero.exe run samples\hello-concat.zasm
-.\zero.exe run samples\hello-win86-controls.zasm
+.\zero.exe run samples\Windows\win-cli-01-hello-using.zasm
+.\zero.exe run samples\Windows\win-cli-02-console-printf-db-vars.zasm
+.\zero.exe run samples\Windows\win-cli-02-integer-math.zasm
+.\zero.exe run samples\Windows\win-cli-05-string-concat.zasm
+.\zero.exe run samples\Windows\win-ui-02-controls.zasm
 ```
 
 - [String concatenation tutorial](tutorial-zasm-concat.md): a short walkthrough with a mnemonic table.

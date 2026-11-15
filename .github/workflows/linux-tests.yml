@@ -50,7 +50,7 @@ jobs:
       - name: Inspect and execute ELF64 sample
         run: |
           $ErrorActionPreference = 'Stop'
-          $executable = './output/samples/Release/hello-linux64-cli'
+          $executable = './output/samples/Release/Linux/linux64-cli-01-hello'
           if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
             throw "Expected the extensionless Linux executable at '$executable'."
           }

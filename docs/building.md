@@ -75,7 +75,7 @@ These compilation tests run on any OS supported by .NET. Existing console-output
 tests still execute selected samples on Windows to check their behavior.
 Native Linux x86-64 runtime tests run under Linux/WSL and skip other hosts. The
 PowerShell-only Linux CI workflow runs the tests, validates all sample formats,
-and inspects/executes `hello-linux64-cli` on Ubuntu. See [Linux x64](linux64.md).
+and inspects/executes `linux64-cli-01-hello` on Ubuntu. See [Linux x64](linux64.md).
 
 ## IDE runtime targets
 
@@ -272,10 +272,10 @@ the Windows x86 assembly sample, and run the resulting executable:
 ```powershell
 # Compile Zero Assembly (ZASM)
 .\build.bat
-.\publish\zcc.exe publish\samples\hello-console.zasm publish\hello-console.exe
+.\publish\zcc.exe publish\samples\Windows\win-cli-03-console-write.zasm publish\win-cli-03-console-write.exe
 
 # Run it
-.\publish\hello-console.exe
+.\publish\win-cli-03-console-write.exe
 ```
 
 The program prints `Hello from Zero!` followed by a newline and exits with code 0

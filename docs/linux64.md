@@ -18,7 +18,7 @@ the default target for existing sources.
 From the published folder on Windows:
 
 ```powershell
-.\zero.exe samples\hello-linux64-cli.zasm hello-linux64-cli
+.\zero.exe samples\Linux\linux64-cli-01-hello.zasm linux64-cli-01-hello
 ```
 
 The sample declares `#TARGET linux-x64`. For other sources, you can select the
@@ -28,8 +28,8 @@ The default Linux output removes the source extension instead of adding `.exe`.
 Copy the generated file into Linux or WSL, then run:
 
 ```sh
-chmod +x hello-linux64-cli
-./hello-linux64-cli
+chmod +x linux64-cli-01-hello
+./linux64-cli-01-hello
 ```
 
 Expected output and exit status:
@@ -40,14 +40,14 @@ Hello Zero from Linux x86-64!
 
 The exit status is 0 on success and 1 if the write does not return the expected
 byte count. A compiler running on Linux sets executable permissions automatically.
-On Linux x86-64, `zero run hello-linux64-cli.zasm` can compile and execute directly.
+On Linux x86-64, `zero run samples/Linux/linux64-cli-01-hello.zasm` can compile and execute directly.
 On Windows, `run` compiles ELF output but reports that Linux/WSL is needed to execute it.
 
 To run the managed compiler on Linux, build with the .NET 10 SDK and use:
 
 ```sh
 dotnet build source/Zero.slnx --configuration Release
-dotnet output/Zero.Cli/Release/zcc.dll run samples/hello-linux64-cli.zasm
+dotnet output/Zero.Cli/Release/zcc.dll run samples/Linux/linux64-cli-01-hello.zasm
 ```
 
 The Windows `build.ps1` still publishes a Windows-hosted Native AOT compiler.

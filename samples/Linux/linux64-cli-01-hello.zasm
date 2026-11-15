@@ -1,5 +1,5 @@
-; Compile on Windows or Linux: ./zero hello-linux64-cli.zasm
-; Run on Linux: chmod +x hello-linux64-cli && ./hello-linux64-cli
+; Compile on Windows or Linux: ./zero samples/Linux/linux64-cli-01-hello.zasm linux64-cli-01-hello
+; Run on Linux: chmod +x linux64-cli-01-hello && ./linux64-cli-01-hello
 ; The executable uses Linux syscalls and does not need libc or a dynamic loader.
 #TARGET linux-x64
 

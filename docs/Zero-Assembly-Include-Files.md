@@ -64,7 +64,7 @@ directory is not added to the search. Absolute filenames are checked directly.
 zero.exe run main.zasm -I "headers" -I "C:\Libraries\Zero"
 
 # Managed builds from the repository need the header path explicitly:
-dotnet output/Zero.Cli/Release/zcc.dll samples/hello-using.zasm -I include
+dotnet output/Zero.Cli/Release/zcc.dll samples/Windows/win-cli-01-hello-using.zasm -I include
 ```
 
 ## Rules
@@ -122,14 +122,18 @@ publish/
       syscalls/           # Comment-only architecture references.
     readme.md
   samples/
-    hello-using.zasm
-    ...
+    Linux/
+      linux64-cli-01-hello.zasm
+      ...
+    Windows/
+      win-cli-01-hello-using.zasm
+      ...
 ```
 
 From any working directory, run the published sample with:
 
 ```powershell
-C:\path\to\publish\zero.exe run C:\path\to\publish\samples\hello-using.zasm
+C:\path\to\publish\zero.exe run C:\path\to\publish\samples\Windows\win-cli-01-hello-using.zasm
 ```
 
 It prints `Hello Zero!`. Keep the `include` folder beside the compiler when

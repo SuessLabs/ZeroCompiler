@@ -40,11 +40,11 @@ public class AssemblerTests
   }
 
   [TestMethod]
-  [DataRow("hello-console.zasm", "Hello from Zero!\r\n")]
-  [DataRow("hello-db-vars.zasm", "Hello, World!\r\n")]
-  [DataRow("hello-using.zasm", "Hello Zero!\r\n")]
-  [DataRow("hello-concat.zasm", "Hello\r\nZero Assembly!\r\nHello Zero Assembly!\r\n")]
-  [DataRow("v002-integer-math.zasm", "7 + 5 = 12\r\n6 * 7 = 42\r\n")]
+  [DataRow("Windows/win-cli-03-console-write.zasm", "Hello from Zero!\r\n")]
+  [DataRow("Windows/win-cli-02-console-printf-db-vars.zasm", "Hello, World!\r\n")]
+  [DataRow("Windows/win-cli-01-hello-using.zasm", "Hello Zero!\r\n")]
+  [DataRow("Windows/win-cli-05-string-concat.zasm", "Hello\r\nZero Assembly!\r\nHello Zero Assembly!\r\n")]
+  [DataRow("Windows/win-cli-02-integer-math.zasm", "7 + 5 = 12\r\n6 * 7 = 42\r\n")]
   [OSCondition(OperatingSystems.Windows)]
   public void ConsoleSamplePrintsExpectedOutput(string sampleName, string expectedOutput)
   {

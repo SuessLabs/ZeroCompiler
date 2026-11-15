@@ -68,7 +68,7 @@ runtime tests exercise static syscall executables. Windows header tests
 continue to validate only `include/windows`.
 
 The build ships both platform directories. Windows samples use
-`using "windows/..."`; `hello-linux64-cli.zasm` uses direct syscalls and no libc
+`using "windows/..."`; `linux64-cli-01-hello.zasm` uses direct syscalls and no libc
 header. For fuller notes, see the
 [Linux header README](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/linux/readme.md)
 and [ZASM roadmap](zasm-coming-soon.md).
