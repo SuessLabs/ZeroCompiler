@@ -13,9 +13,27 @@ namespace Zero.Ide.Controls;
 
 internal sealed class DebugMargin(Func<EditorViewModel?> getModel) : AbstractMargin
 {
+  public static readonly StyledProperty<IBrush?> GutterBrushProperty =
+    AvaloniaProperty.Register<DebugMargin, IBrush?>(nameof(GutterBrush));
+
+  static DebugMargin() => AffectsRender<DebugMargin>(GutterBrushProperty);
+
+  public IBrush? GutterBrush
+  {
+    get => GetValue(GutterBrushProperty);
+    set => SetValue(GutterBrushProperty, value);
+  }
+
   public override void Render(DrawingContext context)
   {
+    // Keep the entire breakpoint hit area visible, including lines without a marker.
     context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
+    if (GutterBrush is { } gutter)
+    {
+      using (context.PushOpacity(0.28))
+        context.FillRectangle(gutter, new Rect(Bounds.Size));
+    }
+
     if (TextView is not { VisualLinesValid: true } view || getModel() is not { } model)
       return;
 
