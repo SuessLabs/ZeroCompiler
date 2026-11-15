@@ -49,7 +49,8 @@ See [registers](zasm-reference.md#registers) for their roles.
 | `#IMPORT` | DLL name followed by exported function names. | `#IMPORT msvcrt.dll, puts, exit` |
 | `using` | Double-quoted header path. | `using "windows/console.zh"` |
 
-Use `;` for comments and `label:` to name a location. `DB` also allows a named
+Use `;` or `//` for line comments, `/* ... */` for block comments, and `label:`
+to name a location. Block comments can span lines. `DB` also allows a named
 byte declaration without a colon. Strings need an explicit terminating zero when
 passed to APIs expecting zero-terminated text. `DW` and `DD` do not currently
 parse string, floating-point, or symbol initializers.

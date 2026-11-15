@@ -20,7 +20,9 @@ public sealed class SourceLoader
     var included = new HashSet<string>(comparer);
     var active = new List<string>();
     var lines = new List<SourceLine>();
+
     Expand(Path.GetFullPath(inputPath, Path.GetFullPath(options.WorkingDirectory)), null);
+
     return lines;
 
     void Expand(string path, SourceLine? requester)
@@ -37,6 +39,7 @@ public sealed class SourceLoader
 
       active.Add(path);
       string[] source;
+
       try
       {
         source = File.ReadAllLines(path);
@@ -46,10 +49,20 @@ public sealed class SourceLoader
         throw new AssemblerException($"{requester.FilePath}({requester.LineNumber}): Cannot read include '{path}': {ex.Message}");
       }
 
+      try
+      {
+        source = AssemblySyntax.StripComments(source);
+      }
+      catch (AssemblerException ex) when (ex.LineNumber is > 0)
+      {
+        throw ex.AtSource(new SourceLine(source[ex.LineNumber.Value - 1], path, ex.LineNumber.Value));
+      }
+
       for (int i = 0; i < source.Length; i++)
       {
         var line = new SourceLine(source[i], path, i + 1);
         string? name;
+
         try
         {
           name = ReadDirective(line.Text, line.LineNumber);
@@ -76,17 +89,20 @@ public sealed class SourceLoader
         !(text.Length > Constants.UsingKeyword.Length &&
           text.StartsWith(Constants.UsingKeyword, StringComparison.OrdinalIgnoreCase) &&
           char.IsWhiteSpace(text[Constants.UsingKeyword.Length])))
+    {
       return null;
+    }
 
-    int comment = AssemblySyntax.FindUnquoted(text, Constants.CommentLine1, lineNumber);
-    if (comment >= 0)
-      text = text[..comment].TrimEnd();
     var operand = text[Constants.UsingKeyword.Length..].Trim();
+
     if (operand.Length < 2 || operand[0] != Constants.DoubleQuote)
       throw new AssemblerException(lineNumber, "USING expects a double-quoted filename");
+
     var name = AssemblySyntax.ReadString(operand, lineNumber);
+
     if (string.IsNullOrWhiteSpace(name))
       throw new AssemblerException(lineNumber, "USING filename cannot be empty");
+
     return name;
   }
 }

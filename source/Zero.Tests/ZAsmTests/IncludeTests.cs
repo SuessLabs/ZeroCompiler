@@ -61,6 +61,36 @@ public sealed class IncludeTests
     Assert.Contains($"{main} -> {a} -> {b} -> {a}", error.Message);
   }
 
+  [TestMethod]
+  public void ErrorsAfterHeaderBlockCommentsKeepOriginalLocation()
+  {
+    var header = Write("first/file.zh", "/*\nignored\n*/\ninvalid_instruction");
+    var main = Write("source/main.zasm", "using \"file.zh\"");
+    var lines = new SourceLoader().Load(main, _options);
+
+    var error = Assert.ThrowsExactly<AssemblerException>(() => new Assembler().Assemble(lines));
+
+    Assert.Contains($"{header}(4):", error.Message);
+  }
+
+  [TestMethod]
+  public void IncludesRespectLineAndBlockComments()
+  {
+    Write("first/file.zh", "/* header comment\nusing \"missing.zh\"\n*/ nop // trailing comment");
+    var main = Write("source/main.zasm", """
+      // using "missing.zh"
+      /*
+      using "missing.zh"
+      */ /* before */ using /* between */ "file.zh" // after
+      /* using "missing.zh" */ ret
+      """);
+
+    var actual = new Assembler().Assemble(new SourceLoader().Load(main, _options));
+    var expected = new Assembler().Assemble(["nop", "ret"]);
+
+    CollectionAssert.AreEqual(expected, actual);
+  }
+
   [TestInitialize]
   public void Initialize()
   {
@@ -173,6 +203,17 @@ public sealed class IncludeTests
     Assert.AreEqual($"db {firstAvailable}", lines[0].Text);
     Assert.AreEqual(Path.GetFullPath(Path.Combine(_workspace.FullName, roots[firstAvailable], "sub/file.zh")), lines[0].FilePath);
     Assert.AreEqual(1, lines[0].LineNumber);
+  }
+
+  [TestMethod]
+  public void UnterminatedHeaderCommentReportsOriginalLocation()
+  {
+    var header = Write("first/file.zh", "nop\n/* unclosed");
+    var main = Write("source/main.zasm", "using \"file.zh\"\n*/ ret");
+
+    var error = Assert.ThrowsExactly<AssemblerException>(() => new SourceLoader().Load(main, _options));
+
+    Assert.Contains($"{header}(2): Unterminated block comment", error.Message);
   }
 
   [TestMethod]

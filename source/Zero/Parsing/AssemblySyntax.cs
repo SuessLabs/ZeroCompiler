@@ -91,4 +91,68 @@ internal static class AssemblySyntax
       start = comma + 1;
     }
   }
+
+  // Replace comments with whitespace so tokens and source line numbers stay separate.
+  internal static string[] StripComments(string[] source)
+  {
+    var result = new string[source.Length];
+    int blockStart = 0;
+    for (int line = 0; line < source.Length; line++)
+    {
+      var text = source[line];
+      var characters = text.ToCharArray();
+      char quote = Constants.NullChar;
+
+      for (int i = 0; i < text.Length; i++)
+      {
+        char current = text[i];
+        char next = i + 1 < text.Length ? text[i + 1] : Constants.NullChar;
+
+        if (blockStart != 0)
+        {
+          characters[i] = Constants.SpaceChar;
+
+          if (current == '*' && next == '/')
+          {
+            characters[++i] = Constants.SpaceChar;
+            blockStart = 0;
+          }
+        }
+        else if (quote != Constants.NullChar)
+        {
+          if (current == quote)
+          {
+            if (next == quote)
+              i++;
+            else
+              quote = Constants.NullChar;
+          }
+        }
+        else if (current is Constants.SingleQuote or Constants.DoubleQuote)
+        {
+          quote = current;
+        }
+        else if (current == Constants.CommentLine1 || (current == '/' && next == '/'))
+        {
+          for (; i < characters.Length; i++)
+            characters[i] = Constants.SpaceChar;
+        }
+        else if (current == '/' && next == '*')
+        {
+          blockStart = line + 1;
+          characters[i] = Constants.SpaceChar;
+          characters[++i] = Constants.SpaceChar;
+        }
+      }
+
+      if (quote != Constants.NullChar)
+        throw new AssemblerException(line + 1, "Unterminated quoted string");
+
+      result[line] = new string(characters);
+    }
+
+    if (blockStart != 0)
+      throw new AssemblerException(blockStart, "Unterminated block comment");
+    return result;
+  }
 }

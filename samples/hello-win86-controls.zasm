@@ -4,10 +4,15 @@
 ; Click "Show message" to display the textbox's current text. Close the main
 ; window to exit. This is a native Win32 window; it does not require .NET Forms.
 
-#IMPORT kernel32.dll, GetModuleHandleA, ExitProcess
-#IMPORT user32.dll, LoadCursorA, RegisterClassA, CreateWindowExA, ShowWindow, UpdateWindow
-#IMPORT user32.dll, GetMessageA, IsDialogMessageA, TranslateMessage, DispatchMessageA
-#IMPORT user32.dll, DefWindowProcA, PostQuitMessage, GetDlgItemTextA, MessageBoxA
+
+; // #IMPORT kernel32.dll, GetModuleHandleA, ExitProcess
+; // #IMPORT user32.dll, LoadCursorA, RegisterClassA, CreateWindowExA, ShowWindow, UpdateWindow
+; // #IMPORT user32.dll, GetMessageA, IsDialogMessageA, TranslateMessage, DispatchMessageA
+; // #IMPORT user32.dll, DefWindowProcA, PostQuitMessage, GetDlgItemTextA, MessageBoxA
+#IMPORT user32.dll, IsDialogMessageA
+
+using "windows/kernel32.zh"
+using "windows/user32.zh"
 
   jmp start
 
