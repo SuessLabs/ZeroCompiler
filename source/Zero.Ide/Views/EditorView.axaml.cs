@@ -27,8 +27,9 @@ public partial class EditorView : UserControl
   {
     InitializeComponent();
     _debugMargin = new DebugMargin(() => _viewModel);
-    _debugMargin.Bind(DebugMargin.GutterBrushProperty, new DynamicResourceExtension("IdeBorderBrush"));
+    _debugMargin.Bind(DebugMargin.GutterBrushProperty, new DynamicResourceExtension("IdeGutterBrush"));
     _debugMargin.Cursor = new Cursor(StandardCursorType.Hand);
+
     ToolTip.SetTip(_debugMargin, "Click to toggle a breakpoint (F9)");
     Editor.TextArea.LeftMargins.Insert(0, _debugMargin);
     Editor.TextArea.TextView.BackgroundRenderers.Add(new ExecutionLineRenderer(() => _viewModel));
