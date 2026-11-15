@@ -1,7 +1,7 @@
 ---
-name: Feature Request
+name: IDE Feature Request
 about: Suggest an idea for this project
-title: "[Enhancement] "
+title: "[IDE] [Enhancement] "
 labels: enhancement, not-reviewed
 assignees: ''
 type: Feature
