@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Zero.Ide.ViewModels"
+             xmlns:dbg="using:Zero.Dbg"
+             x:Class="Zero.Ide.Views.DebuggerView"
+             x:DataType="vm:DebuggerViewModel">
+  <Grid Margin="10" RowDefinitions="Auto,Auto,*" RowSpacing="6">
+    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+    <TextBlock Grid.Row="1" Text="{Binding Location}" FontSize="11" TextWrapping="Wrap" />
+    <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+      <ItemsControl ItemsSource="{Binding Registers}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="dbg:RegisterValue">
+            <StackPanel Orientation="Horizontal" Margin="0,4,22,4" Spacing="8">
+              <TextBlock Text="{Binding Name}" Width="54" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Hex}" FontFamily="Cascadia Code, Consolas, monospace" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

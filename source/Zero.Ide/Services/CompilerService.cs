@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Zero.Compilation;
+using Zero.Dbg;
 using Zero.Ide.Models;
 
 namespace Zero.Ide.Services;
@@ -47,6 +48,9 @@ public sealed class CompilerService : ICompilerService
     startInfo.ArgumentList.Add(sourcePath);
     startInfo.ArgumentList.Add(stagingPath);
 
+    if (configuration == BuildConstants.DebugConfiguration)
+      startInfo.ArgumentList.Add("--debug");
+
     try
     {
       using var process = Process.Start(startInfo)
@@ -77,6 +81,10 @@ public sealed class CompilerService : ICompilerService
 
         RemoveArtifacts(outputBasePath);
         File.Move(stagingPath, outputPath, overwrite: true);
+
+        if (File.Exists(stagingPath + DebugMap.Extension))
+          File.Move(stagingPath + DebugMap.Extension, outputPath + DebugMap.Extension, overwrite: true);
+
         published = true;
         output = output.Replace(stagingPath, outputPath, StringComparison.Ordinal);
       }
@@ -87,6 +95,9 @@ public sealed class CompilerService : ICompilerService
     {
       if (File.Exists(stagingPath))
         File.Delete(stagingPath);
+
+      if (File.Exists(stagingPath + DebugMap.Extension))
+        File.Delete(stagingPath + DebugMap.Extension);
 
       // A failed build must not leave an older executable that looks like a fresh result.
       if (!published)
@@ -129,6 +140,9 @@ public sealed class CompilerService : ICompilerService
     {
       if (File.Exists(path))
         File.Delete(path);
+
+      if (File.Exists(path + DebugMap.Extension))
+        File.Delete(path + DebugMap.Extension);
     }
   }
 }

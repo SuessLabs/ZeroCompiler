@@ -14,6 +14,9 @@
     <DataTemplate DataType="vm:SolutionExplorerViewModel">
       <views:SolutionExplorerView />
     </DataTemplate>
+    <DataTemplate DataType="vm:DebuggerViewModel">
+      <views:DebuggerView />
+    </DataTemplate>
   </Application.DataTemplates>
 
   <Application.Styles>

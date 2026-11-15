@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Mvvm;
+using Zero.Dbg;
 using Zero.Ide.Docking;
 using Zero.Ide.Services;
 using Zero.Ide.Themes;
@@ -32,6 +33,7 @@ public partial class App : PrismApplication
     containerRegistry.RegisterSingleton<IEditorDialogService, EditorDialogService>();
     containerRegistry.RegisterSingleton<ICompilerService, CompilerService>();
     containerRegistry.RegisterSingleton<IProgramRunner, ProgramRunner>();
+    containerRegistry.RegisterSingleton<IDebugSession, IdeDebugSession>();
     containerRegistry.RegisterSingleton<IUpdateService, UpdateService>();
 
     var settings = new IniSettingsService();

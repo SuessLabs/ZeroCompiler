@@ -16,4 +16,7 @@ public static class EditorKeyGestures
   public static KeyGesture Save { get; } = new(Key.S, KeyModifiers.Control);
   public static KeyGesture SaveAll { get; } = new(Key.S, KeyModifiers.Control | KeyModifiers.Alt);
   public static KeyGesture SaveAs { get; } = new(Key.S, KeyModifiers.Control | KeyModifiers.Shift);
+  public static KeyGesture StepOver { get; } = new(Key.F10);
+  public static KeyGesture StopDebugging { get; } = new(Key.F5, KeyModifiers.Shift);
+  public static KeyGesture ToggleBreakpoint { get; } = new(Key.F9);
 }
