@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using AvaloniaEdit.Highlighting;
@@ -27,8 +26,25 @@ public static class ZasmHighlighting
     var syntax = XDocument.Load(stream);
     XNamespace ns = "http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008";
 
-    var instructions = syntax.Descendants(ns + "Keywords").Single(e => (string?)e.Attribute("color") == "Instruction");
-    var words = instructions.Elements(ns + "Word").Select(e => e.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    XElement? instructions = null;
+    foreach (var keywords in syntax.Descendants(ns + "Keywords"))
+    {
+      if ((string?)keywords.Attribute("color") != "Instruction")
+        continue;
+
+      if (instructions is not null)
+        throw new InvalidOperationException("The ZASM highlighting resource has multiple instruction keyword groups.");
+
+      instructions = keywords;
+    }
+
+    if (instructions is null)
+      throw new InvalidOperationException("The ZASM highlighting resource has no instruction keyword group.");
+
+    var words = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    foreach (var word in instructions.Elements(ns + "Word"))
+      words.Add(word.Value);
 
     foreach (var field in typeof(Mnemonic).GetFields(BindingFlags.Public | BindingFlags.Static))
     {

@@ -8,12 +8,13 @@ namespace Zero.Core;
 
 public static class Helpers
 {
-  /// <summary>Because I despise System.Linq so much, we're using logic from it.</summary>
+  /// <summary>Determine whether a sequence contains a value using the specified equality comparer.</summary>
   /// <typeparam name="TSource"></typeparam>
   /// <param name="source"></param>
   /// <param name="value"></param>
   /// <param name="comparer"></param>
   /// <returns></returns>
+  /// <remark>Because I despise System.Linq so much, we're borrowing only good logic from it.</remark>
   /// <exception cref="ArgumentNullException"></exception>
   public static bool Contains<TSource>(this IEnumerable<TSource> source, TSource value, IEqualityComparer<TSource>? comparer)
   {

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Dock.Model.Controls;
@@ -279,13 +278,10 @@ public partial class MainWindowViewModel : ViewModelBase
     {
       var extension = Path.GetExtension(path);
 
-      if (!new[]
-      {
-        SourceFileExtensions.Assembly,
-        SourceFileExtensions.Source,
-        SourceFileExtensions.Header,
-        SourceFileExtensions.Zero
-      }.Contains(extension, StringComparer.OrdinalIgnoreCase))
+      if (!string.Equals(extension, SourceFileExtensions.Assembly, StringComparison.OrdinalIgnoreCase) &&
+          !string.Equals(extension, SourceFileExtensions.Source, StringComparison.OrdinalIgnoreCase) &&
+          !string.Equals(extension, SourceFileExtensions.Header, StringComparison.OrdinalIgnoreCase) &&
+          !string.Equals(extension, SourceFileExtensions.Zero, StringComparison.OrdinalIgnoreCase))
         return;
 
       var file = await _dialogs.GetLocalFileAsync(path)
@@ -451,7 +447,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
   private async Task<bool> ConfirmSaveAsync()
   {
-    foreach (var document in Documents.ToArray())
+    foreach (var document in new List<EditorDocument>(Documents))
     {
       if (!await ConfirmSaveAsync(document))
         return false;
@@ -533,13 +529,13 @@ public partial class MainWindowViewModel : ViewModelBase
   private async Task OpenDocumentAsync(IStorageFile file)
   {
     var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-    var existing = Documents.FirstOrDefault(document => document.File is { } open &&
-      string.Equals(open.Path.AbsoluteUri, file.Path.AbsoluteUri, comparison));
-
-    if (existing is not null)
+    foreach (var document in Documents)
     {
-      DockFactory.Activate(existing);
-      return;
+      if (document.File is { } open && string.Equals(open.Path.AbsoluteUri, file.Path.AbsoluteUri, comparison))
+      {
+        DockFactory.Activate(document);
+        return;
+      }
     }
 
     await using var stream = await file.OpenReadAsync();
@@ -570,7 +566,7 @@ public partial class MainWindowViewModel : ViewModelBase
     Documents.Remove(document);
     if (ReferenceEquals(_activeDocument, document))
     {
-      _activeDocument = Documents.LastOrDefault();
+      _activeDocument = Documents.Count > 0 ? Documents[Documents.Count - 1] : null;
       if (_activeDocument is not null)
         DockFactory.Activate(_activeDocument);
     }
@@ -593,7 +589,7 @@ public partial class MainWindowViewModel : ViewModelBase
     var active = ActiveDocument;
     try
     {
-      foreach (var document in Documents.ToArray())
+      foreach (var document in new List<EditorDocument>(Documents))
       {
         if (!document.Editor.IsModified)
           continue;
@@ -621,10 +617,11 @@ public partial class MainWindowViewModel : ViewModelBase
       return false;
 
     var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-    if (Documents.Any(other => !ReferenceEquals(other, document) && other.File is { } open &&
-      string.Equals(open.Path.AbsoluteUri, file.Path.AbsoluteUri, comparison)))
+    foreach (var other in Documents)
     {
-      throw new InvalidOperationException("That file is already open in another tab. Save that tab or choose a different file name.");
+      if (!ReferenceEquals(other, document) && other.File is { } open &&
+          string.Equals(open.Path.AbsoluteUri, file.Path.AbsoluteUri, comparison))
+        throw new InvalidOperationException("That file is already open in another tab. Save that tab or choose a different file name.");
     }
 
     if (editor.Settings.TrimTrailingWhitespaceOnSave)

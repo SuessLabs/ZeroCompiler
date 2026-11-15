@@ -1,1 +1,1 @@
-N:System.Linq;Do not use System.Linq, as operations may not be AOT-friendly, slower, or difficult to debug.
+N:System.Linq;Production code must use explicit loops or collection APIs. LINQ is allowed only in unit tests. Stay AOT-friendly, as Linq is slower and difficult to debug.

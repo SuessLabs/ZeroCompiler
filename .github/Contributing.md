@@ -22,6 +22,7 @@ We reserve the right to close your "_issue_" or feature request if:
 * Does **NOT** use System.Linq
 * Must be AOT (ahead-of-time) complation friendly
 * _**KISS**_ methodolgoy
+* Production projects must not use `System.Linq`; LINQ is allowed only in unit tests. The build enforces this with `BannedSymbols.txt` and the banned API analyzer.
 
 There have been requests in the past where individuals wanted changes for the sake of personal ease rather than how it would affect the ecosystem compatibility. This project aims to maintain compatibility, not just _one-offs_.
 

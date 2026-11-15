@@ -2,9 +2,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Zero.Ide.ViewModels;
 
@@ -70,15 +70,25 @@ public sealed class WorkspaceNode : ViewModelBase
     try
     {
       // Enumerate only the expanded directory, off the UI thread. Never recurse into links.
-      var entries = await Task.Run(()
-        => new DirectoryInfo(Path)
-        .EnumerateFileSystemInfos()
-        .Select(entry => (entry.FullName,
-          IsDirectory: (entry.Attributes & FileAttributes.Directory) != 0,
-          CanExpand: (entry.Attributes & FileAttributes.ReparsePoint) == 0))
-        .OrderByDescending(entry => entry.IsDirectory)
-        .ThenBy(entry => entry.FullName, StringComparer.OrdinalIgnoreCase)
-        .ToArray());
+      var entries = await Task.Run(() =>
+      {
+        var items = new List<(string FullName, bool IsDirectory, bool CanExpand, int OriginalIndex)>();
+        foreach (var entry in new DirectoryInfo(Path).EnumerateFileSystemInfos())
+          items.Add((entry.FullName,
+            (entry.Attributes & FileAttributes.Directory) != 0,
+            (entry.Attributes & FileAttributes.ReparsePoint) == 0,
+            items.Count));
+
+        items.Sort(static (left, right) =>
+        {
+          int comparison = right.IsDirectory.CompareTo(left.IsDirectory);
+          if (comparison == 0)
+            comparison = StringComparer.OrdinalIgnoreCase.Compare(left.FullName, right.FullName);
+
+          return comparison != 0 ? comparison : left.OriginalIndex.CompareTo(right.OriginalIndex);
+        });
+        return items;
+      });
 
       Children.Clear();
 

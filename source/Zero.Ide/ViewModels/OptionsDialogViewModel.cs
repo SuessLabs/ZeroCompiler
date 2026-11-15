@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Dialogs;
@@ -120,7 +119,17 @@ public class OptionsDialogViewModel : ViewModelBase, IDialogAware
   {
     var settings = _settings.Current;
     CompilerPath = settings.CompilerPath;
-    SelectedTheme = Themes.First(choice => choice.Value == settings.Theme);
+    ThemeChoice? selectedTheme = null;
+    foreach (var choice in Themes)
+    {
+      if (choice.Value != settings.Theme)
+        continue;
+
+      selectedTheme = choice;
+      break;
+    }
+
+    SelectedTheme = selectedTheme ?? throw new InvalidOperationException("The selected theme is unavailable.");
     FontFamily = settings.FontFamily;
     FontSize = settings.FontSize;
     IndentationSize = settings.IndentationSize;
