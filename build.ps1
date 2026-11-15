@@ -14,7 +14,10 @@ param (
   [string]$CompilerVersion,
 
   [ValidateNotNullOrEmpty()]
-  [string]$IdeVersion
+  [string]$IdeVersion,
+
+  [ValidateNotNullOrEmpty()]
+  [string]$DebuggerVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,6 +31,10 @@ if ($PSBoundParameters.ContainsKey('CompilerVersion')) {
 
 if ($PSBoundParameters.ContainsKey('IdeVersion')) {
   $versionArguments += "-p:IdeVersion=$IdeVersion"
+}
+
+if ($PSBoundParameters.ContainsKey('DebuggerVersion')) {
+  $versionArguments += "-p:DebuggerVersion=$DebuggerVersion"
 }
 
 # Use a single MSBuild worker and avoid depending on existing build servers.

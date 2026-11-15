@@ -9,11 +9,21 @@ that create Windows GUI controls) and static Linux x86-64 ELF64 executables usin
 syscalls. Shared-library ELF linking, DLL output, additional architectures, macOS,
 and STM32 remain future work. See [Linux x86-64 support](docs/linux64.md).
 
+## Zero Language Suite
+
+* **Zero** - _Zero Assembly and command line compiler tooling (Zero.Cli)_
+* **Zero.Ide** - _Integrated Development Environment with debugger support_
+* **Zero.Dbg** - _Debugger_
+
 ![ZIDE](docs/images/Zero.IDE-Sample-1.png)
 
-## About
+## History
 
-Zero has its inceptions in 2001 and matured 2006 as a simple, fast, and efficient programming language created by Damian Suess (_Xeno Innovations, inc._). At the time, C/C++ and Visual Basic were the key programmang languages (_besides Java or Pascal_) for creating a compiled business/hobby application. Zero has the heart of assembly language giving it that bare-metal kick.
+> Zero has the heart of assembly language giving it that bare-metal kick.
+
+Zero has its inceptions in 2001 and matured 2006 as a simple, fast, and efficient programming language created by Damian Suess (_Xeno Innovations, inc._). Created at the time of C/C++ and Visual Basic dominance as the key business programmang languages (_besides Java or Pascal_).
+
+The original language parser and compiler has been completely rewritten from scratch, allowing for Windows PE and Linux ELF (x64) projects to build. Enjoy the new cross-platform IDE and debugger.
 
 ### Zero Next-Generation
 

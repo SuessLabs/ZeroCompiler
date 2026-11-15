@@ -50,7 +50,7 @@ jobs:
       - name: Test installer update checks
         run: ./installer/tests/test-update-check.ps1
 
-      - name: Increment and commit compiler and IDE versions
+      - name: Increment and commit compiler, IDE and debugger versions
         id: version
         run: ./.github/scripts/update-version.ps1
 
@@ -73,7 +73,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
           IDE_VERSION: ${{ steps.version.outputs.ide_version }}
-        run: ./publish.ps1 -CompilerVersion $env:RELEASE_VERSION -IdeVersion $env:IDE_VERSION
+          DEBUGGER_VERSION: ${{ steps.version.outputs.debugger_version }}
+        run: ./publish.ps1 -CompilerVersion $env:RELEASE_VERSION -IdeVersion $env:IDE_VERSION -DebuggerVersion $env:DEBUGGER_VERSION
 
       - name: Test release
         if: env.TARGET_BRANCH == 'master'
@@ -81,7 +82,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
           IDE_VERSION: ${{ steps.version.outputs.ide_version }}
-        run: dotnet test source/Zero.slnx --configuration Release --no-build --no-restore "-p:CompilerVersion=$env:RELEASE_VERSION" "-p:IdeVersion=$env:IDE_VERSION"
+          DEBUGGER_VERSION: ${{ steps.version.outputs.debugger_version }}
+        run: dotnet test source/Zero.slnx --configuration Release --no-build --no-restore "-p:CompilerVersion=$env:RELEASE_VERSION" "-p:IdeVersion=$env:IDE_VERSION" "-p:DebuggerVersion=$env:DEBUGGER_VERSION"
 
       - name: Package and publish GitHub Release
         if: env.TARGET_BRANCH == 'master'

@@ -11,26 +11,30 @@ to a branch, does not increment the version.
 | `develop` | Increment Build | `0.0.2.10` → `0.0.2.11` | Version commit only |
 | `master` | Increment Revision and reset Build to 0 | `0.0.2.11` → `0.0.3.0` | Version commit, `v0.0.3.0` tag, and GitHub Release |
 
-The version commit updates two independent `VersionPrefix` values together:
+All product versions live in `source/Version.props`. The version commit updates
+three independent values together:
 
-| Projects | Version source | Initial version after separation |
+| Projects | Property | Version at centralization |
 | --- | --- | --- |
-| `Zero` and `Zero.Cli` | `source/Directory.Build.props` | `0.0.4.6` |
-| `Zero.Ide` | `source/Zero.Ide/Version.props` | `0.1.0.0` |
+| `Zero` and `Zero.Cli` | `CompilerVersion` | `0.2.0.100` |
+| `Zero.Ide` | `IdeVersion` | `0.2.0.15` |
+| `Zero.Dbg` and `Zero.Dbg.WinPe` | `DebuggerVersion` | `0.2.0.3` |
 
-Both follow the branch rules above, using their own current version. For example,
-a merge into `develop` advances the compiler/CLI to `0.0.4.7` and the IDE to
-`0.1.0.1`. A merge into `master` advances their Revision components independently
-and resets both Build components to zero. Local Visual Studio builds,
-`dotnet build`, tests, and publishing do not increment either version.
+All three follow the branch rules above, using their own current version. For
+example, a merge into `develop` advances the compiler/CLI to `0.2.0.101`, the IDE
+to `0.2.0.16`, and the debugger to `0.2.0.4`. A merge into `master` advances their
+Revision components independently and resets their Build components to zero.
+Tests and debugger backends inherit their product's version. Local Visual Studio
+builds, `dotnet build`, tests, and publishing do not increment versions.
 
-Master releases have no prerelease suffix in either version source. Major and
+Master releases have no prerelease suffix. Major and
 Minor remain manual decisions. When a branch has
 an older Revision than an existing release tag with the same Major/Minor, the
 next bump starts from the newer release version. Previous version commits also
 prevent a merge of stale version metadata from moving that branch backward.
-The editor's baselines come from its own metadata in those commits, never from
-the compiler's tag number. Releases predating the IDE version file are supported.
+The editor and debugger baselines come from their own metadata in those commits,
+never from the compiler's tag number. Release history using the former version
+file locations, or predating independent product versions, is supported.
 
 On `master`, the workflow builds and tests the tagged commit, then publishes
 generated release notes and `zero-v{Major}.{Minor}.{Revision}.{Build}-win-x64.zip`.
@@ -39,9 +43,9 @@ leaves the version commit and tag in place but does not create the Release;
 rerun the failed workflow to retry. Reruns reuse the same PR's version and tag,
 and an existing Release's ZIP is replaced rather than creating another Release.
 Tags and release archive names continue to use the compiler/CLI version. The
-workflow supplies `CompilerVersion` and `IdeVersion` separately so the release
-build preserves the IDE's version. Its outputs include `version` (compiler/CLI)
-and `ide_version` (editor).
+workflow supplies `CompilerVersion`, `IdeVersion`, and `DebuggerVersion`
+separately so the release build preserves each product's version. Its outputs
+include `version` (compiler/CLI), `ide_version` (editor), and `debugger_version`.
 
 Competing merge runs use retrying fast-forward pushes; master's tag and version
 commit are pushed atomically. Runs are not grouped with Actions concurrency,

@@ -1,7 +1,5 @@
 <Project>
-  <!-- Load the editor's defaults first; other projects keep the compiler defaults below. -->
-  <Import Project="$(MSBuildThisFileDirectory)Zero.Ide/Version.props"
-          Condition="'$(MSBuildProjectName)' == 'Zero.Ide'" />
+  <Import Project="$(MSBuildThisFileDirectory)Version.props" />
 
   <PropertyGroup>
     <Company>Xeno Innovations, Inc.</Company>
@@ -9,14 +7,6 @@
     <Copyright>Copyright © Xeno Innovations, Inc. 2001-$([System.DateTime]::Now.ToString(yyyy))</Copyright>
     <!--<Description></Description>-->
     <!--<Product>Zero Compiler</Product>-->
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Zero.Ide'">
-    <!-- The SDK derives assembly, file, and informational versions from Version. -->
-    <!-- Compiler/CLI defaults. CompilerVersion and IdeVersion allow independent CI overrides. -->
-    <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.0.4.21</VersionPrefix>
-    <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
-    <Version Condition="'$(MSBuildProjectName)' != 'Zero.Ide' And '$(CompilerVersion)' != ''">$(CompilerVersion)</Version>
   </PropertyGroup>
 
   <PropertyGroup>

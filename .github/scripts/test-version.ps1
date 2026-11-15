@@ -35,6 +35,16 @@ $props = @'
 </Project>
 '@
 $ideProps = $props.Replace('0.0.2.10', '0.1.7.20').Replace('alpha1', 'beta2')
+$centralProps = @'
+<Project>
+  <PropertyGroup>
+    <CompilerVersion Condition="'$(CompilerVersion)' == ''">0.0.2.10</CompilerVersion>
+    <IdeVersion Condition="'$(IdeVersion)' == ''">0.1.7.20</IdeVersion>
+    <DebuggerVersion Condition="'$(DebuggerVersion)' == ''">0.2.0.3</DebuggerVersion>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''">preview</VersionSuffix>
+  </PropertyGroup>
+</Project>
+'@
 
 Invoke-Test 'Develop increments Build; master increments Revision and resets Build' {
   Assert-Equal (Get-NextVersion '0.0.2.10' 'develop') '0.0.2.11'
@@ -64,6 +74,16 @@ Invoke-Test 'Props edits preserve formatting and clear the suffix only for maste
   Assert-Equal ($master.Contains('alpha1')) $false
   Assert-Throws { Get-PropsVersion '<Project />' }
   Assert-Throws { Get-PropsVersion ($props + $props) }
+}
+
+Invoke-Test 'Central properties can be read and edited independently' {
+  Assert-Equal (Get-PropsVersion $centralProps 'CompilerVersion') '0.0.2.10'
+  Assert-Equal (Get-PropsVersion $centralProps 'IdeVersion') '0.1.7.20'
+  Assert-Equal (Get-PropsVersion $centralProps 'DebuggerVersion') '0.2.0.3'
+  $updated = Set-PropsVersion $centralProps '0.2.0.4' 'develop' 'DebuggerVersion'
+  Assert-Equal $updated ($centralProps.Replace('0.2.0.3', '0.2.0.4'))
+  Assert-Throws { Get-PropsVersion $centralProps 'VersionPrefix' }
+  Assert-Throws { Get-PropsVersion ($centralProps + $centralProps) 'DebuggerVersion' }
 }
 
 Invoke-Test 'Local Git: concurrent merges, retries, tags, stale metadata, and reruns' {
@@ -134,6 +154,12 @@ Invoke-Test 'Local Git: concurrent merges, retries, tags, stale metadata, and re
     [System.IO.File]::WriteAllText((Join-Path $seed 'source/Zero.Ide/Version.props'), $ideProps)
     $null = Get-TestGit $seed @('add', '.')
     $null = Get-TestGit $seed @('commit', '-m', 'Independent editor version')
+    # Retain a legacy IDE release so baseline reads exercise the old file location.
+    $null = Get-TestGit $seed @('tag', 'v0.0.2.10')
+    [System.IO.File]::WriteAllText((Join-Path $seed 'source/Version.props'), $centralProps)
+    $null = Get-TestGit $seed @('rm', 'source/Zero.Ide/Version.props', 'source/Directory.Build.props')
+    $null = Get-TestGit $seed @('add', '.')
+    $null = Get-TestGit $seed @('commit', '-m', 'Centralize product versions')
     $null = Get-TestGit $seed @('branch', 'develop')
     $null = Get-TestGit $seed @('remote', 'add', 'origin', $remote)
     $null = Get-TestGit $seed @('push', 'origin', 'master', 'develop', '--tags')
@@ -144,43 +170,48 @@ Invoke-Test 'Local Git: concurrent merges, retries, tags, stale metadata, and re
     $results = @($runs | ForEach-Object { Receive-VersionProcess $_ })
     Assert-Equal (($results.version | Sort-Object) -join ',') '0.0.2.11,0.0.2.12,0.0.2.13,0.0.2.14'
     Assert-Equal (($results.ideVersion | Sort-Object) -join ',') '0.1.7.21,0.1.7.22,0.1.7.23,0.1.7.24'
+    Assert-Equal (($results.debuggerVersion | Sort-Object) -join ',') '0.2.0.4,0.2.0.5,0.2.0.6,0.2.0.7'
     $rerun = Update-ZeroVersion -Branch develop -PullRequest 1 -Directory $runners[0]
     Assert-Equal $rerun.reused $true
     Assert-Equal $rerun.ideVersion ($results | Where-Object commit -EQ $rerun.commit).ideVersion
+    Assert-Equal $rerun.debuggerVersion ($results | Where-Object commit -EQ $rerun.commit).debuggerVersion
     Assert-Equal (Get-TestGit $runners[0] @('rev-parse', 'HEAD')) $rerun.commit
-    Assert-Equal (Get-TestGit $runners[0] @('tag', '--list')) 'v0.0.2.9'
-    Assert-Equal (Get-PropsVersion (Get-TestGit $runners[0] @('show', 'origin/develop:source/Directory.Build.props'))) '0.0.2.14'
-    Assert-Equal (Get-PropsVersion (Get-TestGit $runners[0] @('show', 'origin/develop:source/Zero.Ide/Version.props'))) '0.1.7.24'
+    Assert-Equal (Get-TestGit $runners[0] @('tag', '--list')) "v0.0.2.10`nv0.0.2.9"
+    $developProps = Get-TestGit $runners[0] @('show', 'origin/develop:source/Version.props')
+    Assert-Equal (Get-PropsVersion $developProps 'CompilerVersion') '0.0.2.14'
+    Assert-Equal (Get-PropsVersion $developProps 'IdeVersion') '0.1.7.24'
+    Assert-Equal (Get-PropsVersion $developProps 'DebuggerVersion') '0.2.0.7'
 
     $masterRunner = New-TestClone 'master-runner' 'master'
     $release = Update-ZeroVersion -Branch master -PullRequest 5 -Directory $masterRunner
     Assert-Equal $release.version '0.0.3.0'
     Assert-Equal $release.ideVersion '0.1.8.0'
+    Assert-Equal $release.debuggerVersion '0.2.1.0'
     Assert-Equal (Get-TestGit $root @('--git-dir', $remote, 'rev-parse', "$($release.tag)^{commit}")) $release.commit
     Assert-Equal (Get-TestGit $root @('--git-dir', $remote, 'rev-parse', 'master')) $release.commit
-    $masterProps = [System.IO.File]::ReadAllText((Join-Path $masterRunner 'source/Directory.Build.props'))
-    Assert-Equal ($masterProps.Contains('alpha1')) $false
-    $masterIdeProps = [System.IO.File]::ReadAllText((Join-Path $masterRunner 'source/Zero.Ide/Version.props'))
-    Assert-Equal ($masterIdeProps.Contains('beta2')) $false
+    $masterProps = [System.IO.File]::ReadAllText((Join-Path $masterRunner 'source/Version.props'))
+    Assert-Equal ($masterProps.Contains('preview')) $false
 
     $masterRunners = @(6..7 | ForEach-Object { New-TestClone "master-$_" 'master' })
     $masterRuns = @(for ($i = 0; $i -lt 2; $i++) { Start-VersionProcess $masterRunners[$i] 'master' ($i + 6) })
     $masterResults = @($masterRuns | ForEach-Object { Receive-VersionProcess $_ })
     Assert-Equal (($masterResults.version | Sort-Object) -join ',') '0.0.4.0,0.0.5.0'
     Assert-Equal (($masterResults.ideVersion | Sort-Object) -join ',') '0.1.10.0,0.1.9.0'
+    Assert-Equal (($masterResults.debuggerVersion | Sort-Object) -join ',') '0.2.2.0,0.2.3.0'
     $releaseRerun = Update-ZeroVersion -Branch master -PullRequest 5 -Directory $masterRunner
     Assert-Equal $releaseRerun.reused $true
     Assert-Equal $releaseRerun.commit $release.commit
     Assert-Equal $releaseRerun.ideVersion $release.ideVersion
+    Assert-Equal $releaseRerun.debuggerVersion $release.debuggerVersion
     Assert-Equal (Get-TestGit $masterRunner @('rev-parse', 'HEAD')) $release.commit
 
     $afterRelease = Update-ZeroVersion -Branch develop -PullRequest 8 -Directory $runners[0]
     Assert-Equal $afterRelease.version '0.0.5.1'
     Assert-Equal $afterRelease.ideVersion '0.1.10.1'
+    Assert-Equal $afterRelease.debuggerVersion '0.2.3.1'
     $null = Get-TestGit $seed @('fetch', 'origin', 'develop')
     $null = Get-TestGit $seed @('switch', '--detach', 'origin/develop')
-    [System.IO.File]::WriteAllText((Join-Path $seed 'source/Directory.Build.props'), $props)
-    [System.IO.File]::WriteAllText((Join-Path $seed 'source/Zero.Ide/Version.props'), $ideProps)
+    [System.IO.File]::WriteAllText((Join-Path $seed 'source/Version.props'), $centralProps)
     [System.IO.File]::WriteAllText((Join-Path $seed 'merged-feature.txt'), 'Keep this feature')
     $null = Get-TestGit $seed @('add', '.')
     $null = Get-TestGit $seed @('commit', '-m', 'Merge feature with stale version metadata')
@@ -188,6 +219,7 @@ Invoke-Test 'Local Git: concurrent merges, retries, tags, stale metadata, and re
     $afterStaleMerge = Update-ZeroVersion -Branch develop -PullRequest 9 -Directory $runners[0]
     Assert-Equal $afterStaleMerge.version '0.0.5.2'
     Assert-Equal $afterStaleMerge.ideVersion '0.1.10.2'
+    Assert-Equal $afterStaleMerge.debuggerVersion '0.2.3.2'
     Assert-Equal ([System.IO.File]::ReadAllText((Join-Path $runners[0] 'merged-feature.txt'))) 'Keep this feature'
     [System.IO.File]::WriteAllText((Join-Path $runners[0] 'untracked.txt'), 'Preserve user changes')
     Assert-Throws { Update-ZeroVersion -Branch develop -PullRequest 10 -Directory $runners[0] } 'clean'

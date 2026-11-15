@@ -5,7 +5,8 @@ param(
   [ValidateSet('win-x64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64')][string]$Runtime,
   [ValidateSet('Size', 'Speed')][string]$OptimizationPreference = 'Size',
   [ValidateNotNullOrEmpty()][Alias('Version')][string]$CompilerVersion,
-  [ValidateNotNullOrEmpty()][string]$IdeVersion
+  [ValidateNotNullOrEmpty()][string]$IdeVersion,
+  [ValidateNotNullOrEmpty()][string]$DebuggerVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,6 +31,9 @@ if ($CompilerVersion) {
 if ($IdeVersion) {
   $buildArguments += @('-IdeVersion', $IdeVersion) }
 
+if ($DebuggerVersion) {
+  $buildArguments += @('-DebuggerVersion', $DebuggerVersion) }
+
 & $powerShell -NoProfile -File (Join-Path $PSScriptRoot 'build.ps1') @buildArguments
 
 if ($LASTEXITCODE -ne 0) {
@@ -46,5 +50,8 @@ if ($CompilerVersion) {
 
 if ($IdeVersion) {
   $packagingArguments.IdeVersion = $IdeVersion }
+
+if ($DebuggerVersion) {
+  $packagingArguments.DebuggerVersion = $DebuggerVersion }
 
 & (Join-Path $PSScriptRoot 'installer/build-installers.ps1') @packagingArguments
