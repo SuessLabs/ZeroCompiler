@@ -16,7 +16,7 @@ internal class Program
   {
     Console.WriteLine("Zero Compiler v{0}", Zero.Version);
 
-    if (args.Length == 0 || args.Contains("-h") || args.Contains("--help"))
+    if (args.Length == 0 || Array.IndexOf(args, "-h") >= 0 || Array.IndexOf(args, "--help") >= 0)
     {
       PrintUsage();
       return 0;

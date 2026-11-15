@@ -1,4 +1,4 @@
-# Zero Compiler
+# Zero - _Programming Language and Compiler Suite_
 
 ![logo](docs/images/zero-logo.png)
 

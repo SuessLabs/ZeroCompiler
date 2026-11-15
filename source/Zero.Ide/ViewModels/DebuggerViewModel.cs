@@ -2,7 +2,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Linq;
 using Dock.Model.Mvvm.Controls;
 using Zero.Dbg;
 using Zero.Ide.Models;
@@ -53,12 +52,35 @@ public sealed class DebuggerViewModel : Tool
       return;
     }
 
-    foreach (var stale in _registerScope.Children.Where(node => !values.Any(register => register.Name == node.Name)).ToArray())
-      _registerScope.Children.Remove(stale);
+    for (int i = _registerScope.Children.Count - 1; i >= 0; i--)
+    {
+      var child = _registerScope.Children[i];
+      bool present = false;
+      foreach (var register in values)
+      {
+        if (register.Name != child.Name)
+          continue;
+
+        present = true;
+        break;
+      }
+
+      if (!present)
+        _registerScope.Children.RemoveAt(i);
+    }
 
     foreach (var register in values)
     {
-      var node = _registerScope.Children.FirstOrDefault(child => child.Name == register.Name);
+      DebugValueNode? node = null;
+      foreach (var child in _registerScope.Children)
+      {
+        if (child.Name != register.Name)
+          continue;
+
+        node = child;
+        break;
+      }
+
       if (node is null)
         _registerScope.Children.Add(new DebugValueNode(register.Name, register.Hex, "uint32"));
       else

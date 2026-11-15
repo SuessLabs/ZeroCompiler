@@ -2,7 +2,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Dock.Avalonia.Controls;
@@ -54,7 +53,7 @@ public sealed class EditorDockFactory : Factory
   public override void CloseAllDockables(IDockable dockable)
   {
     if (dockable.Owner is IDock dock && dock.VisibleDockables is { } visible)
-      _ = _owner.CloseDocumentsAsync([.. visible.OfType<EditorDocument>()]);
+      _ = _owner.CloseDocumentsAsync(DocumentsInRange(visible, 0, visible.Count));
   }
 
   public override void CloseDockable(IDockable dockable)
@@ -74,36 +73,32 @@ public sealed class EditorDockFactory : Factory
     if (!_applicationClosing)
       return;
 
-    foreach (var window in _owner.Layout.Windows?.ToArray() ?? [])
-      window.Exit();
+    if (_owner.Layout.Windows is { } windows)
+      foreach (var window in new List<IDockWindow>(windows)) window.Exit();
   }
 
   public override void CloseLeftDockables(IDockable dockable)
   {
     if (dockable.Owner is IDock dock && dock.VisibleDockables is { } visible)
-      _ = _owner.CloseDocumentsAsync([.. visible
-        .Take(visible.IndexOf(dockable))
-        .OfType<EditorDocument>()]);
+      _ = _owner.CloseDocumentsAsync(DocumentsInRange(visible, 0, visible.IndexOf(dockable)));
   }
 
   public override void CloseOtherDockables(IDockable dockable)
   {
     if (dockable.Owner is IDock dock && dock.VisibleDockables is { } visible)
-      _ = _owner.CloseDocumentsAsync([.. visible
-        .OfType<EditorDocument>()
-        .Where(document => !ReferenceEquals(document, dockable))]);
+      _ = _owner.CloseDocumentsAsync(DocumentsInRange(visible, 0, visible.Count, dockable));
   }
 
   public override void CloseRightDockables(IDockable dockable)
   {
     if (dockable.Owner is IDock dock && dock.VisibleDockables is { } visible)
-      _ = _owner.CloseDocumentsAsync([.. visible
-        .Skip(visible.IndexOf(dockable) + 1)
-        .OfType<EditorDocument>()]);
+      _ = _owner.CloseDocumentsAsync(DocumentsInRange(visible, visible.IndexOf(dockable) + 1, visible.Count));
   }
 
   public override IRootDock CreateLayout()
   {
+    var documents = new List<IDockable>(_owner.Documents.Count);
+    foreach (var document in _owner.Documents) documents.Add(document);
     _documents = new DocumentDock
     {
       Id = "Documents",
@@ -111,7 +106,7 @@ public sealed class EditorDockFactory : Factory
       CanCloseLastDockable = true,
       CanCreateDocument = false,
       ActiveDockable = _owner.ActiveDocument,
-      VisibleDockables = CreateList<IDockable>(_owner.Documents.Cast<IDockable>().ToArray()),
+      VisibleDockables = CreateList<IDockable>(documents.ToArray()),
     };
 
     _explorerDock = CreateExplorerDock();
@@ -170,13 +165,16 @@ public sealed class EditorDockFactory : Factory
     if (_applicationClosing || window is null || _approvedWindows.Remove(window))
       return base.OnWindowClosing(window);
 
-    var documents = Descendants(window.Layout).OfType<EditorDocument>().ToArray();
+    var documents = new List<EditorDocument>();
+    foreach (var item in Descendants(window.Layout))
+      if (item is EditorDocument document)
+        documents.Add(document);
 
-    if (documents.Length == 0)
+    if (documents.Count == 0)
       return base.OnWindowClosing(window);
 
     if (!_owner.IsBusy && _closingWindows.Add(window))
-      _ = CloseWindowAsync(window, documents);
+      _ = CloseWindowAsync(window, documents.ToArray());
 
     return false;
   }
@@ -205,7 +203,7 @@ public sealed class EditorDockFactory : Factory
 
       if (owner is not null && ReferenceEquals(owner.ActiveDockable, debugger))
       {
-        owner.ActiveDockable = owner.VisibleDockables?.FirstOrDefault(item => item is not ISplitter);
+        owner.ActiveDockable = FirstContent(owner.VisibleDockables);
         if (owner.ActiveDockable is { } active)
           SetActiveDockable(active);
       }
@@ -215,8 +213,7 @@ public sealed class EditorDockFactory : Factory
 
       // Keep the layout and floating bounds so the next session restores the user's placement.
       if (root?.Window?.Host is HostWindow host &&
-          !Descendants(root).OfType<ITool>().Any() &&
-          !Descendants(root).OfType<IDocument>().Any())
+          !HasHostContent(root))
       {
         host.Hide();
       }
@@ -243,6 +240,35 @@ public sealed class EditorDockFactory : Factory
   {
     if (FindRoot(document, _ => true)?.Window is { } window)
       window.Title = $"{document.DisplayTitle} — Zero IDE";
+  }
+
+  private static List<EditorDocument> DocumentsInRange(IList<IDockable> items, int start, int end, IDockable? exclude = null)
+  {
+    var documents = new List<EditorDocument>();
+    for (int i = start; i < end; i++)
+      if (items[i] is EditorDocument document && !ReferenceEquals(document, exclude))
+        documents.Add(document);
+
+    return documents;
+  }
+
+  private static IDockable? FirstContent(IList<IDockable>? items)
+  {
+    if (items is not null)
+      foreach (var item in items)
+        if (item is not ISplitter)
+          return item;
+
+    return null;
+  }
+
+  private static bool HasHostContent(IDockable root)
+  {
+    foreach (var item in Descendants(root))
+      if (item is ITool or IDocument)
+        return true;
+
+    return false;
   }
 
   private static IEnumerable<IDockable> Descendants(IDockable? dockable)

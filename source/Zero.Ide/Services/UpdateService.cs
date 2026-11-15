@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -93,29 +92,47 @@ public sealed class UpdateService : IUpdateService
       using var checksumTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
       var sums = await _client.GetStringAsync(update.ChecksumsUri, checksumTimeout.Token);
       var pattern = @"^([a-fA-F0-9]{64})[ \t]+\*?" + Regex.Escape(update.AssetName) + "$";
-      var entries = sums.TrimStart('\uFEFF').Split('\n').Select(line => Regex.Match(line.TrimEnd('\r'), pattern)).Where(match => match.Success).ToArray();
-      if (entries.Length != 1) throw new InvalidDataException("The release checksum file does not identify this installer uniquely.");
-      expected = entries[0].Groups[1].Value;
+      int matches = 0;
+
+      foreach (var line in sums.TrimStart('\uFEFF').Split('\n'))
+      {
+        var match = Regex.Match(line.TrimEnd('\r'), pattern);
+        if (!match.Success)
+          continue;
+
+        matches++;
+        expected = match.Groups[1].Value;
+      }
+
+      if (matches != 1)
+        throw new InvalidDataException("The release checksum file does not identify this installer uniquely.");
     }
 
-    if (!Regex.IsMatch(expected, "^[a-fA-F0-9]{64}$")) throw new InvalidDataException("The installer checksum is invalid.");
+    if (expected is null || !Regex.IsMatch(expected, "^[a-fA-F0-9]{64}$"))
+      throw new InvalidDataException("The installer checksum is invalid.");
+
     var directory = Directory.CreateDirectory(Path.Combine(_downloadDirectory, Guid.NewGuid().ToString("N")));
     var path = Path.Combine(directory.FullName, update.AssetName);
     try
     {
       using var response = await _client.GetAsync(update.InstallerUri, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
       response.EnsureSuccessStatusCode();
+
       await using (var source = await response.Content.ReadAsStreamAsync(timeout.Token))
       await using (var destination = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
+
       using (var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
       {
         var buffer = new byte[81920];
         long length = 0;
         int read;
+
         while ((read = await source.ReadAsync(buffer, timeout.Token)) != 0)
         {
           length += read;
-          if (length > update.Size) throw new InvalidDataException("The update download exceeds its published size.");
+          if (length > update.Size)
+            throw new InvalidDataException("The update download exceeds its published size.");
+
           hash.AppendData(buffer, 0, read);
           await destination.WriteAsync(buffer.AsMemory(0, read), timeout.Token);
         }
@@ -136,10 +153,13 @@ public sealed class UpdateService : IUpdateService
 
   public void LaunchInstaller(DownloadedUpdate update)
   {
-    if (!IsSupported) throw new PlatformNotSupportedException("IDE updates currently require Windows x64.");
+    if (!IsSupported)
+      throw new PlatformNotSupportedException("IDE updates currently require Windows x64.");
+
     using (var stream = File.OpenRead(update.Path))
       if (!Convert.ToHexString(SHA256.HashData(stream)).Equals(update.Sha256, StringComparison.OrdinalIgnoreCase))
         throw new InvalidDataException("The downloaded installer changed after verification. Check for updates again.");
+
     using var process = Process.Start(CreateInstallerStartInfo(update.Path, AppContext.BaseDirectory, Environment.ProcessId))
       ?? throw new InvalidOperationException("The update installer could not be started.");
   }
@@ -150,6 +170,7 @@ public sealed class UpdateService : IUpdateService
     var directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(ideDirectory));
     if (Path.GetFileName(directory).Equals("ide", StringComparison.OrdinalIgnoreCase))
       arguments += $" /D={Path.GetDirectoryName(directory)}"; // NSIS /D must be unquoted and last.
+
     return new ProcessStartInfo(Path.GetFullPath(path)) { UseShellExecute = true, Verb = "runas", Arguments = arguments };
   }
 
@@ -161,7 +182,9 @@ public sealed class UpdateService : IUpdateService
   private static bool TryVersion(string value, out Version version)
   {
     version = new Version();
-    if (!Regex.IsMatch(value, @"^\d+\.\d+\.\d+(\.\d+)?$")) return false;
+    if (!Regex.IsMatch(value, @"^\d+\.\d+\.\d+(\.\d+)?$"))
+      return false;
+
     return Version.TryParse(value.Split('.').Length == 3 ? value + ".0" : value, out version!);
   }
 }

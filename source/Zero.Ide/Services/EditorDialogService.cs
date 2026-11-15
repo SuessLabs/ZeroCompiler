@@ -2,7 +2,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Avalonia;
@@ -36,7 +35,12 @@ public class EditorDialogService : IEditorDialogService
   public async Task<string?> BrowseCompilerAsync()
   {
     var desktop = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
-    var owner = desktop?.Windows.LastOrDefault(window => window.IsActive) ?? Owner;
+    Window? activeWindow = null;
+    if (desktop is not null)
+      foreach (var window in desktop.Windows)
+        if (window.IsActive) activeWindow = window;
+
+    var owner = activeWindow ?? Owner;
 
     var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
     {
