@@ -1,7 +1,7 @@
 ---
 name: Zero Language Feature Request
 about: Suggest an idea for this project
-title: "[ZSRC] [Enhancement] "
+title: "[ZSRC] [Request] "
 labels: enhancement, not-reviewed
 assignees: ''
 type: Feature

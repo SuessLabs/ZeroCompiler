@@ -1,7 +1,7 @@
 ---
 name: Zero Assembly Feature Request
 about: Suggest an idea for this project
-title: "[ZASM] [Enhancement] "
+title: "[ZASM] [Request] "
 labels: enhancement, not-reviewed
 assignees: ''
 type: Feature
