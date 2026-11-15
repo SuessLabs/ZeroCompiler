@@ -2,7 +2,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Dock.Model.Controls;
+using Dock.Model.Core;
 using Moq;
 using Zero.Dbg;
 using Zero.Ide.Services;
@@ -74,6 +77,76 @@ public class DebuggerTests
     Assert.IsFalse(shell.IsDebugging);
     Assert.IsFalse(editor.IsDebugReadOnly);
     Assert.IsFalse(shell.CmdDebugStop.CanExecute());
+  }
+
+  [TestMethod]
+  public void DebuggerDockIsHiddenOutsideDebuggingAndRetainsMovedPlacement()
+  {
+    var session = new Mock<IDebugSession>();
+    var shell = new MainWindowViewModel(new EditorViewModel(), new Mock<IEditorDialogService>().Object, debugSession: session.Object);
+
+    Assert.Contains(shell.Debugger, shell.Layout.HiddenDockables);
+
+    var originalDock = (IToolDock)shell.Debugger.OriginalOwner!;
+    Assert.AreEqual(Alignment.Right, originalDock.Alignment);
+
+    session.Raise(s => s.Changed += null, session.Object, new DebugSnapshot(DebugState.Starting, "Starting"));
+
+    Assert.AreSame(originalDock, shell.Debugger.Owner);
+    Assert.DoesNotContain(shell.Debugger, shell.Layout.HiddenDockables);
+
+    var explorerDock = (IDock)shell.SolutionExplorer.Owner!;
+    shell.DockFactory.MoveDockable(originalDock, explorerDock, shell.Debugger, shell.SolutionExplorer);
+
+    foreach (var state in new[] { DebugState.Paused, DebugState.Running, DebugState.Exited, DebugState.Starting, DebugState.Faulted, DebugState.Idle })
+    {
+      session.Raise(s => s.Changed += null, session.Object, new DebugSnapshot(state, state.ToString()));
+
+      if (shell.IsDebugging)
+      {
+        Assert.AreSame(explorerDock, shell.Debugger.Owner);
+        Assert.IsNotNull(explorerDock.VisibleDockables);
+        Assert.Contains(shell.Debugger, explorerDock.VisibleDockables);
+      }
+      else
+      {
+        Assert.Contains(shell.Debugger, shell.Layout.HiddenDockables);
+        Assert.IsNotNull(explorerDock.VisibleDockables);
+        Assert.DoesNotContain(shell.Debugger, explorerDock.VisibleDockables);
+        Assert.AreSame(explorerDock, shell.Debugger.OriginalOwner);
+      }
+    }
+
+    Assert.ContainsSingle(dockable => ReferenceEquals(dockable, shell.Debugger), shell.Layout.HiddenDockables);
+  }
+
+  [TestMethod]
+  public void DebuggerValueTreeRetainsNodesAndSupportsNestedScopes()
+  {
+    var model = new DebuggerViewModel();
+    model.Update(new DebugSnapshot(DebugState.Paused, "Step", Registers: [new("EAX", 42), new("EBX", 7)]));
+    var scope = model.Values.Single();
+    var eax = scope.Children[0];
+
+    Assert.AreEqual("Registers", scope.Name);
+    Assert.AreEqual("EAX", eax.Name);
+    Assert.AreEqual("0x0000002A", eax.Value);
+    Assert.AreEqual("uint32", eax.Type);
+
+    scope.IsExpanded = false;
+    model.Update(new DebugSnapshot(DebugState.Paused, "Step", Registers: [new("EAX", 43)]));
+
+    Assert.AreSame(eax, scope.Children.Single());
+    Assert.AreEqual("0x0000002B", eax.Value);
+    Assert.IsFalse(scope.IsExpanded);
+
+    var locals = new Models.DebugValueNode("Locals");
+    locals.Children.Add(new Models.DebugValueNode("message", "hello", "string"));
+    model.Values.Add(locals);
+    model.Update(new DebugSnapshot(DebugState.Running, "Running"));
+
+    Assert.IsEmpty(scope.Children);
+    Assert.AreSame(locals, model.Values[1]);
   }
 
   [TestMethod]

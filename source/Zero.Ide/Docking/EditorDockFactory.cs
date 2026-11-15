@@ -122,23 +122,17 @@ public sealed class EditorDockFactory : Factory
     var debuggerDock = new ToolDock
     {
       Id = "DebuggerDock",
-      Alignment = Alignment.Bottom,
-      Proportion = 0.24,
+      Alignment = Alignment.Right,
+      Proportion = 0.34,
       ActiveDockable = _owner.Debugger,
       VisibleDockables = CreateList<IDockable>(_owner.Debugger),
     };
 
-    var vertical = new ProportionalDock
-    {
-      Id = "WorkspaceAndDebugger",
-      IsCollapsable = false,
-      Orientation = Orientation.Vertical,
-      VisibleDockables = CreateList<IDockable>(_main, new ProportionalDockSplitter(), debuggerDock),
-    };
-
-    root.VisibleDockables = CreateList<IDockable>(vertical);
-    root.DefaultDockable = vertical;
-    root.ActiveDockable = vertical;
+    _main.VisibleDockables.Add(new ProportionalDockSplitter());
+    _main.VisibleDockables.Add(debuggerDock);
+    root.VisibleDockables = CreateList<IDockable>(_main);
+    root.DefaultDockable = _main;
+    root.ActiveDockable = _main;
     return root;
   }
 
@@ -179,6 +173,34 @@ public sealed class EditorDockFactory : Factory
   }
 
   public void RemoveDocument(EditorDocument document) => base.CloseDockable(document);
+
+  public void SetDebuggerVisible(bool visible)
+  {
+    var debugger = _owner.Debugger;
+    var root = FindRoot(debugger, _ => true);
+    var hidden = root?.HiddenDockables?.Contains(debugger) == true;
+
+    if (visible && hidden)
+    {
+      RestoreDockable(debugger);
+      if (debugger.Owner is IDock dock)
+        dock.ActiveDockable = debugger;
+
+      if (root?.Window?.Host is HostWindow host)
+        host.Show();
+    }
+    else if (!visible && !hidden)
+    {
+      HideDockable(debugger);
+      // Keep the layout and floating bounds so the next session restores the user's placement.
+      if (root?.Window?.Host is HostWindow host &&
+          !Descendants(root).OfType<ITool>().Any() &&
+          !Descendants(root).OfType<IDocument>().Any())
+      {
+        host.Hide();
+      }
+    }
+  }
 
   public void ShowExplorer()
   {

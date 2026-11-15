@@ -28,13 +28,13 @@ public static class IdeThemes
 
     // Neutral Visual Studio-inspired surfaces, with a separate blue-gray Slate variant.
     resources.ThemeDictionaries[ThemeVariant.Light] = CreatePalette(
-      "#F5F5F5", "#FFFFFF", "#EBEBEB", "#FFFFFF", "#1F1F1F", "#616161", "#D4D4D4", "#E2E7EF", "#CDE4FF", "#0078D4", "#ADD6FF", "#6E7681", "#EDF2FA");
+      "#F5F5F5", "#FFFFFF", "#EBEBEB", "#FFFFFF", "#1F1F1F", "#616161", "#D4D4D4", "#E2E7EF", "#CDE4FF", "#0078D4", "#ADD6FF", "#6E7681", "#EDF2FA", "#F0F0F0");
 
     resources.ThemeDictionaries[ThemeVariant.Dark] = CreatePalette(
-      "#1F1F1F", "#252526", "#2B2B2B", "#1E1E1E", "#D4D4D4", "#A6A6A6", "#414141", "#37373D", "#094771", "#4DAAFC", "#264F78", "#858585", "#2A2D32");
+      "#1F1F1F", "#252526", "#2B2B2B", "#262626", "#D4D4D4", "#A6A6A6", "#414141", "#37373D", "#094771", "#4DAAFC", "#264F78", "#858585", "#303030", "#1E1E1E");
 
     resources.ThemeDictionaries[CoolSlateVariant] = CreatePalette(
-      "#242B35", "#2B3440", "#303C4A", "#202731", "#DFE7F0", "#A5B7CC", "#465568", "#39495D", "#365A7A", "#8BBDEB", "#3B556F", "#8B9EB4", "#2D3A49");
+      "#242B35", "#2B3440", "#303C4A", "#202731", "#DFE7F0", "#A5B7CC", "#465568", "#39495D", "#365A7A", "#8BBDEB", "#3B556F", "#8B9EB4", "#2D3A49", "#242B35");
 
     return resources;
   }
@@ -50,7 +50,7 @@ public static class IdeThemes
   public static bool IsDark(ThemeVariant variant) => variant == ThemeVariant.Dark || variant == CoolSlateVariant;
 
   private static ResourceDictionary CreatePalette(string window, string panel, string chrome, string editor,
-    string text, string secondary, string border, string hover, string selected, string accent, string selection, string lineNumbers, string currentLine)
+    string text, string secondary, string border, string hover, string selected, string accent, string selection, string lineNumbers, string currentLine, string gutter)
   {
     var resources = new ResourceDictionary();
     var colors = new Dictionary<string, string>
@@ -59,6 +59,7 @@ public static class IdeThemes
       ["Panel"] = panel,
       ["Chrome"] = chrome,
       ["Editor"] = editor,
+      ["Gutter"] = gutter,
       ["Text"] = text,
       ["Secondary"] = secondary,
       ["Border"] = border,

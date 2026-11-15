@@ -99,9 +99,15 @@
                   Header="Start / _Continue Debugging"
                   InputGesture="F5" />
         <MenuItem Command="{Binding CmdDebugPlayPause}" Header="Play / Pause Debugging" />
-        <MenuItem Command="{Binding CmdDebugStepOver}" Header="Step _Over" InputGesture="F10" />
-        <MenuItem Command="{Binding CmdToggleBreakpoint}" Header="Toggle Breakpoint" InputGesture="F9" />
-        <MenuItem Command="{Binding CmdDebugStop}" Header="Stop Debugging" InputGesture="Shift+F5" />
+        <MenuItem Command="{Binding CmdDebugStepOver}"
+                  Header="Step _Over"
+                  InputGesture="F10" />
+        <MenuItem Command="{Binding CmdToggleBreakpoint}"
+                  Header="Toggle Breakpoint"
+                  InputGesture="F9" />
+        <MenuItem Command="{Binding CmdDebugStop}"
+                  Header="Stop Debugging"
+                  InputGesture="Shift+F5" />
         <MenuItem Command="{Binding CmdBuildAndRun}" Header="Run Without Debugging" />
         <Separator />
         <MenuItem Command="{Binding CmdBuild}"
@@ -201,10 +207,16 @@
                   ToolTip.Tip="{Binding DebugPlayLabel}">
             <Path Data="{Binding DebugPlayIcon}" />
           </Button>
-          <Button Classes="toolbar-icon" Command="{Binding CmdDebugStepOver}" ToolTip.Tip="Step Over (F10)" AutomationProperties.Name="Step Over">
+          <Button AutomationProperties.Name="Step Over"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdDebugStepOver}"
+                  ToolTip.Tip="Step Over (F10)">
             <Path Data="M4,4 C16,0 22,5 17,11 M13,8 L17,12 21,8 M5,20 L21,20" />
           </Button>
-          <Button Classes="toolbar-icon" Command="{Binding CmdDebugStop}" ToolTip.Tip="Stop Debugging (Shift+F5)" AutomationProperties.Name="Stop Debugging">
+          <Button AutomationProperties.Name="Stop Debugging"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdDebugStop}"
+                  ToolTip.Tip="Stop Debugging (Shift+F5)">
             <Path Data="M5,5 L19,5 19,19 5,19 Z" />
           </Button>
 

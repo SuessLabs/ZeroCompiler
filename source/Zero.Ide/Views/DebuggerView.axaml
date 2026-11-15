@@ -1,26 +1,68 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:Zero.Ide.Models"
              xmlns:vm="using:Zero.Ide.ViewModels"
-             xmlns:dbg="using:Zero.Dbg"
              x:Class="Zero.Ide.Views.DebuggerView"
              x:DataType="vm:DebuggerViewModel">
-  <Grid Margin="10" RowDefinitions="Auto,Auto,*" RowSpacing="6">
+  <Grid Margin="8"
+        Background="{DynamicResource IdePanelBrush}"
+        RowDefinitions="Auto,Auto,Auto,*"
+        RowSpacing="6">
     <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
-    <TextBlock Grid.Row="1" Text="{Binding Location}" FontSize="11" TextWrapping="Wrap" />
-    <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
-      <ItemsControl ItemsSource="{Binding Registers}">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="dbg:RegisterValue">
-            <StackPanel Orientation="Horizontal" Margin="0,4,22,4" Spacing="8">
-              <TextBlock Text="{Binding Name}" Width="54" FontWeight="SemiBold" />
-              <TextBlock Text="{Binding Hex}" FontFamily="Cascadia Code, Consolas, monospace" />
-            </StackPanel>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
+    <TextBlock Text="{Binding Location}"
+               Grid.Row="1"
+               FontSize="11"
+               TextWrapping="Wrap" />
+    <Grid Grid.Row="2"
+          Margin="32,4,0,0"
+          ColumnDefinitions="150,150,90">
+      <TextBlock Text="Name" FontWeight="SemiBold" />
+      <TextBlock Text="Value"
+                 Grid.Column="1"
+                 FontWeight="SemiBold" />
+      <TextBlock Text="Type"
+                 Grid.Column="2"
+                 FontWeight="SemiBold" />
+    </Grid>
+    <TreeView x:Name="ValuesTree"
+              Grid.Row="3"
+              AutomationProperties.Name="Debugger values"
+              ItemsSource="{Binding Values}"
+              KeyDown="OnValuesKeyDownAsync"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+      <TreeView.Styles>
+        <Style x:DataType="models:DebugValueNode" Selector="TreeViewItem">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        </Style>
+      </TreeView.Styles>
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate DataType="models:DebugValueNode" ItemsSource="{Binding Children}">
+          <Grid MinHeight="24" ColumnDefinitions="150,150,90">
+            <Grid.ContextMenu>
+              <ContextMenu>
+                <MenuItem Click="OnCopyEntryAsync"
+                          Header="Copy Value"
+                          Tag="{Binding Value}" />
+                <MenuItem Click="OnCopyEntryAsync"
+                          Header="Copy Name"
+                          Tag="{Binding Name}" />
+                <MenuItem Click="OnCopyEntryAsync"
+                          Header="Copy Type"
+                          Tag="{Binding Type}" />
+              </ContextMenu>
+            </Grid.ContextMenu>
+            <SelectableTextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+            <SelectableTextBlock Text="{Binding Value}"
+                                 Grid.Column="1"
+                                 VerticalAlignment="Center"
+                                 FontFamily="Cascadia Code, Consolas, monospace" />
+            <SelectableTextBlock Text="{Binding Type}"
+                                 Grid.Column="2"
+                                 VerticalAlignment="Center"
+                                 Foreground="{DynamicResource IdeAccentBrush}" />
+          </Grid>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
   </Grid>
 </UserControl>
