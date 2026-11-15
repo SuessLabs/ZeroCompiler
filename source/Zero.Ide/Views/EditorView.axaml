@@ -1,11 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:edit="using:AvaloniaEdit"
-             xmlns:prism="http://prismlibrary.com/"
              xmlns:vm="using:Zero.Ide.ViewModels"
              x:Class="Zero.Ide.Views.EditorView"
-             x:DataType="vm:EditorViewModel"
-             prism:ViewModelLocator.AutoWireViewModel="True">
+             x:DataType="vm:EditorViewModel">
   <edit:TextEditor x:Name="SourceEditor"
                    Padding="12"
                    Document="{Binding Document}"

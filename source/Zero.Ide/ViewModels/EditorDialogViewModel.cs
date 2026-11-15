@@ -3,6 +3,7 @@
 
 using Prism.Commands;
 using Prism.Dialogs;
+using Zero.Ide.Services;
 
 namespace Zero.Ide.ViewModels;
 
@@ -63,10 +64,10 @@ public class EditorDialogViewModel : ViewModelBase, IDialogAware
 
   public void OnDialogOpened(IDialogParameters parameters)
   {
-    Title = parameters.GetValue<string>("title");
-    Message = parameters.GetValue<string>("message");
-    IsSaveConfirmation = parameters.GetValue<bool>("confirmSave");
-    IsUpdateConfirmation = parameters.GetValue<bool>("confirmUpdate");
+    Title = parameters.GetValue<string>(EditorDialogService.TitleKey);
+    Message = parameters.GetValue<string>(EditorDialogService.MessageKey);
+    IsSaveConfirmation = parameters.GetValue<bool>(EditorDialogService.ConfirmSaveKey);
+    IsUpdateConfirmation = parameters.GetValue<bool>(EditorDialogService.ConfirmUpdateKey);
     RaisePropertyChanged(nameof(IsConfirmation));
   }
 }

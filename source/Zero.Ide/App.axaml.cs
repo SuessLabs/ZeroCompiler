@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Mvvm;
+using Zero.Ide.Docking;
 using Zero.Ide.Services;
 using Zero.Ide.Themes;
 using Zero.Ide.ViewModels;
@@ -18,6 +19,7 @@ public partial class App : PrismApplication
   public override void Initialize()
   {
     AvaloniaXamlLoader.Load(this);
+    DockTabBehavior.Register();
     Resources.MergedDictionaries.Add(IdeThemes.CreateResources());
     base.Initialize();
   }
@@ -38,7 +40,7 @@ public partial class App : PrismApplication
     settings.SettingsChanged += (_, _) => RequestedThemeVariant = IdeThemes.GetVariant(settings.Current.Theme);
 
     // ViewModels
-    containerRegistry.RegisterSingleton<EditorViewModel>();
+    containerRegistry.Register<EditorViewModel>();
     containerRegistry.RegisterSingleton<MainWindowViewModel>();
 
     // Dialogs
@@ -51,6 +53,5 @@ public partial class App : PrismApplication
 
     // Windows
     ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
-    ViewModelLocationProvider.Register<EditorView, EditorViewModel>();
   }
 }

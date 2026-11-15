@@ -102,6 +102,31 @@ Linux desktop deployment also requires Avalonia's X11/native dependencies.
 
 ## IDE settings
 
+The editor uses Dock.Avalonia document tabs and a dockable **Solution Explorer**.
+Open multiple `.zasm` or `.zsrc` files with **File > Open** (Ctrl+O), or create a
+new tab with Ctrl+N. Each document has its own text and undo history.
+Opening an already-open path selects its existing tab. Tabs can be moved, split,
+or floated using their docking context menu or drag handles.
+
+**Save** (Ctrl+S) saves the active tab. **Save All** (Ctrl+Alt+S) saves all dirty
+tabs; **Save As** remains Ctrl+Shift+S. Dirty tabs display one trailing `*`.
+Middle-clicking a tab, using its close button, or pressing Ctrl+W closes it.
+Unsaved changes offer **Save**, **Close Without Saving**, and **Cancel**. Canceled
+or failed saves leave the tab open. Exiting the IDE or installing an update checks
+all dirty documents, including floating windows.
+Save, close, and build shortcuts also work when a native floating editor has focus.
+
+Use **File > Open Folder** or **Open Folder** in Solution Explorer to open a
+folder workspace. The tree loads directories on expansion; double-click a source
+file to open it, and use Refresh to pick up filesystem changes. Closing the tool
+does not close documents. **View > Solutions Explorer** (right after Edit) restores
+the tool on the left, including when it has been floated or moved. `.zproj` and
+XML solution formats are reserved for a future phase; no project parsing is done yet.
+
+Build and execution commands act on the document active when the command starts.
+The compiler currently supports `.zasm`; `.zsrc` files can be opened, edited, and
+saved, but are not yet supported by the compiler.
+
 The toolbar provides icon buttons for New, Open, Save, Undo, Redo, and Build and
 Execute. Hover over a button for its name and shortcut. The build configuration
 selector offers Debug and Release. Play or F5 builds and launches the current

@@ -9,6 +9,8 @@ that create Windows GUI controls) and static Linux x86-64 ELF64 executables usin
 syscalls. Shared-library ELF linking, DLL output, additional architectures, macOS,
 and STM32 remain future work. See [Linux x86-64 support](docs/linux64.md).
 
+![ZIDE](docs/images/Zero.IDE-Sample-1.png)
+
 ## About
 
 Zero has its inceptions in 2001 and matured 2006 as a simple, fast, and efficient programming language created by Damian Suess (_Xeno Innovations, inc._). At the time, C/C++ and Visual Basic were the key programmang languages (_besides Java or Pascal_) for creating a compiled business/hobby application. Zero has the heart of assembly language giving it that bare-metal kick.

@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Zero.Ide.ViewModels"
+             xmlns:models="using:Zero.Ide.Models"
+             x:Class="Zero.Ide.Views.SolutionExplorerView"
+             x:DataType="vm:SolutionExplorerViewModel">
+  <DockPanel Background="{DynamicResource IdePanelBrush}">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8" Spacing="6">
+      <Button Content="Open Folder..." Command="{Binding CmdOpenFolder}" />
+      <Button Content="↻" Command="{Binding CmdRefresh}" ToolTip.Tip="Refresh workspace" AutomationProperties.Name="Refresh workspace" />
+    </StackPanel>
+    <TreeView x:Name="WorkspaceTree" ItemsSource="{Binding Roots}" DoubleTapped="OnItemDoubleTapped">
+      <TreeView.Styles>
+        <Style Selector="TreeViewItem" x:DataType="models:WorkspaceNode">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        </Style>
+      </TreeView.Styles>
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate DataType="models:WorkspaceNode" ItemsSource="{Binding Children}">
+          <StackPanel Orientation="Horizontal" Spacing="6" ToolTip.Tip="{Binding Path}">
+            <TextBlock Text="▸" IsVisible="{Binding IsDirectory}" Foreground="{DynamicResource IdeAccentBrush}" />
+            <TextBlock Text="{Binding Name}" />
+            <TextBlock Text="!" Foreground="IndianRed" ToolTip.Tip="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
+  </DockPanel>
+</UserControl>

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -17,6 +18,7 @@ namespace Zero.Ide.Services;
 public class EditorDialogService : IEditorDialogService
 {
   public const string ConfirmSaveKey = "confirmSave";
+  public const string ConfirmUpdateKey = "confirmUpdate";
   public const string MessageKey = "message";
   public const string TitleKey = "title";
 
@@ -71,31 +73,52 @@ public class EditorDialogService : IEditorDialogService
     {
       { TitleKey, "Update Zero IDE" },
       { MessageKey, $"Zero IDE {latestVersion} is available (current: {currentVersion}). Download and start the installer to update the IDE and bundled compiler? You will be prompted to save your work, then the IDE will close. Windows will ask for administrator permission." },
-      { ConfirmSaveKey, true },
+      { ConfirmUpdateKey, true },
       { KnownDialogParameters.WindowName, nameof(EditorDialogWindow) },
     });
 
     return result.Result == ButtonResult.Yes;
   }
 
+  public async Task<IStorageFile?> GetLocalFileAsync(string path) =>
+    await Owner.StorageProvider.TryGetFileFromPathAsync(path);
+
   public async Task<IStorageFile?> OpenFileAsync()
   {
-    var files = await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+    var files = await OpenFilesAsync();
+    return files.Count > 0 ? files[0] : null;
+  }
+
+  public async Task<IReadOnlyList<IStorageFile>> OpenFilesAsync() =>
+    await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
     {
       Title = "Open source file",
-      AllowMultiple = false,
+      AllowMultiple = true,
       FileTypeFilter = [new FilePickerFileType("Zero source")
       {
         Patterns =
         [
           SourceFileExtensions.AssemblyPattern,
+          SourceFileExtensions.SourcePattern,
           SourceFileExtensions.HeaderPattern,
           SourceFileExtensions.ZeroPattern,
         ],
       }, FilePickerFileTypes.All],
     });
 
-    return files.Count > 0 ? files[0] : null;
+  public async Task<string?> OpenFolderAsync()
+  {
+    var folders = await Owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+    {
+      Title = "Open workspace folder",
+      AllowMultiple = false,
+    });
+
+    if (folders.Count == 0)
+      return null;
+
+    return folders[0].TryGetLocalPath()
+      ?? throw new InvalidOperationException("Select a local workspace folder.");
   }
 
   public Task<IStorageFile?> SaveFileAsync(string suggestedName) =>
@@ -110,6 +133,7 @@ public class EditorDialogService : IEditorDialogService
         {
           Patterns = [SourceFileExtensions.AssemblyPattern]
         },
+        new FilePickerFileType("Zero source") { Patterns = [SourceFileExtensions.SourcePattern] },
         FilePickerFileTypes.All,
       ],
     });
