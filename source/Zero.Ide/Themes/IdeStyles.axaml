@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:area="using:AvaloniaEdit.Editing"
+        xmlns:dock="using:Dock.Avalonia.Controls"
         xmlns:render="using:AvaloniaEdit.Rendering"
         xmlns:edit="using:AvaloniaEdit">
   <Style Selector="Window">
@@ -28,6 +29,30 @@
   </Style>
   <Style Selector="Button:pointerover">
     <Setter Property="Background" Value="{DynamicResource IdeHoverBrush}" />
+  </Style>
+  <!-- Dock header actions must reveal their active/inactive header, rather than use the form button surface. -->
+  <Style Selector="dock|ToolChromeControl /template/ Button, dock|DocumentTabStripItem /template/ Button, dock|DocumentTabStrip /template/ Button">
+    <Style.Resources>
+      <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="Transparent" />
+    </Style.Resources>
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="dock|ToolChromeControl /template/ Button:pointerover">
+    <Setter Property="Background" Value="{DynamicResource DockChromeButtonHoverBackgroundBrush}" />
+  </Style>
+  <Style Selector="dock|ToolChromeControl /template/ Button:pressed">
+    <Setter Property="Background" Value="{DynamicResource DockChromeButtonPressedBackgroundBrush}" />
+  </Style>
+  <Style Selector="dock|ToolChromeControl /template/ Button#PART_CloseButton:pointerover">
+    <Setter Property="Background" Value="{DynamicResource DockChromeButtonDangerHoverBrush}" />
+  </Style>
+  <Style Selector="dock|DocumentTabStripItem /template/ Button:pointerover">
+    <Setter Property="Background" Value="{DynamicResource DockTabCloseHoverBackgroundBrush}" />
+  </Style>
+  <Style Selector="dock|DocumentTabStrip /template/ Button:pointerover">
+    <Setter Property="Background" Value="{DynamicResource DockTabHoverBackgroundBrush}" />
   </Style>
   <Style Selector="Button.toolbar-icon">
     <Style.Resources>
