@@ -9,7 +9,7 @@ using Zero.Ide.Services;
 
 namespace Zero.Ide.ViewModels;
 
-public class EditorViewModel : ViewModelBase
+public class EditorViewModel : ViewModelBase, IDisposable
 {
   private readonly ISettingsService? _settingsService;
   private TextDocument _document = new();
@@ -30,15 +30,19 @@ public class EditorViewModel : ViewModelBase
 
     _settingsService = settingsService;
 
-    _settingsService?.SettingsChanged += (_, _) => RaisePropertyChanged(nameof(Settings));
+    _settingsService?.SettingsChanged += OnSettingsChanged;
     _document.UndoStack.SizeLimit = 1000;
     _document.TextChanged += OnTextChanged;
   }
 
   public DelegateCommand CmdCopy { get; }
+
   public DelegateCommand CmdCut { get; }
+
   public DelegateCommand CmdFindNext { get; }
+
   public DelegateCommand CmdPaste { get; }
+
   public DelegateCommand CmdRedo { get; }
 
   public DelegateCommand CmdUndo { get; }
@@ -106,6 +110,15 @@ public class EditorViewModel : ViewModelBase
     RefreshEditorCommands();
   }
 
+  public void Dispose()
+  {
+    _settingsService?.SettingsChanged -= OnSettingsChanged;
+    _document.TextChanged -= OnTextChanged;
+
+    if (_editorActions is not null)
+      DetachEditorActions(_editorActions);
+  }
+
   public void Load(string text, string fileName)
   {
     _savedText = text;
@@ -160,7 +173,11 @@ public class EditorViewModel : ViewModelBase
         execute(actions);
     }, () => _editorActions is { } actions && canExecute(actions));
 
-  private void OnEditorStateChanged(object? sender, EventArgs e) => RefreshEditorCommands();
+  private void OnEditorStateChanged(object? sender, EventArgs e) =>
+    RefreshEditorCommands();
+
+  private void OnSettingsChanged(object? sender, EventArgs e) =>
+    RaisePropertyChanged(nameof(Settings));
 
   private void OnTextChanged(object? sender, EventArgs e)
   {

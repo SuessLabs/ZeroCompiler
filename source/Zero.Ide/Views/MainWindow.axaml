@@ -1,8 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:dock="using:Dock.Avalonia.Controls"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:shortcuts="using:Zero.Ide.Input"
         xmlns:views="using:Zero.Ide.Views"
         xmlns:vm="using:Zero.Ide.ViewModels"
         x:Class="Zero.Ide.Views.MainWindow"
@@ -25,13 +27,15 @@
   </Window.Resources>
 
   <Window.KeyBindings>
-    <KeyBinding Command="{Binding CmdNew}" Gesture="Ctrl+N" />
-    <KeyBinding Command="{Binding CmdOpen}" Gesture="Ctrl+O" />
-    <KeyBinding Command="{Binding CmdSave}" Gesture="Ctrl+S" />
-    <KeyBinding Command="{Binding CmdSaveAs}" Gesture="Ctrl+Shift+S" />
-    <KeyBinding Command="{Binding CmdBuildAndRun}" Gesture="F5" />
-    <KeyBinding Command="{Binding CmdBuild}" Gesture="Ctrl+B" />
-    <KeyBinding Command="{Binding CmdRebuild}" Gesture="Ctrl+Shift+B" />
+    <KeyBinding Command="{Binding CmdNew}" Gesture="{x:Static shortcuts:EditorKeyGestures.NewFile}" />
+    <KeyBinding Command="{Binding CmdOpen}" Gesture="{x:Static shortcuts:EditorKeyGestures.OpenFile}" />
+    <KeyBinding Command="{Binding CmdSave}" Gesture="{x:Static shortcuts:EditorKeyGestures.Save}" />
+    <KeyBinding Command="{Binding CmdSaveAs}" Gesture="{x:Static shortcuts:EditorKeyGestures.SaveAs}" />
+    <KeyBinding Command="{Binding CmdSaveAll}" Gesture="{x:Static shortcuts:EditorKeyGestures.SaveAll}" />
+    <KeyBinding Command="{Binding CmdCloseDocument}" Gesture="{x:Static shortcuts:EditorKeyGestures.CloseDocument}" />
+    <KeyBinding Command="{Binding CmdBuildAndRun}" Gesture="{x:Static shortcuts:EditorKeyGestures.BuildAndRun}" />
+    <KeyBinding Command="{Binding CmdBuild}" Gesture="{x:Static shortcuts:EditorKeyGestures.Build}" />
+    <KeyBinding Command="{Binding CmdRebuild}" Gesture="{x:Static shortcuts:EditorKeyGestures.Rebuild}" />
   </Window.KeyBindings>
 
   <DockPanel>
@@ -43,12 +47,19 @@
         <MenuItem Command="{Binding CmdOpen}"
                   Header="_Open"
                   InputGesture="Ctrl+O" />
+        <MenuItem Command="{Binding CmdOpenFolder}" Header="Open _Folder..." />
         <MenuItem Command="{Binding CmdSave}"
                   Header="_Save"
                   InputGesture="Ctrl+S" />
         <MenuItem Command="{Binding CmdSaveAs}"
                   Header="Save _As..."
                   InputGesture="Ctrl+Shift+S" />
+        <MenuItem Command="{Binding CmdSaveAll}"
+                  Header="Save A_ll"
+                  InputGesture="Ctrl+Alt+S" />
+        <MenuItem Command="{Binding CmdCloseDocument}"
+                  Header="_Close"
+                  InputGesture="Ctrl+W" />
 
         <Separator />
 
@@ -74,6 +85,10 @@
         <MenuItem Command="{Binding Editor.CmdPaste}"
                   Header="_Paste"
                   InputGesture="Ctrl+V" />
+      </MenuItem>
+
+      <MenuItem Header="_View">
+        <MenuItem Command="{Binding CmdShowSolutionExplorer}" Header="_Solutions Explorer" />
       </MenuItem>
 
       <MenuItem Header="_Build">
@@ -236,6 +251,11 @@
       <TextBlock Text="{Binding Status}" FontSize="12" />
     </Border>
 
-    <views:EditorView x:Name="EditorPane" IsEnabled="{Binding !IsBusy}" />
+    <dock:DockControl x:Name="WorkspaceDock"
+                      Factory="{Binding DockFactory}"
+                      InitializeFactory="False"
+                      InitializeLayout="False"
+                      IsEnabled="{Binding !IsBusy}"
+                      Layout="{Binding Layout}" />
   </DockPanel>
 </Window>

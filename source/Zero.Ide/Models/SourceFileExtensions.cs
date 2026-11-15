@@ -9,6 +9,8 @@ public static class SourceFileExtensions
   public const string AssemblyPattern = "*" + Assembly;
   public const string Header = ".zh";
   public const string HeaderPattern = "*" + Header;
+  public const string Source = ".zsrc";
+  public const string SourcePattern = "*" + Source;
   public const string Zero = ".zero";
   public const string ZeroPattern = "*" + Zero;
 }

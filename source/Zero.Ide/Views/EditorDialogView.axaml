@@ -22,7 +22,7 @@
               Command="{Binding CmdSave}"
               IsDefault="{Binding IsSaveConfirmation}"
               IsVisible="{Binding IsSaveConfirmation}" />
-      <Button Content="Don't Save"
+      <Button Content="Close Without Saving"
               MinWidth="80"
               Command="{Binding CmdDiscard}"
               IsVisible="{Binding IsSaveConfirmation}" />

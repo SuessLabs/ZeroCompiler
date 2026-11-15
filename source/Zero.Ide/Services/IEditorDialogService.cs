@@ -2,6 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Avalonia.Platform.Storage;
 
 namespace Zero.Ide.Services;
@@ -23,7 +24,13 @@ public interface IEditorDialogService
 
   Task<bool> ConfirmUpdateAsync(string currentVersion, string latestVersion);
 
+  Task<IStorageFile?> GetLocalFileAsync(string path);
+
   Task<IStorageFile?> OpenFileAsync();
+
+  Task<IReadOnlyList<IStorageFile>> OpenFilesAsync();
+
+  Task<string?> OpenFolderAsync();
 
   Task<IStorageFile?> SaveFileAsync(string suggestedName);
 
