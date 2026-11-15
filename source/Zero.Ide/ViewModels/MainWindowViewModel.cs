@@ -96,6 +96,7 @@ public partial class MainWindowViewModel : ViewModelBase
     DockFactory = new EditorDockFactory(this);
     Layout = DockFactory.CreateLayout();
     DockFactory.InitLayout(Layout);
+    DockFactory.SetDebuggerVisible(IsDebugging);
   }
 
   public EditorDocument? ActiveDocument => _activeDocument;

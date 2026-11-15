@@ -201,6 +201,7 @@ public partial class MainWindowViewModel
   {
     _debugSnapshot = snapshot;
     Debugger.Update(snapshot);
+    DockFactory.SetDebuggerVisible(IsDebugging);
     Status = $"Debugger: {snapshot.Reason}";
 
     RaisePropertyChanged(nameof(IsDebugging));

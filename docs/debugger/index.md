@@ -27,9 +27,18 @@ on Windows or support for every Windows CPU architecture.
 6. Press **F10** while paused to execute one instruction, stepping over a `CALL`
    until control returns to its caller. **Shift+F5** stops the debuggee.
 
-The bottom **Debugger — Registers** tool shows EAX, EBX, ECX, EDX, ESI, EDI, EBP,
-ESP, EIP and EFLAGS as hexadecimal values, plus the active thread, source location,
-stop reason and exit code. It can be resized and floated using the docking UI.
+The **Debugger — Locals** tool appears on the right when debugging starts and
+hides when the session ends. It can be resized, moved, or floated; its placement
+is retained between debug sessions while the IDE remains open. Its tree uses
+Name, Value, and Type columns, with a Registers group showing EAX, EBX, ECX, EDX,
+ESI, EDI, EBP, ESP, EIP and EFLAGS as hexadecimal values. The active thread,
+source location, and stop reason appear above the tree.
+
+Select text to copy it, press **Ctrl+C** (**Cmd+C** on macOS) to copy a selected
+row's value, or right-click an entry for **Copy Value**, **Copy Name**, and
+**Copy Type**. Values can be pasted into other editors; changing debuggee values
+through the tree is not supported. The tree model supports additional scopes
+and nested values, but locals and scoped variables are not yet populated.
 Registers are cleared while running so old values cannot be mistaken for current
 process state. **Build > Run Without Debugging** retains ordinary execution.
 
