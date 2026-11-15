@@ -12,14 +12,20 @@ namespace Zero.Parsing;
 /// <summary>Expands using directives while preserving original source locations.</summary>
 public sealed class SourceLoader
 {
+  public IReadOnlyList<string> SourceFiles { get; private set; } = [];
+
   public IReadOnlyList<SourceLine> Load(string inputPath, CompilerOptions? options = null)
   {
     options ??= new CompilerOptions();
+
     var resolver = new IncludeResolver(options);
     var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
     var included = new HashSet<string>(comparer);
     var active = new List<string>();
     var lines = new List<SourceLine>();
+    var sourceFiles = new List<string>();
+
+    SourceFiles = sourceFiles;
 
     Expand(Path.GetFullPath(inputPath, Path.GetFullPath(options.WorkingDirectory)), null);
 
@@ -36,6 +42,8 @@ public sealed class SourceLoader
 
       if (!included.Add(path))
         return;
+
+      sourceFiles.Add(path);
 
       active.Add(path);
       string[] source;

@@ -3,14 +3,14 @@
 
 namespace Zero.Assembly;
 
-/// <summary>List of x86 instruction mnemonic.</summary>
+/// <summary>Assembly instruction and data-directive mnemonic constants shared by the supported targets.</summary>
 /// <remarks>
 ///   r: register, m: memory address, imm: immediate (i.e. a value).
 ///   References:
 ///     * http://unixwiz.net/techtips/x86-jumps.html
 ///     * https://en.wikipedia.org/wiki/List_of_x86_instructions
 /// </remarks>
-public class Mnemonic
+public static class Mnemonic
 {
   /// <summary>Add with carry (0x10...0x15, 0x80...0x81/2, 0x83/2).</summary>
   public const string ADC = "ADC";
@@ -36,14 +36,19 @@ public class Mnemonic
   /// <remarks><![CDATA[if (DF==0) *(word*)SI++ - *(word*)ES:DI++; else *(word*) SI-- - *(word*) ES:DI--;]]></remarks>
   public const string CMPSW = "CMPSW";
 
-  /// <summary>Data section - Define byte.</summary>
+  /// <summary>Define bytes or UTF-8 string data.</summary>
   public const string DB = "DB";
 
+  /// <summary>Define 32-bit doubleword data.</summary>
   public const string DD = "DD";
 
-  /// <summary>Text section - ___.</summary>
+  /// <summary>Define 16-bit word data.</summary>
   public const string DW = "DW";
+
+  /// <summary>Define 64-bit quadword data.</summary>
   public const string DQ = "DQ";
+
+  /// <summary>Invoke the operating system through the x86-64 system-call instruction.</summary>
   public const string SYSCALL = "SYSCALL";
 
   /// <summary>Call to interrupt (0xCC, 0xCD).</summary>
@@ -64,7 +69,7 @@ public class Mnemonic
   /// <summary>Short jump if zero (.mylabel:).</summary>
   public const string JZ8 = "JZ8";
 
-  /// <summary>	Load Effective Address (0x8D).</summary>
+  /// <summary>Load effective address (0x8D).</summary>
   public const string LEA = "LEA";
 
   /// <summary>Move r32, imm32 (B8+r) or load r32, [mem] (8B /r).</summary>
@@ -79,10 +84,10 @@ public class Mnemonic
   /// <summary>Unsigned multiply (0xF7/4, 0xF6/4).</summary>
   public const string MUL = "MUL";
 
-  /// <summary>No operation (	0x90).</summary>
+  /// <summary>No operation (0x90).</summary>
   public const string NOP = "NOP";
 
-  /// <summary>Negate the operand, logical NOT (0xF6/2...0xF7/2).</summary>
+  /// <summary>Complement each bit of the operand (0xF6/2...0xF7/2).</summary>
   /// <remarks><![CDATA[r/m ^= -1]]></remarks>
   public const string NOT = "NOT";
 

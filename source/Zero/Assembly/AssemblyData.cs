@@ -11,8 +11,6 @@ namespace Zero.Assembly;
 
 internal static class AssemblyData
 {
-  public static bool IsDirective(string mnemonic) => mnemonic is "DB" or "DW" or "DD" or "DQ";
-
   public static byte[] Encode(AsmLine line)
   {
     if (line.Operands.Count == 0)
@@ -20,10 +18,10 @@ internal static class AssemblyData
 
     int width = line.Mnemonic switch
     {
-      "DB" => 1,
-      "DW" => 2,
-      "DD" => 4,
-      "DQ" => 8,
+      Mnemonic.DB => 1,
+      Mnemonic.DW => 2,
+      Mnemonic.DD => 4,
+      Mnemonic.DQ => 8,
       _ => throw new InvalidOperationException()
     };
 
@@ -45,4 +43,6 @@ internal static class AssemblyData
 
     return bytes.ToArray();
   }
+
+  public static bool IsDirective(string mnemonic) => mnemonic is Mnemonic.DB or Mnemonic.DW or Mnemonic.DD or Mnemonic.DQ;
 }

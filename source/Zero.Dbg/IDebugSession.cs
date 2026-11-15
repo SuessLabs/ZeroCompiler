@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace Zero.Dbg;
 
-public enum DebugState { Idle, Starting, Running, Paused, Exited, Faulted }
-
 public sealed record SourceBreakpoint(string FilePath, int Line);
+
 public sealed record RegisterValue(string Name, uint Value)
 {
   public string Hex => $"0x{Value:X8}";
@@ -26,11 +25,18 @@ public sealed record DebugLaunchOptions(string ExecutablePath, string WorkingDir
 public interface IDebugSession : IAsyncDisposable
 {
   event EventHandler<DebugSnapshot>? Changed;
+
   DebugSnapshot Snapshot { get; }
-  Task LaunchAsync(DebugLaunchOptions options);
+
   void Continue();
+
+  Task LaunchAsync(DebugLaunchOptions options);
+
   void Pause();
-  void StepOver();
+
   void SetBreakpoints(IReadOnlyList<SourceBreakpoint> breakpoints);
+
+  void StepOver();
+
   Task StopAsync();
 }
