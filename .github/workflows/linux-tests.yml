@@ -42,7 +42,7 @@ jobs:
           $installDirectory | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
       - name: Test encoders, executable formats, and Linux runtime
-        run: dotnet test source/Zero.slnx --configuration Release --disable-build-servers --maxcpucount:1
+        run: dotnet test source/Zero.slnx --configuration Release --disable-build-servers --maxcpucount:1 --blame-hang-timeout 2m --logger "console;verbosity=normal" --logger trx --results-directory output/test-results
 
       - name: Validate all samples
         run: ./validate-samples.ps1

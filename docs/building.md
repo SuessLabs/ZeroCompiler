@@ -76,6 +76,15 @@ Native Linux x86-64 runtime tests run under Linux/WSL and skip other hosts. The
 PowerShell-only Linux CI workflow runs the tests, validates all sample formats,
 and inspects/executes `linux64-cli-01-hello` on Ubuntu. See [Linux x64](linux64.md).
 
+### Warning - LinuxRuntimeTests
+
+`LinuxRuntimeTests` runs without test parallelization. Concurrent fork/exec calls
+can briefly inherit another test's open executable writer, causing Linux to
+reject an otherwise complete output with `ETXTBSY` ("Text file busy"). See the
+[.NET runtime investigation](https://github.com/dotnet/runtime/issues/58964).
+The Linux workflow also captures TRX results and aborts a test host after two
+minutes without test progress, so a real hang produces diagnostics.
+
 ## IDE runtime targets
 
 `Zero.Ide` builds for `win-x64`, `linux-x64`, `linux-arm64`, `linux-arm`,
