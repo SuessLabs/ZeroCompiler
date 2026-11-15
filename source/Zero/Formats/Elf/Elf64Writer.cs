@@ -55,7 +55,7 @@ internal sealed class Elf64Writer : IExecutableWriter
     if (program.Imports.Count > 0)
       throw new AssemblerException(program.FirstImportLine ?? 1, "ELF64 shared-library imports are not implemented; use Linux syscalls instead of #IMPORT");
 
-    return new ExecutableLayout(ImageBase + TextOffset);
+    return new ExecutableLayout(ImageBase + TextOffset) { ImageBase = ImageBase };
   }
 
   public byte[] Write(byte[] code, ExecutableLayout layout)

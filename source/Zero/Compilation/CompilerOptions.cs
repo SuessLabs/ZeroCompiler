@@ -10,6 +10,7 @@ namespace Zero.Compilation;
 /// <summary>Source search paths for a single compilation.</summary>
 public sealed class CompilerOptions
 {
+  public bool EmitDebugInformation { get; set; }
   /// <summary>Explicit target; null allows #TARGET, defaulting to windows-x86.</summary>
   public CompilationTarget? Target { get; set; }
 

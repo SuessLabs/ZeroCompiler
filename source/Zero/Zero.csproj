@@ -5,4 +5,7 @@
     <AssemblyTitle>Zero</AssemblyTitle>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Zero.Dbg/Zero.Dbg.csproj" />
+  </ItemGroup>
 </Project>

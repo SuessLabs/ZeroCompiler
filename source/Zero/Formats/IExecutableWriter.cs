@@ -10,6 +10,7 @@ namespace Zero.Formats;
 internal sealed class ExecutableLayout(ulong codeAddress)
 {
   public ulong CodeAddress { get; } = codeAddress;
+  public ulong ImageBase { get; init; }
   public Dictionary<string, ulong> Symbols { get; } = new(StringComparer.OrdinalIgnoreCase);
 }
 

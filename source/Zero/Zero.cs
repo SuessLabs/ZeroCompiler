@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using Zero.Assembly;
 using Zero.Compilation;
+using Zero.Dbg;
 using Zero.Exceptions;
 using Zero.Parsing;
 
@@ -54,11 +55,13 @@ public class Zero
     if (sourceType == SourceType.Assembly)
     {
       byte[]? exeBytes;
+      DebugMap? debugMap = null;
       try
       {
         var source = new SourceLoader().Load(inputPath, options);
         var assembler = new Assembler(options?.Target);
         exeBytes = assembler.Assemble(source);
+        if (options?.EmitDebugInformation == true) debugMap = assembler.DebugMap;
         Target = assembler.Target;
       }
       catch (AssemblerException ex)
@@ -73,6 +76,13 @@ public class Zero
         if (string.Equals(Path.GetFullPath(inputPath), Path.GetFullPath(outputPath), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
           throw new IOException("The output path must differ from the input source path.");
         File.WriteAllBytes(outputPath, exeBytes);
+        var mapPath = outputPath + DebugMap.Extension;
+        if (debugMap is not null)
+        {
+          debugMap.ExecutableHash = DebugMap.HashFile(outputPath);
+          debugMap.Save(mapPath);
+        }
+        else if (File.Exists(mapPath)) File.Delete(mapPath);
         if (Target == CompilationTarget.LinuxX64 && OperatingSystem.IsLinux())
           File.SetUnixFileMode(outputPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
             UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);

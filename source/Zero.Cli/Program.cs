@@ -39,6 +39,10 @@ internal class Program
 
         options.IncludeDirectories.Add(args[++i]);
       }
+      else if (args[i] == "--debug")
+      {
+        options.EmitDebugInformation = true;
+      }
       else if (args[i] == "--target")
       {
         if (i + 1 >= args.Length)
@@ -145,6 +149,7 @@ internal class Program
         -h|--help    Show this help.
         -I|--include <directory>    Add an include search directory (repeatable).
         --target <target>          Select windows-x86 or linux-x64.
+        --debug                    Write a .zdbg.json source map beside the executable.
 
       Includes search the current working directory, then -I directories in order,
       then include beside the compiler, then ../include when installed in bin.
