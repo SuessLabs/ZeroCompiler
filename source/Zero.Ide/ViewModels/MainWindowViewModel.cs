@@ -22,6 +22,7 @@ public partial class MainWindowViewModel : ViewModelBase
   private readonly ICompilerService? _compilerService;
   private readonly IEditorDialogService _dialogs;
   private readonly EditorViewModel _emptyEditor = new();
+  private readonly EditorExecutionCoordinator? _executionCoordinator;
   private readonly IProgramRunner? _programRunner;
   private readonly ISettingsService? _settings;
   private readonly IUpdateService? _updates;
@@ -37,11 +38,12 @@ public partial class MainWindowViewModel : ViewModelBase
 
   public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null,
     ICompilerService? compilerService = null, IProgramRunner? programRunner = null, IUpdateService? updates = null,
-    IDebugSession? debugSession = null)
+    IDebugSession? debugSession = null, EditorExecutionCoordinator? executionCoordinator = null)
   {
     _dialogs = dialogs;
     _settings = settings;
     _compilerService = compilerService;
+    _executionCoordinator = executionCoordinator ?? (compilerService is null ? null : new EditorExecutionCoordinator(compilerService, programRunner));
     _programRunner = programRunner;
     _updates = updates;
     settings?.SettingsChanged += (_, _) => NotifyThemeChanged();
@@ -316,57 +318,63 @@ public partial class MainWindowViewModel : ViewModelBase
         return;
 
       var editor = document.Editor;
-
-      if (string.IsNullOrWhiteSpace(editor.Settings.CompilerPath))
-        throw new InvalidOperationException("Select the Zero CLI executable in Tools > Options > Compiler before building.");
-
-      if ((document.File is null || editor.IsModified) &&
-          !await SaveAsync(document, false))
-        return;
-
-      var sourcePath = document.File?.TryGetLocalPath() ?? throw new InvalidOperationException($"Building requires a local {SourceFileExtensions.Assembly} file.");
-
-      if (!string.Equals(Path.GetExtension(sourcePath), SourceFileExtensions.Assembly, StringComparison.OrdinalIgnoreCase))
-        throw new InvalidOperationException($"Only {SourceFileExtensions.Assembly} source files can be built.");
-
-      BuildState = EditorBuildState.Building;
       var configuration = debugAfterBuild ? BuildConstants.DebugConfiguration : BuildConfiguration;
-      Status = $"Building {editor.FileName} ({configuration})";
-      BuildOutput = Status;
+      var mode = debugAfterBuild ? EditorExecutionMode.Debug : runAfterBuild ? EditorExecutionMode.Run : EditorExecutionMode.Build;
 
-      var result = await _compilerService!.BuildAsync(editor.Settings.CompilerPath, sourcePath, configuration, cleanFirst);
-
-      BuildOutput = result.Output + Environment.NewLine + $"Compiler exit code: {result.ExitCode}";
-
-      if (!result.Succeeded)
-      {
-        BuildState = EditorBuildState.Failed;
-        Status = "Build failed";
-        await _dialogs.ShowMessageAsync("Build failure", BuildOutput);
-        return;
-      }
-
-      BuildState = EditorBuildState.Idle;
-      Status = $"Build succeeded: {result.OutputPath}";
-
-      if (debugAfterBuild)
-        await LaunchDebuggerAsync(result.OutputPath, sourcePath);
-
-      if (runAfterBuild)
-      {
-        try
+      var request = new EditorExecutionRequest(
+        editor.Settings.CompilerPath,
+        configuration,
+        cleanFirst,
+        mode,
+        SaveSourceAsync: async () =>
         {
-          _programRunner!.Run(result.OutputPath, Path.GetDirectoryName(sourcePath)!);
-          Status = $"Started {result.OutputPath}";
+          if ((document.File is null || editor.IsModified) && !await SaveAsync(document, false))
+            return null;
+
+          return document.File?.TryGetLocalPath()
+            ?? throw new InvalidOperationException($"Building requires a local {SourceFileExtensions.Assembly} file.");
+        }, StartDebuggerAsync: LaunchDebuggerAsync);
+
+      var outcome = await _executionCoordinator!.ExecuteAsync(request, update =>
+      {
+        if (update.Stage == EditorExecutionStage.Build)
+        {
+          BuildState = EditorBuildState.Building;
+          BuildOutput = Status = $"Building {editor.FileName} ({configuration})";
+        }
+        else if (update.Stage == EditorExecutionStage.Built)
+        {
+          BuildState = EditorBuildState.Idle;
+          BuildOutput = update.Compilation!.Output + Environment.NewLine + $"Compiler exit code: {update.Compilation.ExitCode}";
+          Status = $"Build succeeded: {update.Compilation.OutputPath}";
+        }
+        else if (update.Stage == EditorExecutionStage.Completed && mode == EditorExecutionMode.Run)
+        {
+          Status = $"Started {update.Compilation!.OutputPath}";
           BuildOutput += Environment.NewLine + Status;
         }
-        catch (Exception ex)
+      });
+
+      if (outcome.Stage == EditorExecutionStage.Failed)
+      {
+        if (outcome.Error is { } error)
         {
-          BuildState = EditorBuildState.RunFailed;
-          Status = "Run failed";
-          BuildOutput += Environment.NewLine + ex.Message;
-          await _dialogs.ShowMessageAsync("Run failure", ex.Message);
+          await ReportBuildFailureAsync(error);
         }
+        else
+        {
+          BuildState = EditorBuildState.Failed;
+          Status = "Build failed";
+          BuildOutput = outcome.Compilation!.Output + Environment.NewLine + $"Compiler exit code: {outcome.Compilation.ExitCode}";
+          await _dialogs.ShowMessageAsync("Build failure", BuildOutput);
+        }
+      }
+      else if (outcome.Stage == EditorExecutionStage.RunFailed)
+      {
+        BuildState = EditorBuildState.RunFailed;
+        Status = "Run failed";
+        BuildOutput += Environment.NewLine + outcome.Error!.Message;
+        await _dialogs.ShowMessageAsync("Run failure", outcome.Error.Message);
       }
     }
     catch (Exception ex)
