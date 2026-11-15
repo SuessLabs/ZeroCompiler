@@ -126,6 +126,24 @@ Build and execution commands act on the document active when the command starts.
 The compiler currently supports `.zasm`; `.zsrc` files can be opened, edited, and
 saved, but are not yet supported by the compiler.
 
+Save, validation, build, and optional run/debug startup are coordinated by
+`EditorExecutionCoordinator` using Lite.StateMachine. The state classes all use
+the `State` suffix: `ValidateCompilerState`, `SaveSourceState`,
+`ValidateSourceState`, `CompileState`, `LaunchState`, and the terminal
+`CompletedState`, `CanceledState`, `FailedState`, and `RunFailedState`.
+Canceling the save picker stops the workflow before compilation; this does not
+add cancellation of an already-running compiler process. Failed compilation
+never launches a program, and run failures retain compiler diagnostics.
+Debug startup always builds the Debug configuration. Each request captures its
+source document, compiler path, and configuration, and overlapping executions
+are rejected. UI callbacks return to the caller's synchronization context.
+The native debugger session continues to own running/paused state independently.
+
+Other potential state-machine workflows include update download/verification/
+installation, extension activation/deactivation, and future project loading
+and dependency restoration. Those workflows are not implemented as state
+machines yet; simple editor and docking notifications do not need one.
+
 The toolbar provides icon buttons for New, Open, Save, Undo, Redo, and Build and
 Execute. Hover over a button for its name and shortcut. The build configuration
 selector offers Debug and Release. Play or F5 builds and launches the current

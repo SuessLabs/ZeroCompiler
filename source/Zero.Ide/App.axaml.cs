@@ -33,6 +33,7 @@ public partial class App : PrismApplication
     containerRegistry.RegisterSingleton<IEditorDialogService, EditorDialogService>();
     containerRegistry.RegisterSingleton<ICompilerService, CompilerService>();
     containerRegistry.RegisterSingleton<IProgramRunner, ProgramRunner>();
+    containerRegistry.RegisterSingleton<EditorExecutionCoordinator>();
     containerRegistry.RegisterSingleton<IDebugSession, IdeDebugSession>();
     containerRegistry.RegisterSingleton<IUpdateService, UpdateService>();
 
