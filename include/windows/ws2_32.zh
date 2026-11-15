@@ -1,0 +1,9 @@
+; Winsock 2: preferred Windows x86 socket API.
+; WSAAPI/stdcall. Initialize with WSAStartup and pair success with WSACleanup.
+; SOCKET values use closesocket, not CloseHandle. Structures/buffers are caller-owned.
+#IMPORT ws2_32.dll, WSAStartup, WSACleanup, WSAGetLastError, WSASetLastError
+#IMPORT ws2_32.dll, socket, closesocket, bind, listen, accept, connect, shutdown
+#IMPORT ws2_32.dll, send, recv, sendto, recvfrom, select, ioctlsocket, setsockopt, getsockopt, getsockname, getpeername
+#IMPORT ws2_32.dll, htons, htonl, ntohs, ntohl, inet_addr, inet_ntoa, inet_pton, inet_ntop
+#IMPORT ws2_32.dll, getaddrinfo, freeaddrinfo, getnameinfo, gethostname
+#IMPORT ws2_32.dll, WSASocketA, WSASocketW, WSAEventSelect, WSACreateEvent, WSACloseEvent, WSAWaitForMultipleEvents

@@ -1,0 +1,10 @@
+<Project>
+  <!-- Production code must not depend on LINQ. Unit tests are deliberately exempt. -->
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' and !$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('.Tests'))">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true' and !$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('.Tests'))">
+    <WarningsAsErrors>$(WarningsAsErrors);RS0030</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

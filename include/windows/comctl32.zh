@@ -1,0 +1,9 @@
+; Common controls and image lists. The DLL name is comctl32.dll on x86 and x64.
+; WinAPI/stdcall. Call InitCommonControlsEx with a valid INITCOMMONCONTROLSEX.
+; Controls such as list/tree views use User32 messages; those are not DLL exports.
+; Version 6 visual styles need a common-controls activation manifest.
+#IMPORT comctl32.dll, InitCommonControls, InitCommonControlsEx
+#IMPORT comctl32.dll, ImageList_Create, ImageList_Destroy, ImageList_Add, ImageList_AddMasked, ImageList_Replace, ImageList_ReplaceIcon
+#IMPORT comctl32.dll, ImageList_Remove, ImageList_Draw, ImageList_DrawEx, ImageList_GetIcon, ImageList_GetImageCount, ImageList_SetImageCount
+#IMPORT comctl32.dll, ImageList_GetIconSize, ImageList_SetIconSize, ImageList_SetBkColor, ImageList_GetBkColor, ImageList_LoadImageA, ImageList_LoadImageW
+#IMPORT comctl32.dll, CreateStatusWindowA, CreateStatusWindowW, CreateToolbarEx, DrawStatusTextA, DrawStatusTextW

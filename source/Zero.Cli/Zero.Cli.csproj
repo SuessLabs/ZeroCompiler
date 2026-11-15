@@ -9,7 +9,8 @@
     <Title>Zero Language Compiler</Title>
     <Description>Compiler for the Zero programming language and Zero assembly.</Description>
     <ApplicationIcon>z3-16-48.ico</ApplicationIcon>
-    <AssemblyName>zcc</AssemblyName>
+    <AssemblyName>zero</AssemblyName>
+    <RootNamespace>Zero.Cli</RootNamespace>
     <AssemblyTitle>Zero Language Compiler</AssemblyTitle>
   </PropertyGroup>
 
@@ -25,5 +26,12 @@
     <ProjectReference Include="..\Zero\Zero.csproj" />
     <InternalsVisibleTo Include="Zero.Tests" />
   </ItemGroup>
+
+  <!-- Remove artifacts from the former CLI name when reusing an output folder. -->
+  <Target Name="RemoveLegacyCompilerArtifacts" AfterTargets="Build;Publish">
+    <Delete Files="$(TargetDir)zcc.exe;$(TargetDir)zcc;$(TargetDir)zcc.dll;$(TargetDir)zcc.deps.json;$(TargetDir)zcc.runtimeconfig.json;$(TargetDir)zcc.pdb" />
+    <Delete Condition="'$(PublishDir)' != ''"
+            Files="$(PublishDir)zcc.exe;$(PublishDir)zcc;$(PublishDir)zcc.dll;$(PublishDir)zcc.deps.json;$(PublishDir)zcc.runtimeconfig.json;$(PublishDir)zcc.pdb" />
+  </Target>
 
 </Project>

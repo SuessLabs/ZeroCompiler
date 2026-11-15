@@ -1,12 +1,29 @@
-# Zero Compiler
+# Zero - _Programming Language and Compiler Suite_
+
+![logo](docs/images/zero-logo.png)
 
 The Zero programming language and compiler project (_AKA: Null Compiler_). **Zero** is a simple, fast, and efficient programming language for the x86-64 architecture.
 
-The compiler supports PE (portable exectuable) file formats for GUI, CLI, and library binaries. Future expansions will include ELF formats and ARM architecture.
+The compiler generates Windows x86 PE32 console executables (including programs
+that create Windows GUI controls) and static Linux x86-64 ELF64 executables using
+syscalls. Shared-library ELF linking, DLL output, additional architectures, macOS,
+and STM32 remain future work. See [Linux x86-64 support](docs/linux64.md).
 
-## About
+## Zero Language Suite
 
-Zero has its inceptions in 2001 and matured 2006 as a simple, fast, and efficient programming language created by Damian Suess (_Xeno Innovations, inc._). At the time, C/C++ and Visual Basic were the key programmang languages (_besides Java or Pascal_) for creating a compiled business/hobby application. Zero has the heart of assembly language giving it that bare-metal kick.
+* **Zero** - _Zero Assembly and command line compiler tooling (Zero.Cli)_
+* **Zero.Ide** - _Integrated Development Environment with debugger support_
+* **Zero.Dbg** - _Debugger_
+
+![ZIDE](docs/images/Zero.IDE-Sample-1.png)
+
+## History
+
+> Zero has the heart of assembly language giving it that bare-metal kick.
+
+Zero has its inceptions in 2001 and matured 2006 as a simple, fast, and efficient programming language created by Damian Suess (_Xeno Innovations, inc._). Created at the time of C/C++ and Visual Basic dominance as the key business programmang languages (_besides Java or Pascal_).
+
+The original language parser and compiler has been completely rewritten from scratch, allowing for Windows PE and Linux ELF (x64) projects to build. Enjoy the new cross-platform IDE and debugger.
 
 ### Zero Next-Generation
 
@@ -20,8 +37,10 @@ Yes, the heart language and engine are being rewritten for a more modern approac
 |-|-|-|-|-|
 | &#9989; | Windows x86   | x86     | PE32  | Windows APIs and calling conventions |
 | &#9744; | Windows ARM64 | ARM64   | PE32+ | Windows ARM64 ABI |
-| &#9744; | Linux x64     | x86-64  | ELF64 | Linux ABI and system calls |
+| &#9989; | Linux x64     | x86-64  | ELF64 | Static executables and Linux system calls |
 | &#9744; | Linux ARM64   | ARM64   | ELF64 | Linux ARM64 ABI |
+| &#9744; | macOS ARM64   | ARM64   | Mach-O | macOS ABI and loader |
+| &#9744; | STM32         | ARM     | ELF   | Bare-metal startup and board memory map |
 
 **References:**
 
@@ -43,10 +62,13 @@ source/
     Core/           Shared utility functions
     Diagnostics/    Error codes and assembler exceptions
     Parsing/        Quote-aware operand and string parsing
+    Compilation/    Target selection and instruction encoder contract
     Formats/
       Pe/           PE writer, layout, imports, and binary structures
+      Elf/          Static Linux ELF64 writer
     Targets/
       X86/          x86 mnemonic and opcode definitions
+      X64/          AMD64 instruction encoder
     Zero.cs         Public compiler entry point
   Zero.Cli/         Arguments, console output, and program execution
   Zero.Tests/       Compiler and CLI tests
@@ -73,14 +95,13 @@ the Windows x86 assembly sample, and run the resulting executable:
 ./build.bat
 
 # From the publish folder:
-./zcc.exe run samples/hello-console.zasm
+./zero.exe run samples/Windows/win-cli-03-console-write.zasm
 ```
 
-Use `zcc run <source> [output.exe]` to compile and execute, or omit `run` to
+Use `zero run <source> [output.exe]` to compile and execute, or omit `run` to
 compile only. The generated executable defaults to the source path with an
 `.exe` extension. The run command waits for the program and returns its exit code.
-The build publishes both `zcc.exe` and `zero.exe`; either name accepts the same
-commands, for example `zero run samples/hello-console.zasm`.
+The build publishes `zero.exe` on Windows and `zero` on Linux/macOS.
 
 ## File Types
 

@@ -1,0 +1,5 @@
+; Windows x86 HTTP client APIs. WinAPI/stdcall; text parameters are UTF-16.
+; Follow session/connect/request handle ordering and release with WinHttpCloseHandle.
+#IMPORT winhttp.dll, WinHttpOpen, WinHttpConnect, WinHttpOpenRequest, WinHttpSendRequest, WinHttpReceiveResponse
+#IMPORT winhttp.dll, WinHttpQueryHeaders, WinHttpQueryDataAvailable, WinHttpReadData, WinHttpWriteData
+#IMPORT winhttp.dll, WinHttpSetOption, WinHttpQueryOption, WinHttpSetTimeouts, WinHttpCloseHandle

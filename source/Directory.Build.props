@@ -1,17 +1,12 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)Version.props" />
+
   <PropertyGroup>
     <Company>Xeno Innovations, Inc.</Company>
     <Authors>Damian Suess</Authors>
     <Copyright>Copyright © Xeno Innovations, Inc. 2001-$([System.DateTime]::Now.ToString(yyyy))</Copyright>
     <!--<Description></Description>-->
     <!--<Product>Zero Compiler</Product>-->
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- The SDK derives assembly, file, and informational versions from Version. -->
-    <!-- CI can override Version, or VersionPrefix and VersionSuffix, with -p:. -->
-    <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.0.4.0</VersionPrefix>
-    <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup>

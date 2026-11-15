@@ -1,0 +1,7 @@
+; Windows x86 COM initialization, instance creation, GUIDs, and task memory.
+; WinAPI/stdcall. Check HRESULT values and balance successful COM initialization.
+; Interface methods use vtables; this file only declares DLL exports.
+#IMPORT ole32.dll, CoInitializeEx, CoUninitialize, CoCreateInstance, CoCreateGuid
+#IMPORT ole32.dll, CoTaskMemAlloc, CoTaskMemRealloc, CoTaskMemFree
+#IMPORT ole32.dll, CLSIDFromString, IIDFromString, StringFromGUID2
+#IMPORT ole32.dll, OleInitialize, OleUninitialize

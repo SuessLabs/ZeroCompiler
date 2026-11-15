@@ -2,17 +2,24 @@
 
 **Date:** 2026-11-07 - _Damian Suess_
 
+**Implementation update:** the shared parser, separate x86/x64 encoders, and
+PE32/static Linux ELF64 writers are now implemented. See [Linux x64](../linux64.md)
+for the supported target and limitations. The broader folder/model proposals
+below still include future work, especially ARM, macOS, STM32, and dynamic linking.
+
 The next stage of Zero's development will preserve a shared parsing core while separating the components that depend on processor architecture, executable format, and operating system. This will allow the compiler to grow beyond Windows x86 without duplicating its parser or tying every backend to PE output.
 
 For now, `Zero.Cli` will remain separate from the `Zero` compiler library; _though subject to change_. The CLI will handle command-line arguments, file operations, console messages, and exit codes. The library will expose compilation functionality that can also be used by tests, editors, or other applications.
 
-The final command name remains independent of this structure. The CLI's `AssemblyName` setting can produce either `zero.exe` or `zcc.exe`:
+The CLI's `AssemblyName` setting produces `zero.exe` on Windows and `zero` on Linux/macOS:
 
 ```xml
-<AssemblyName>zcc</AssemblyName>
+<AssemblyName>zero</AssemblyName>
 ```
 
-If both command names become useful, an alias or wrapper can provide the second name without requiring another compiler implementation.
+The shared library is named `Zero.Compiler.dll` so it cannot collide with the
+CLI's managed `zero.dll` on case-insensitive filesystems. Its C# namespaces remain
+under `Zero`.
 
 ## Separate Architecture, Format, and Platform Decisions
 
@@ -113,4 +120,4 @@ The implementation sequence will be:
 
 Backend registration will remain explicit to support Native AOT without depending on runtime assembly discovery.
 
-Throughout this work, I will distinguish the platform that runs the compiler from the platform it generates code for. Publishing `zcc` with `-Runtime win-arm64` produces an ARM64 compiler application; generating ARM64 machine code requires a separate ARM64 backend.
+Throughout this work, I will distinguish the platform that runs the compiler from the platform it generates code for. Publishing `zero` with `-Runtime win-arm64` produces an ARM64 compiler application; generating ARM64 machine code requires a separate ARM64 backend.

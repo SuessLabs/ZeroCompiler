@@ -5,25 +5,24 @@ using System;
 using System.IO;
 using System.Reflection;
 using Zero.Assembly;
+using Zero.Compilation;
+using Zero.Dbg;
 using Zero.Exceptions;
+using Zero.Parsing;
 
 namespace Zero;
 
-public enum SourceType
-{
-  Assembly,
-  Zero,
-}
-
 public class Zero
 {
-  public static string Version { get; } = typeof(Zero).Assembly
-    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-  private const string ObjExt = ".obj";
-
   private static ErrorCode _lastError = ErrorCode.None;
-  private string? _inputPath;
-  private string? _outputPath;
+
+  public static string Version { get; } = typeof(Zero)
+    .Assembly
+    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+
+  public string? OutputPath { get; private set; }
+
+  public CompilationTarget? Target { get; private set; }
 
   public static byte[]? CompileAsm(string[] source)
   {
@@ -51,21 +50,72 @@ public class Zero
     return exeBytes;
   }
 
-  public ErrorCode Compile(string inputPath, string outputPath, SourceType sourceType)
+  public ErrorCode Compile(string inputPath, string? outputPath, SourceType sourceType, CompilerOptions? options = null)
   {
-    _inputPath = inputPath;
-    _outputPath = outputPath;
-
-    string[] source = File.ReadAllLines(inputPath);
+    OutputPath = null;
+    Target = null;
 
     if (sourceType == SourceType.Assembly)
     {
-      byte[]? exeBytes = CompileAsm(source);
+      byte[]? exeBytes;
+      DebugMap? debugMap = null;
+
+      try
+      {
+        var loader = new SourceLoader();
+        var source = loader.Load(inputPath, options);
+        var assembler = new Assembler(options?.Target) { EmitDebugInformation = options?.EmitDebugInformation == true };
+
+        exeBytes = assembler.Assemble(source);
+
+        if (options?.EmitDebugInformation == true)
+        {
+          debugMap = assembler.DebugMap;
+          var mappedFiles = new System.Collections.Generic.HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
+          foreach (var file in debugMap.Sources)
+            mappedFiles.Add(file.FilePath);
+
+          foreach (var file in loader.SourceFiles)
+            if (mappedFiles.Add(file)) debugMap.Sources.Add(new DebugSource { FilePath = file, Hash = DebugMap.HashFile(file) });
+        }
+
+        Target = assembler.Target;
+      }
+      catch (AssemblerException ex)
+      {
+        Console.Error.WriteLine($"Assembly error: {ex.Message}");
+        return ErrorCode.AssemblyError;
+      }
 
       if (exeBytes is not null)
       {
-        // Generate EXE
+        outputPath ??= Target == CompilationTarget.LinuxX64 ? Path.ChangeExtension(inputPath, null) : Path.ChangeExtension(inputPath, ".exe");
+        if (string.Equals(Path.GetFullPath(inputPath), Path.GetFullPath(outputPath), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+          throw new IOException("The output path must differ from the input source path.");
+
         File.WriteAllBytes(outputPath, exeBytes);
+        var mapPath = outputPath + DebugMap.Extension;
+
+        if (debugMap is not null)
+        {
+          debugMap.ExecutableHash = DebugMap.HashFile(outputPath);
+          debugMap.Save(mapPath);
+        }
+        else if (File.Exists(mapPath))
+        {
+          File.Delete(mapPath);
+        }
+
+        if (Target == CompilationTarget.LinuxX64 && OperatingSystem.IsLinux())
+        {
+          File.SetUnixFileMode(
+            outputPath,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+            UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+
+        OutputPath = outputPath;
         Console.WriteLine($"Compiled {outputPath} ({exeBytes.Length} bytes)");
       }
       else

@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <SupportedRuntimeIdentifiers>win-x64;linux-x64;linux-arm64;linux-arm;osx-x64;osx-arm64</SupportedRuntimeIdentifiers>
+    <RuntimeIdentifiers>$(SupportedRuntimeIdentifiers)</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
+    <ApplicationManifest Condition="'$(RuntimeIdentifier)' == 'win-x64'">app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\zero-logo.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <AvaloniaResource Include="Assets\**" />
+    <EmbeddedResource Include="Highlighting\Zasm.xshd" LogicalName="Zero.Ide.Highlighting.Zasm.xshd" />
+    <ProjectReference Include="..\Zero\Zero.csproj" />
+    <ProjectReference Include="../Zero.Dbg.WinPe/Zero.Dbg.WinPe.csproj" />
+    <InternalsVisibleTo Include="Zero.Ide.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Dock.Avalonia" />
+    <PackageReference Include="Dock.Avalonia.Themes.Fluent" />
+    <PackageReference Include="Dock.Model.Mvvm" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)' == 'Debug'" />
+    <PackageReference Include="Avalonia.Markup.Xaml.Loader" />
+    <PackageReference Include="Lite.EventIpc" />
+    <PackageReference Include="Lite.StateMachine" />
+    <PackageReference Include="Prism.Avalonia" />
+    <PackageReference Include="Prism.DryIoc.Avalonia" />
+  </ItemGroup>
+
+  <Target Name="ValidateIdeRuntime" BeforeTargets="Restore;PrepareForBuild;Publish"
+          Condition="'$(DesignTimeBuild)' != 'true'" Returns="$(RuntimeIdentifier)">
+    <Error Condition="'$(RuntimeIdentifier)' == 'linux-x86'"
+           Text="Zero.Ide cannot target linux-x86: .NET 10 has no Linux x86 runtime/app host, and SkiaSharp 2.88 lacks Linux x86 native assets. Use linux-x64, linux-arm, or linux-arm64." />
+    <Error Condition="!$([System.String]::Copy(';$(SupportedRuntimeIdentifiers);').Contains(';$(RuntimeIdentifier);'))"
+           Text="Zero.Ide does not support runtime '$(RuntimeIdentifier)'. Supported runtimes: $(SupportedRuntimeIdentifiers)." />
+  </Target>
+</Project>

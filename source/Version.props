@@ -1,0 +1,15 @@
+<Project>
+  <!-- Edit these three versions here. CI can override each property independently. -->
+  <PropertyGroup>
+    <CompilerVersion Condition="'$(CompilerVersion)' == ''">0.2.0.101</CompilerVersion>
+    <IdeVersion Condition="'$(IdeVersion)' == ''">0.2.0.16</IdeVersion>
+    <DebuggerVersion Condition="'$(DebuggerVersion)' == ''">0.2.0.4</DebuggerVersion>
+  </PropertyGroup>
+
+  <!-- Tests and debugger backends follow their product's version. -->
+  <PropertyGroup Condition="'$(VersionPrefix)' == ''">
+    <VersionPrefix Condition="$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Zero.Ide'))">$(IdeVersion)</VersionPrefix>
+    <VersionPrefix Condition="$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Zero.Dbg'))">$(DebuggerVersion)</VersionPrefix>
+    <VersionPrefix Condition="'$(VersionPrefix)' == ''">$(CompilerVersion)</VersionPrefix>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,7 @@
+; Legacy Winsock 1.1 imports. Prefer ws2_32.zh for new programs.
+; WSAAPI/stdcall. Call WSAStartup before socket operations and WSACleanup afterward.
+; Do not combine with ws2_32.zh unless DLL-qualified aliases are used for overlaps.
+#IMPORT wsock32.dll, WSAStartup, WSACleanup, WSAGetLastError, WSASetLastError
+#IMPORT wsock32.dll, socket, closesocket, bind, listen, accept, connect, shutdown
+#IMPORT wsock32.dll, send, recv, sendto, recvfrom, select, ioctlsocket, setsockopt, getsockopt, getsockname, getpeername
+#IMPORT wsock32.dll, htons, htonl, ntohs, ntohl, inet_addr, inet_ntoa, gethostbyname, gethostbyaddr, gethostname

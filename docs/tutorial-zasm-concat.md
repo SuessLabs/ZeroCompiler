@@ -1,6 +1,6 @@
 # Joining strings in Zero Assembly
 
-[hello-concat.zasm](../samples/hello-concat.zasm) prints two pieces of text, then
+[win-cli-05-string-concat.zasm](../samples/Windows/win-cli-05-string-concat.zasm) prints two pieces of text, then
 joins them with a space. Joining strings is called **concatenation**.
 
 ## 1. Import helper functions
@@ -81,7 +81,7 @@ success. The joined sentence is built while the program runs.
 From the repository root, after building the compiler:
 
 ```powershell
-./zero.exe run samples/hello-concat.zasm
+./zero.exe run samples/Windows/win-cli-05-string-concat.zasm
 ```
 
 Output:

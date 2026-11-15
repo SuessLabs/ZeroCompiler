@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Zero.Ide.ViewModels"
+        x:Class="Zero.Ide.Views.EditorDialogWindow"
+        x:DataType="vm:EditorDialogViewModel"
+        Title="{Binding Title}"
+        Width="440"
+        CanResize="False"
+        Icon="/Assets/zero-logo.ico"
+        ShowInTaskbar="False"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" />

@@ -17,4 +17,13 @@ public sealed class CompilerTests
     Assert.IsFalse(string.IsNullOrWhiteSpace(Zero.Version));
     Assert.AreEqual(expected, Zero.Version);
   }
+
+  [TestMethod]
+  public void CliAndCompilerShareTheSameVersion()
+  {
+    var cliVersion = typeof(Cli.Program).Assembly
+      .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+
+    Assert.AreEqual(Zero.Version.Split('+')[0], cliVersion.Split('+')[0]);
+  }
 }

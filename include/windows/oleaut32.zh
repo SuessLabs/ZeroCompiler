@@ -1,0 +1,6 @@
+; Windows x86 Automation strings, VARIANTs, and SAFEARRAYs. WinAPI/stdcall.
+; BSTR strings are UTF-16. Initialize structures and pair allocations with cleanup.
+#IMPORT oleaut32.dll, SysAllocString, SysAllocStringLen, SysFreeString, SysStringLen, SysStringByteLen
+#IMPORT oleaut32.dll, VariantInit, VariantClear, VariantCopy, VariantChangeType
+#IMPORT oleaut32.dll, SafeArrayCreateVector, SafeArrayDestroy, SafeArrayAccessData, SafeArrayUnaccessData
+#IMPORT oleaut32.dll, SafeArrayGetDim, SafeArrayGetLBound, SafeArrayGetUBound

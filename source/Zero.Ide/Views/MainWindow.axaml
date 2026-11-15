@@ -1,0 +1,287 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:dock="using:Dock.Avalonia.Controls"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:shortcuts="using:Zero.Ide.Input"
+        xmlns:views="using:Zero.Ide.Views"
+        xmlns:vm="using:Zero.Ide.ViewModels"
+        x:Class="Zero.Ide.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}"
+        Width="1100"
+        Height="750"
+        MinWidth="800"
+        MinHeight="400"
+        Icon="/Assets/zero-logo.ico"
+        mc:Ignorable="d">
+
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Zero.Ide/Themes/ToolbarIcons.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <Window.KeyBindings>
+    <KeyBinding Command="{Binding CmdNew}" Gesture="{x:Static shortcuts:EditorKeyGestures.NewFile}" />
+    <KeyBinding Command="{Binding CmdOpen}" Gesture="{x:Static shortcuts:EditorKeyGestures.OpenFile}" />
+    <KeyBinding Command="{Binding CmdSave}" Gesture="{x:Static shortcuts:EditorKeyGestures.Save}" />
+    <KeyBinding Command="{Binding CmdSaveAs}" Gesture="{x:Static shortcuts:EditorKeyGestures.SaveAs}" />
+    <KeyBinding Command="{Binding CmdSaveAll}" Gesture="{x:Static shortcuts:EditorKeyGestures.SaveAll}" />
+    <KeyBinding Command="{Binding CmdCloseDocument}" Gesture="{x:Static shortcuts:EditorKeyGestures.CloseDocument}" />
+    <KeyBinding Command="{Binding CmdDebugContinue}" Gesture="{x:Static shortcuts:EditorKeyGestures.BuildAndRun}" />
+    <KeyBinding Command="{Binding CmdDebugStepOver}" Gesture="{x:Static shortcuts:EditorKeyGestures.StepOver}" />
+    <KeyBinding Command="{Binding CmdToggleBreakpoint}" Gesture="{x:Static shortcuts:EditorKeyGestures.ToggleBreakpoint}" />
+    <KeyBinding Command="{Binding CmdDebugStop}" Gesture="{x:Static shortcuts:EditorKeyGestures.StopDebugging}" />
+    <KeyBinding Command="{Binding CmdBuild}" Gesture="{x:Static shortcuts:EditorKeyGestures.Build}" />
+    <KeyBinding Command="{Binding CmdRebuild}" Gesture="{x:Static shortcuts:EditorKeyGestures.Rebuild}" />
+  </Window.KeyBindings>
+
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Command="{Binding CmdNew}"
+                  Header="_New"
+                  InputGesture="Ctrl+N" />
+        <MenuItem Command="{Binding CmdOpen}"
+                  Header="_Open"
+                  InputGesture="Ctrl+O" />
+        <MenuItem Command="{Binding CmdOpenFolder}" Header="Open _Folder..." />
+        <MenuItem Command="{Binding CmdSave}"
+                  Header="_Save"
+                  InputGesture="Ctrl+S" />
+        <MenuItem Command="{Binding CmdSaveAs}"
+                  Header="Save _As..."
+                  InputGesture="Ctrl+Shift+S" />
+        <MenuItem Command="{Binding CmdSaveAll}"
+                  Header="Save A_ll"
+                  InputGesture="Ctrl+Alt+S" />
+        <MenuItem Command="{Binding CmdCloseDocument}"
+                  Header="_Close"
+                  InputGesture="Ctrl+W" />
+
+        <Separator />
+
+        <MenuItem Command="{Binding CmdExit}" Header="E_xit" />
+      </MenuItem>
+
+      <MenuItem Header="_Edit" IsEnabled="{Binding !IsBusy}">
+        <MenuItem Command="{Binding Editor.CmdUndo}"
+                  Header="_Undo"
+                  InputGesture="Ctrl+Z" />
+        <MenuItem Command="{Binding Editor.CmdRedo}"
+                  Header="_Redo"
+                  InputGesture="Ctrl+Y" />
+
+        <Separator />
+
+        <MenuItem Command="{Binding Editor.CmdCut}"
+                  Header="Cu_t"
+                  InputGesture="Ctrl+X" />
+        <MenuItem Command="{Binding Editor.CmdCopy}"
+                  Header="_Copy"
+                  InputGesture="Ctrl+C" />
+        <MenuItem Command="{Binding Editor.CmdPaste}"
+                  Header="_Paste"
+                  InputGesture="Ctrl+V" />
+      </MenuItem>
+
+      <MenuItem Header="_View">
+        <MenuItem Command="{Binding CmdShowSolutionExplorer}" Header="_Solutions Explorer" />
+      </MenuItem>
+
+      <MenuItem Header="_Build">
+        <MenuItem Command="{Binding CmdDebugContinue}"
+                  Header="Start / _Continue Debugging"
+                  InputGesture="F5" />
+        <MenuItem Command="{Binding CmdDebugPlayPause}" Header="Play / Pause Debugging" />
+        <MenuItem Command="{Binding CmdDebugStepOver}"
+                  Header="Step _Over"
+                  InputGesture="F10" />
+        <MenuItem Command="{Binding CmdToggleBreakpoint}"
+                  Header="Toggle Breakpoint"
+                  InputGesture="F9" />
+        <MenuItem Command="{Binding CmdDebugStop}"
+                  Header="Stop Debugging"
+                  InputGesture="Shift+F5" />
+        <MenuItem Command="{Binding CmdBuildAndRun}" Header="Run Without Debugging" />
+        <Separator />
+        <MenuItem Command="{Binding CmdBuild}"
+                  Header="_Build"
+                  InputGesture="Ctrl+B"
+                  ToolTip.Tip="Build (Ctrl+B)" />
+        <MenuItem Command="{Binding CmdRebuild}"
+                  Header="_Rebuild"
+                  InputGesture="Ctrl+Shift+B" />
+        <MenuItem Command="{Binding CmdClean}" Header="_Clean" />
+        <Separator />
+        <MenuItem Command="{Binding CmdBuildOutput}" Header="Build _Output..." />
+      </MenuItem>
+
+      <MenuItem Header="_Tools">
+        <MenuItem Command="{Binding CmdOptions}" Header="_Options..." />
+        <MenuItem Header="_Themes">
+          <MenuItem Command="{Binding CmdThemeSystem}"
+                    GroupName="IdeTheme"
+                    Header="Use _system setting"
+                    IsChecked="{Binding IsSystemTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+          <Separator />
+          <MenuItem Command="{Binding CmdThemeLight}"
+                    GroupName="IdeTheme"
+                    Header="_Light"
+                    IsChecked="{Binding IsLightTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+          <MenuItem Command="{Binding CmdThemeDark}"
+                    GroupName="IdeTheme"
+                    Header="_Dark"
+                    IsChecked="{Binding IsDarkTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+          <MenuItem Command="{Binding CmdThemeCoolSlate}"
+                    GroupName="IdeTheme"
+                    Header="_Cool Slate"
+                    IsChecked="{Binding IsCoolSlateTheme, Mode=OneWay}"
+                    ToggleType="Radio" />
+        </MenuItem>
+      </MenuItem>
+
+      <MenuItem Header="_Help">
+        <MenuItem Command="{Binding CmdCheckForUpdates}" Header="Check for _Updates..." />
+        <Separator />
+        <MenuItem Command="{Binding CmdAbout}" Header="_About" />
+      </MenuItem>
+    </Menu>
+
+    <Border Padding="8,6"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="0,1,0,1"
+            Classes="toolbar"
+            DockPanel.Dock="Top">
+      <Grid ColumnDefinitions="*,Auto,*">
+        <StackPanel HorizontalAlignment="Left"
+                    Orientation="Horizontal"
+                    Spacing="6">
+          <Button AutomationProperties.Name="New File"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdNew}"
+                  ToolTip.Tip="New File (Ctrl+N)">
+            <Path Data="{StaticResource IconNewFile}" />
+          </Button>
+          <Button AutomationProperties.Name="Open File"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdOpen}"
+                  ToolTip.Tip="Open File (Ctrl+O)">
+            <Path Data="{StaticResource IconOpenFile}" />
+          </Button>
+          <Button AutomationProperties.Name="Save File"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdSave}"
+                  ToolTip.Tip="Save File (Ctrl+S)">
+            <Path Data="{StaticResource IconSaveFile}" />
+          </Button>
+
+          <Separator Classes="toolbar-divider" />
+
+          <Button AutomationProperties.Name="Undo Edit"
+                  Classes="toolbar-icon"
+                  Command="{Binding Editor.CmdUndo}"
+                  ToolTip.Tip="Undo Edit (Ctrl+Z)">
+            <Path Data="{StaticResource IconUndo}" />
+          </Button>
+          <Button AutomationProperties.Name="Redo Edit"
+                  Classes="toolbar-icon"
+                  Command="{Binding Editor.CmdRedo}"
+                  ToolTip.Tip="Redo Edit (Ctrl+Y)">
+            <Path Data="{StaticResource IconRedo}" />
+          </Button>
+
+          <Separator Classes="toolbar-divider" />
+
+          <Button AutomationProperties.Name="{Binding DebugPlayLabel}"
+                  Classes="toolbar-icon play"
+                  Command="{Binding CmdDebugPlayPause}"
+                  ToolTip.Tip="{Binding DebugPlayLabel}">
+            <Path Data="{Binding DebugPlayIcon}" />
+          </Button>
+          <Button AutomationProperties.Name="Step Over"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdDebugStepOver}"
+                  ToolTip.Tip="Step Over (F10)">
+            <Path Data="M4,4 C16,0 22,5 17,11 M13,8 L17,12 21,8 M5,20 L21,20" />
+          </Button>
+          <Button AutomationProperties.Name="Stop Debugging"
+                  Classes="toolbar-icon"
+                  Command="{Binding CmdDebugStop}"
+                  ToolTip.Tip="Stop Debugging (Shift+F5)">
+            <Path Data="M5,5 L19,5 19,19 5,19 Z" />
+          </Button>
+
+          <ComboBox Width="104"
+                    MinHeight="30"
+                    Padding="8,4"
+                    AutomationProperties.Name="Build Configuration"
+                    IsEnabled="{Binding !IsBusy}"
+                    ItemsSource="{Binding BuildConfigurations}"
+                    SelectedItem="{Binding BuildConfiguration, Mode=TwoWay}"
+                    ToolTip.Tip="Build Configuration" />
+        </StackPanel>
+
+        <TextBlock Text="{Binding BuildStatus}"
+                   Grid.Column="1"
+                   Margin="12,0"
+                   VerticalAlignment="Center"
+                   AutomationProperties.Name="Build Status"
+                   Classes.build-failed="{Binding HasBuildFailed}"
+                   Classes.run-failed="{Binding HasRunFailed}"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   ToolTip.Tip="{Binding BuildOutput}" />
+
+        <TextBox Text="{Binding Editor.SearchText, Mode=TwoWay}"
+                 Grid.Column="2"
+                 Width="210"
+                 MinHeight="30"
+                 Padding="8,4"
+                 HorizontalAlignment="Right"
+                 VerticalContentAlignment="Center"
+                 AutomationProperties.Name="Search current file"
+                 IsEnabled="{Binding !IsBusy}"
+                 ToolTip.Tip="Search current file (Enter: next match)"
+                 Watermark="Search current file...">
+
+          <TextBox.InnerLeftContent>
+            <Path Width="14"
+                  Height="14"
+                  Margin="6,0,6,0"
+                  Data="{StaticResource IconSearch}"
+                  Stretch="Uniform"
+                  Stroke="{DynamicResource IdeSecondaryBrush}"
+                  StrokeThickness="1.7" />
+          </TextBox.InnerLeftContent>
+
+          <TextBox.KeyBindings>
+            <KeyBinding Command="{Binding Editor.CmdFindNext}" Gesture="Enter" />
+          </TextBox.KeyBindings>
+        </TextBox>
+      </Grid>
+    </Border>
+
+    <Border Padding="12,6"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="0,1,0,0"
+            Classes="status-bar"
+            DockPanel.Dock="Bottom">
+      <TextBlock Text="{Binding Status}" FontSize="12" />
+    </Border>
+
+    <dock:DockControl x:Name="WorkspaceDock"
+                      Factory="{Binding DockFactory}"
+                      InitializeFactory="False"
+                      InitializeLayout="False"
+                      Layout="{Binding Layout}" />
+  </DockPanel>
+</Window>

@@ -1,0 +1,86 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="using:Dock.Avalonia.Converters"
+        xmlns:core="using:Dock.Model.Core"
+        xmlns:dock="using:Dock.Avalonia.Controls"
+        xmlns:models="using:Dock.Model.Controls">
+  <!-- DocumentControl supplies CloseTemplate to its tab strip through a template binding. -->
+  <Style Selector="dock|DocumentControl">
+    <Setter Property="CloseTemplate">
+      <DataTemplate x:DataType="core:IDockable">
+        <Button AutomationProperties.Name="Close document"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                Classes="dock-document-action"
+                Command="{Binding Owner.Factory.CloseDockable}"
+                CommandParameter="{Binding}"
+                ToolTip.Tip="{DynamicResource DocumentTabStripItemCloseString}">
+          <Button.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+              <MultiBinding Converter="{x:Static converters:DockCapabilityConverters.CanCloseMultiConverter}">
+                <Binding />
+                <Binding Path="CanClose" />
+                <Binding Path="DockCapabilityOverrides.CanClose" />
+                <Binding Path="((core:IDock)Owner).DockCapabilityPolicy.CanClose" />
+              </MultiBinding>
+              <MultiBinding Converter="{x:Static converters:CanRemoveDockableConverter.Instance}">
+                <Binding FallbackValue="True" Path="((core:IDock)Owner).CanCloseLastDockable" />
+                <Binding FallbackValue="0" Path="((core:IDock)Owner).VisibleDockables.Count" />
+              </MultiBinding>
+              <MultiBinding Converter="{x:Static converters:DocumentCloseButtonVisibilityConverter.Instance}">
+                <Binding FallbackValue="Always" Path="((models:IDocumentDock)Owner).CloseButtonShowMode" />
+                <Binding Path="$parent[dock:DocumentTabStripItem].IsSelected" />
+              </MultiBinding>
+            </MultiBinding>
+          </Button.IsVisible>
+          <Path Width="10"
+                Height="10"
+                Data="{DynamicResource DockToolIconCloseGeometry}"
+                Fill="{Binding $parent[dock:DocumentTabStripItem].Foreground}"
+                Stretch="Uniform" />
+        </Button>
+      </DataTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="dock|DocumentTabStripItem:active:selected">
+    <Setter Property="Background" Value="{DynamicResource DockSurfaceHeaderActiveBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource DockTabActiveForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.dock-document-action">
+    <Style.Resources>
+      <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="Transparent" />
+    </Style.Resources>
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="{DynamicResource DockChromeButtonPadding}" />
+    <Setter Property="Margin" Value="{DynamicResource DockChromeButtonMargin}" />
+    <Setter Property="Width" Value="{DynamicResource DockChromeButtonWidth}" />
+    <Setter Property="Height" Value="{DynamicResource DockChromeButtonHeight}" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+  </Style>
+
+  <Style Selector="Button.dock-document-action:pointerover">
+    <Setter Property="Background" Value="{DynamicResource DockChromeButtonDangerHoverBrush}" />
+  </Style>
+
+  <Style Selector="Button.dock-document-action:pressed">
+    <Setter Property="Background" Value="{DynamicResource DockChromeButtonPressedBackgroundBrush}" />
+  </Style>
+  <!-- Fluent paints interaction states on the presenter, independently of Button.Background. -->
+  <Style Selector="Button.dock-document-action /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.dock-document-action:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource DockChromeButtonDangerHoverBrush}" />
+  </Style>
+  <Style Selector="Button.dock-document-action:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource DockChromeButtonPressedBackgroundBrush}" />
+  </Style>
+</Styles>

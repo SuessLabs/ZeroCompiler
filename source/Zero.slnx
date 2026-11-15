@@ -1,17 +1,41 @@
 <Solution>
+  <Folder Name="/Installer/">
+    <File Path="../installer/build-installers.ps1" />
+    <File Path="../installer/README.md" />
+  </Folder>
+  <Folder Name="/Installer/Linux/">
+    <File Path="../installer/linux/package.ps1" />
+  </Folder>
+  <Folder Name="/Installer/MacOS/">
+    <File Path="../installer/macos/package.ps1" />
+  </Folder>
+  <Folder Name="/Installer/Windows/">
+    <File Path="../installer/windows/Check-ZeroUpdate.ps1" />
+    <File Path="../installer/windows/cli.nsi" />
+    <File Path="../installer/windows/common.nsh" />
+    <File Path="../installer/windows/ide.nsi" />
+    <File Path="../installer/windows/Set-ZeroPath.ps1" />
+    <File Path="../installer/windows/update-check.nsh" />
+  </Folder>
   <Folder Name="/Solution Items/">
+    <File Path="../docs/building.md" />
+    <File Path="../readme.md" />
     <File Path=".editorconfig" />
-    <File Path=".gitignore" />
+    <File Path="../.gitignore" />
+    <File Path="../LICENSE" />
     <File Path=".markdownlint.json" />
-    <File Path="CodeMaid.config" />
+    <File Path="codemaid.config" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
-    <File Path="LICENSE" />
-    <File Path="readme.md" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Zero.Dbg.Tests/Zero.Dbg.Tests.csproj" />
+    <Project Path="Zero.Ide.Tests/Zero.Ide.Tests.csproj" />
     <Project Path="Zero.Tests/Zero.Tests.csproj" />
   </Folder>
   <Project Path="Zero.Cli/Zero.Cli.csproj" />
+  <Project Path="Zero.Dbg/Zero.Dbg.csproj" />
+  <Project Path="Zero.Dbg.WinPe/Zero.Dbg.WinPe.csproj" />
+  <Project Path="Zero.Ide/Zero.Ide.csproj" Id="bc9c27ed-aefd-4df3-8d89-f96d2f8ce58c" />
   <Project Path="Zero/Zero.csproj" />
 </Solution>

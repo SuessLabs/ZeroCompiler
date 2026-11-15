@@ -1,0 +1,4 @@
+; Windows x86 multimedia: system sounds and multimedia timers. WinAPI/stdcall.
+; File playback with PlaySound requires appropriate flag values and string encoding.
+#IMPORT winmm.dll, PlaySoundA, PlaySoundW, sndPlaySoundA, sndPlaySoundW
+#IMPORT winmm.dll, timeGetTime, timeGetDevCaps, timeBeginPeriod, timeEndPeriod

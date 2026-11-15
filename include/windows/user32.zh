@@ -1,0 +1,14 @@
+; Windows x86 windows, controls, messages, input, menus, and painting.
+; WinAPI/stdcall. Callbacks need the documented signature and stack cleanup.
+; Text APIs use explicit ANSI (A) or UTF-16 (W) export names.
+#IMPORT user32.dll, MessageBoxA, MessageBoxW, RegisterClassA, RegisterClassW, RegisterClassExA, RegisterClassExW
+#IMPORT user32.dll, CreateWindowExA, CreateWindowExW, DefWindowProcA, DefWindowProcW, DestroyWindow, ShowWindow, UpdateWindow
+#IMPORT user32.dll, GetMessageA, GetMessageW, PeekMessageA, PeekMessageW, TranslateMessage, DispatchMessageA, DispatchMessageW, PostQuitMessage
+#IMPORT user32.dll, SendMessageA, SendMessageW, PostMessageA, PostMessageW, SetWindowTextA, SetWindowTextW, GetWindowTextA, GetWindowTextW
+#IMPORT user32.dll, GetWindowTextLengthA, GetWindowTextLengthW, GetDlgItem, GetDlgItemTextA, GetDlgItemTextW, SetDlgItemTextA, SetDlgItemTextW
+#IMPORT user32.dll, LoadCursorA, LoadCursorW, LoadIconA, LoadIconW, LoadImageA, LoadImageW, SetFocus, GetFocus, EnableWindow, IsWindow
+#IMPORT user32.dll, SetWindowLongA, SetWindowLongW, GetWindowLongA, GetWindowLongW, CallWindowProcA, CallWindowProcW
+#IMPORT user32.dll, GetClientRect, GetWindowRect, MoveWindow, SetWindowPos, InvalidateRect, BeginPaint, EndPaint, GetDC, ReleaseDC
+#IMPORT user32.dll, FillRect, DrawTextA, DrawTextW, GetSystemMetrics, GetSysColor, GetSysColorBrush, SetTimer, KillTimer
+#IMPORT user32.dll, CreateMenu, CreatePopupMenu, AppendMenuA, AppendMenuW, SetMenu, DestroyMenu, TrackPopupMenu
+#IMPORT user32.dll, OpenClipboard, CloseClipboard, EmptyClipboard, GetClipboardData, SetClipboardData

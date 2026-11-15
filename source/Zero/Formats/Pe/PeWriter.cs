@@ -5,15 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Zero.Assembly;
 using Zero.PE;
-using static Zero.Assembly.PeWriter;
 
-namespace Zero.Assembly;
+namespace Zero.Formats.Pe;
 
 /// <summary>Minimal PE32 Writer (no imports, reloc stripped).</summary>
 public class PeWriter
 {
   public const uint DosHeaderSize = 0x80;
+
   public const uint FileHeaderSize = 20;
 
   /// <summary>.text + .idata.</summary>
@@ -23,6 +24,7 @@ public class PeWriter
   public const uint OptionalHeaderSize = 0xE0;
 
   public const uint PeSignatureSize = 4;
+
   public const uint SectionHeaderSize = 40;
 
   /// <summary>512 bytes.</summary>
@@ -123,9 +125,11 @@ public class PeWriter
     // --- Data Directories (16 * 8 bytes) all zero ---
     // 0: Export
     bw.Write((uint)0); bw.Write((uint)0);
+
     // 1: Import
     bw.Write(plan.ImportDirectoryRva);
     bw.Write(plan.ImportDirectorySize);
+
     // 2..15: zeros
     for (int i = 2; i < 16; i++)
     {
@@ -418,79 +422,5 @@ public class PeWriter
       TotalSize = totalSize,
       IatEntries = iatEntries
     };
-  }
-
-  public class BlobBuilder
-  {
-    private readonly MemoryStream _ms = new();
-    public int Length => (int)_ms.Length;
-    public int OffsetBase { get; set; } = 0;
-    public int Position => (int)_ms.Position;
-
-    public void AddAsciiZ(string s)
-    {
-      var bytes = Encoding.ASCII.GetBytes(s);
-      Write(bytes);
-      Write(new byte[] { 0 });
-    }
-
-    public void AddBytes(byte[] b) => Write(b);
-
-    public void AddDword(uint v) => Write(BitConverter.GetBytes(v));
-
-    public void AddWord(ushort v) => Write(BitConverter.GetBytes(v));
-
-    public byte[] ToArray() => _ms.ToArray();
-
-    public void Write(byte[] b) => _ms.Write(b, 0, b.Length);
-  }
-
-  public class IDataBuilder
-  {
-    public BlobBuilder Desc { get; set; } = default!;
-    public BlobBuilder IAT { get; set; } = default!;
-    public List<(string dll, string func, uint iatRva)> IatEntries { get; set; } = default!;
-    public BlobBuilder ILT { get; set; } = default!;
-    public uint ImportDirectoryRva { get; set; }
-    public uint ImportDirectorySize { get; set; }
-    public BlobBuilder Names { get; set; } = default!;
-    public uint TotalSize { get; set; }
-
-    public byte[] Emit(uint idataRva)
-    {
-      using var ms = new MemoryStream();
-      using var bw = new BinaryWriter(ms);
-      bw.Write(Desc.ToArray());
-      bw.Write(ILT.ToArray());
-      bw.Write(IAT.ToArray());
-      bw.Write(Names.ToArray());
-      bw.Flush();
-      return ms.ToArray();
-    }
-  }
-
-  public class PePlan
-  {
-    public IReadOnlyDictionary<string, uint> ExternSymbolMap { get; set; } = default!;
-    public uint FileAlignment { get; set; }
-    public IDataBuilder IdataBytesBuilder { get; set; } = default!;
-    public uint IdataRawPtr { get; set; }
-    public uint IdataRawSize { get; set; }
-    public uint IdataRva { get; set; }
-    public uint IdataVirtSize { get; set; }
-    public uint ImageBase { get; set; }
-    public uint ImportDirectoryRva { get; set; }
-    public uint ImportDirectorySize { get; set; }
-    public uint SectionAlignment { get; set; }
-    public uint SizeOfHeaders { get; set; }
-    public uint SizeOfImage { get; set; }
-    public uint TextRawPtr { get; set; }
-    public uint TextRawSize { get; set; }
-
-    /// <summary>Text Virtual Address.</summary>
-    public uint TextRva { get; set; }
-
-    /// <summary>Text Virtual Size.</summary>
-    public uint TextVirtSize { get; set; }
   }
 }

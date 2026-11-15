@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Remove="AotSmoke/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="../Zero/Zero.csproj" />
+    <ProjectReference Include="../Zero.Dbg.WinPe/Zero.Dbg.WinPe.csproj" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+</Project>

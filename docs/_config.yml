@@ -1,5 +1,19 @@
 title: Zero Compiler
-description: The Zero language and assembly compiler
-theme: jekyll-theme-cayman
+description: The Zero programming language and Zero Assembly
+theme: jekyll-theme-slate
+lang: en-US
+logo: /images/zero-logo.png
+repository: SuessLabs/ZeroCompiler
+show_downloads: false
 url: https://suesslabs.github.io
 baseurl: /ZeroCompiler
+
+plugins:
+  - jekyll-relative-links
+
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default

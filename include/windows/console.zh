@@ -1,0 +1,4 @@
+; Shared C runtime imports for 32-bit console programs.
+; puts prints a zero-terminated string and adds a newline.
+; Calls use cdecl: the caller removes arguments from the stack.
+#IMPORT msvcrt.dll, puts, printf, exit

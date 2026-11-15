@@ -12,7 +12,10 @@ internal static class Constants
   internal const char CommaChar = ',';
   internal const char CommentLine1 = ';';
   internal const string CommentLine2 = "//";
+  internal const string DotDll = ".dll";
   internal const char DoubleQuote = '"';
+  internal const string HexPrefix = "0x";
+  internal const string HexSuffix = "h";
   internal const char MinusChar = '-';
   internal const char NullChar = '\0';
   internal const char PeriodChar = '.';
@@ -21,8 +24,5 @@ internal static class Constants
   internal const char SpaceChar = ' ';
   internal const char TabChar = '\t';
   internal const char UnderscoreChar = '_';
-
-  internal const string DotDll = ".dll";
-  internal const string HexPrefix = "0x";
-  internal const string HexSuffix = "h";
+  internal const string UsingKeyword = "using";
 }
