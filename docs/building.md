@@ -138,6 +138,8 @@ Debug startup always builds the Debug configuration. Each request captures its
 source document, compiler path, and configuration, and overlapping executions
 are rejected. UI callbacks return to the caller's synchronization context.
 The native debugger session continues to own running/paused state independently.
+See the [generated execution state diagrams](ide-execution.md) for Build, Run,
+and Debug flows and regeneration instructions.
 
 Other potential state-machine workflows include update download/verification/
 installation, extension activation/deactivation, and future project loading

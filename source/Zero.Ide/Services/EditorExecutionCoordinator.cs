@@ -39,6 +39,56 @@ public sealed class EditorExecutionCoordinator(ICompilerService compiler, IProgr
 {
   private int _executing;
 
+  /// <summary>Exports the registered workflow for the requested mode as Graphviz DOT without executing any states.</summary>
+  public static string ExportStateDiagram(EditorExecutionMode mode) => CreateMachine(mode).ExportUml(
+    initialStateIds: [EditorExecutionStage.ValidateCompiler],
+    includeLegend: false,
+    transitionColors: new Dictionary<Result, string>
+    {
+      [Result.Success] = "#2563EB", [Result.Error] = "#B91C1C", [Result.Failure] = "#B45309",
+    },
+    graphName: $"Zero IDE — {mode}",
+    rankLeftToRight: false,
+    nodeLabelSelector: stage => stage switch
+    {
+      EditorExecutionStage.ValidateCompiler => $"1. {nameof(ValidateCompilerState)}",
+      EditorExecutionStage.Save => $"2. {nameof(SaveSourceState)}",
+      EditorExecutionStage.ValidateSource => $"3. {nameof(ValidateSourceState)}",
+      EditorExecutionStage.Build => $"4. {nameof(CompileState)}",
+      EditorExecutionStage.Launch => $"5. {nameof(LaunchState)}",
+      EditorExecutionStage.Completed => $"6. {nameof(CompletedState)}",
+      EditorExecutionStage.Canceled => $"2a. {nameof(CanceledState)}",
+      EditorExecutionStage.Failed => nameof(FailedState),
+      EditorExecutionStage.RunFailed => $"5a. {nameof(RunFailedState)}",
+      _ => stage.ToString(),
+    });
+
+  /// <summary>Shares one transition definition between execution and diagram export, omitting states unused by the selected mode.</summary>
+  private static StateMachine<EditorExecutionStage> CreateMachine(EditorExecutionMode mode, Func<Type, object?>? factory = null)
+  {
+    if (mode is not (EditorExecutionMode.Build or EditorExecutionMode.Run or EditorExecutionMode.Debug))
+      throw new ArgumentOutOfRangeException(nameof(mode));
+
+    var machine = new StateMachine<EditorExecutionStage>(containerFactory: factory)
+      .RegisterState<ValidateCompilerState>(EditorExecutionStage.ValidateCompiler, EditorExecutionStage.Save, EditorExecutionStage.Failed)
+      .RegisterState<SaveSourceState>(EditorExecutionStage.Save, EditorExecutionStage.ValidateSource, EditorExecutionStage.Failed, EditorExecutionStage.Canceled, parentStateId: null)
+      .RegisterState<ValidateSourceState>(EditorExecutionStage.ValidateSource, EditorExecutionStage.Build, EditorExecutionStage.Failed)
+      .RegisterState<CompileState>(EditorExecutionStage.Build,
+        mode == EditorExecutionMode.Build ? EditorExecutionStage.Completed : EditorExecutionStage.Launch, EditorExecutionStage.Failed)
+      .RegisterState<CompletedState>(EditorExecutionStage.Completed)
+      .RegisterState<CanceledState>(EditorExecutionStage.Canceled)
+      .RegisterState<FailedState>(EditorExecutionStage.Failed);
+
+    if (mode != EditorExecutionMode.Build)
+      machine.RegisterState<LaunchState>(EditorExecutionStage.Launch, EditorExecutionStage.Completed,
+        mode == EditorExecutionMode.Run ? EditorExecutionStage.RunFailed : EditorExecutionStage.Failed);
+
+    if (mode == EditorExecutionMode.Run)
+      machine.RegisterState<RunFailedState>(EditorExecutionStage.RunFailed);
+
+    return machine;
+  }
+
   public async Task<EditorExecutionUpdate> ExecuteAsync(EditorExecutionRequest request, Action<EditorExecutionUpdate> report)
   {
     if (Interlocked.CompareExchange(ref _executing, 1, 0) != 0)
@@ -62,24 +112,7 @@ public sealed class EditorExecutionCoordinator(ICompilerService compiler, IProgr
         [typeof(RunFailedState)] = new RunFailedState(run),
       };
 
-      // Build State machine for execution flow.
-      // Each state is responsible for invoking the next state based on the result of its operation.
-      var machine = new StateMachine<EditorExecutionStage>(containerFactory: type => states[type])
-        .RegisterState<ValidateCompilerState>(EditorExecutionStage.ValidateCompiler, EditorExecutionStage.Save, EditorExecutionStage.Failed)
-        .RegisterState<SaveSourceState>(EditorExecutionStage.Save, EditorExecutionStage.ValidateSource, EditorExecutionStage.Failed, EditorExecutionStage.Canceled, parentStateId: null)
-        .RegisterState<ValidateSourceState>(EditorExecutionStage.ValidateSource, EditorExecutionStage.Build, EditorExecutionStage.Failed)
-        .RegisterState<CompileState>(
-          EditorExecutionStage.Build,
-          request.Mode == EditorExecutionMode.Build ? EditorExecutionStage.Completed : EditorExecutionStage.Launch,
-          EditorExecutionStage.Failed)
-        .RegisterState<LaunchState>(
-          EditorExecutionStage.Launch,
-          EditorExecutionStage.Completed,
-          request.Mode == EditorExecutionMode.Run ? EditorExecutionStage.RunFailed : EditorExecutionStage.Failed)
-        .RegisterState<CompletedState>(EditorExecutionStage.Completed)
-        .RegisterState<CanceledState>(EditorExecutionStage.Canceled)
-        .RegisterState<FailedState>(EditorExecutionStage.Failed)
-        .RegisterState<RunFailedState>(EditorExecutionStage.RunFailed);
+      var machine = CreateMachine(request.Mode, type => states[type]);
 
       await machine.RunAsync(EditorExecutionStage.ValidateCompiler);
       return run.Update;

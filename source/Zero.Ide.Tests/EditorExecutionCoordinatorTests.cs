@@ -18,6 +18,32 @@ namespace Zero.Ide.Tests;
 [DoNotParallelize]
 public class EditorExecutionCoordinatorTests
 {
+  [TestMethod]
+  [DataRow(EditorExecutionMode.Build)]
+  [DataRow(EditorExecutionMode.Run)]
+  [DataRow(EditorExecutionMode.Debug)]
+  public void DiagramExportUsesModeSpecificRegisteredTransitions(EditorExecutionMode mode)
+  {
+    var dot = EditorExecutionCoordinator.ExportStateDiagram(mode);
+    Assert.Contains("1. ValidateCompilerState", dot);
+    Assert.Contains("4. CompileState", dot);
+    Assert.Contains("\"Save\" -> \"Canceled\"", dot);
+    Assert.Contains("\"Build\" -> \"Failed\"", dot);
+    Assert.DoesNotContain("\"Built\" [", dot); // Built is a notification, not a registered state.
+    if (mode == EditorExecutionMode.Build)
+    {
+      Assert.Contains("\"Build\" -> \"Completed\"", dot);
+      Assert.DoesNotContain("LaunchState", dot);
+    }
+    else
+    {
+      Assert.Contains("\"Build\" -> \"Launch\"", dot);
+      Assert.Contains(mode == EditorExecutionMode.Run ? "\"Launch\" -> \"RunFailed\"" : "\"Launch\" -> \"Failed\"", dot);
+    }
+
+    if (mode != EditorExecutionMode.Run) Assert.DoesNotContain("RunFailedState", dot);
+  }
+
   private static string SourcePath => Path.Combine(Path.GetTempPath(), "program" + SourceFileExtensions.Assembly);
 
   [TestMethod]
