@@ -255,7 +255,6 @@
                       Factory="{Binding DockFactory}"
                       InitializeFactory="False"
                       InitializeLayout="False"
-                      IsEnabled="{Binding !IsBusy}"
                       Layout="{Binding Layout}" />
   </DockPanel>
 </Window>
