@@ -6,6 +6,7 @@ param(
   [ValidateSet('Release', 'Debug')][string]$Configuration = 'Release',
   [string]$CompilerVersion,
   [string]$IdeVersion,
+  [string]$DebuggerVersion,
   [string]$MakeNsis,
   [string]$Nfpm,
   [string]$Destination,
@@ -30,6 +31,7 @@ $versions = @()
 
 if ($CompilerVersion) { $versions += "-p:CompilerVersion=$CompilerVersion" }
 if ($IdeVersion) { $versions += "-p:IdeVersion=$IdeVersion" }
+if ($DebuggerVersion) { $versions += "-p:DebuggerVersion=$DebuggerVersion" }
 
 function Invoke-Checked([string]$Command, [string[]]$Arguments)
 {

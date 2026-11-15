@@ -229,29 +229,38 @@ for GitHub credentials and only fetches published assets from `SuessLabs/ZeroCom
 
 ## Build version
 
-The compiler and CLI share the numeric version in `source/Directory.Build.props`
-(`0.0.4.6`). The IDE maintains its own version in `source/Zero.Ide/Version.props`
-(starting at `0.1.0.0`). Both use `Major.Minor.Revision.Build`. Each version source
-also has its own `VersionSuffix`; the release workflow clears both on `master`. The SDK
-derives numeric assembly/file versions and the informational version from these
-properties. `Zero.Version` and the CLI banner read the library's generated
+Edit all three product versions in `source/Version.props`:
+
+| Property | Projects | Version at centralization |
+| --- | --- | --- |
+| `CompilerVersion` | `Zero`, `Zero.Cli`, and compiler tests | `0.2.0.100` |
+| `IdeVersion` | `Zero.Ide` and IDE tests | `0.2.0.15` |
+| `DebuggerVersion` | `Zero.Dbg`, `Zero.Dbg.WinPe`, debugger tests and AOT smoke project | `0.2.0.3` |
+
+All use `Major.Minor.Revision.Build`. `Directory.Build.props` imports the central
+file, which selects the appropriate `VersionPrefix` for each project. The SDK
+derives numeric assembly/file versions and the informational version from it.
+An optional SDK `VersionSuffix` applies to all products; the release workflow
+clears any suffix declared in the central file on `master`.
+`Zero.Version` and the CLI banner read the library's generated
 informational version, including commit metadata when the SDK supplies it.
 
 CI/CD can supply a complete version without modifying source files:
 
 ```powershell
-.\build.bat -CompilerVersion 0.0.4.7-ci.123 -IdeVersion 0.1.0.1-ci.123
+.\build.bat -CompilerVersion 0.2.0.101-ci.123 -IdeVersion 0.2.0.16-ci.123 -DebuggerVersion 0.2.0.4-ci.123
 
 # Or publish a stable release:
-.\build.ps1 -CompilerVersion 0.0.5.0 -IdeVersion 0.1.1.0
+.\build.ps1 -CompilerVersion 0.2.1.0 -IdeVersion 0.2.1.0 -DebuggerVersion 0.2.1.0
 ```
 
 Please see [builds-AutoVersioning.md](builds-AutoVersioning.md) for more information on automatic-versioning on PRs.
 
 The build script passes the independent versions to solution build and native
 publish. `-Version` remains an alias for `-CompilerVersion` and does not override
-the IDE version. Direct `dotnet` commands can use
-`-p:CompilerVersion=0.0.4.7-ci.123 -p:IdeVersion=0.1.0.1-ci.123`.
+the IDE or debugger version. `publish.ps1` accepts the same three version
+parameters. Direct `dotnet` commands can use
+`-p:CompilerVersion=0.2.0.101-ci.123 -p:IdeVersion=0.2.0.16-ci.123 -p:DebuggerVersion=0.2.0.4-ci.123`.
 The standard SDK `-p:Version=...` or `VersionPrefix`/`VersionSuffix` properties
 remain available when intentionally applying the same override to every project.
 Pass the same properties when

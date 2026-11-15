@@ -1,9 +1,12 @@
 #Requires -Version 7.2
 Set-StrictMode -Version Latest
 
-$script:VersionPath = 'source/Directory.Build.props'
-$script:IdeVersionPath = 'source/Zero.Ide/Version.props'
-$script:PrefixPattern = [regex]'(<VersionPrefix\b[^>]*>)([^<]*)(</VersionPrefix>)'
+$script:VersionPath = 'source/Version.props'
+
+function Get-VersionPattern {
+  param([ValidateSet('VersionPrefix', 'CompilerVersion', 'IdeVersion', 'DebuggerVersion')][string]$Property)
+  return [regex]"(<$Property\b[^>]*>)([^<]*)(</$Property>)"
+}
 
 function ConvertTo-VersionParts {
   param([Parameter(Mandatory)][string]$Value)
@@ -22,11 +25,14 @@ function ConvertTo-VersionParts {
 }
 
 function Get-PropsVersion {
-  param([Parameter(Mandatory)][AllowEmptyString()][string]$Contents)
+  param(
+    [Parameter(Mandatory)][AllowEmptyString()][string]$Contents,
+    [ValidateSet('VersionPrefix', 'CompilerVersion', 'IdeVersion', 'DebuggerVersion')][string]$Property = 'VersionPrefix'
+  )
 
-  $prefixes = $script:PrefixPattern.Matches($Contents)
+  $prefixes = (Get-VersionPattern $Property).Matches($Contents)
   if ($prefixes.Count -ne 1) {
-    throw 'Expected exactly one VersionPrefix in the version properties file.'
+    throw "Expected exactly one $Property in the version properties file."
   }
   $value = $prefixes[0].Groups[2].Value
   $null = ConvertTo-VersionParts $value
@@ -65,12 +71,13 @@ function Set-PropsVersion {
   param(
     [Parameter(Mandatory)][string]$Contents,
     [Parameter(Mandatory)][string]$Version,
-    [Parameter(Mandatory)][ValidateSet('develop', 'master')][string]$Branch
+    [Parameter(Mandatory)][ValidateSet('develop', 'master')][string]$Branch,
+    [ValidateSet('VersionPrefix', 'CompilerVersion', 'IdeVersion', 'DebuggerVersion')][string]$Property = 'VersionPrefix'
   )
 
-  $null = Get-PropsVersion $Contents
+  $null = Get-PropsVersion $Contents $Property
   $null = ConvertTo-VersionParts $Version
-  $updated = $script:PrefixPattern.Replace($Contents, [System.Text.RegularExpressions.MatchEvaluator]{
+  $updated = (Get-VersionPattern $Property).Replace($Contents, [System.Text.RegularExpressions.MatchEvaluator]{
     param($match)
     $match.Groups[1].Value + $Version + $match.Groups[3].Value
   })
@@ -79,6 +86,28 @@ function Set-PropsVersion {
       '(<VersionSuffix\b[^>]*>)[^<]*(</VersionSuffix>)', '$1$2')
   }
   return $updated
+}
+
+# Release history predates the central file. Missing IDE/debugger metadata is optional.
+function Get-HistoricalVersion {
+  param([string]$Directory, [string]$Commit, [string]$Property)
+
+  $props = Invoke-VersionGit -Directory $Directory -Arguments @('show', "${Commit}:$script:VersionPath") -AllowFailure
+  if ($props.ExitCode -eq 0) {
+    return Get-PropsVersion $props.Output $Property }
+
+  $legacyPath = switch ($Property)
+  {
+    'CompilerVersion' { 'source/Directory.Build.props' }
+    'IdeVersion' { 'source/Zero.Ide/Version.props' }
+    default { return $null }
+  }
+
+  $legacy = Invoke-VersionGit -Directory $Directory -Arguments @('show', "${Commit}:$legacyPath") -AllowFailure
+  if ($legacy.ExitCode -eq 0) {
+    return Get-PropsVersion $legacy.Output }
+
+  return $null
 }
 
 function Invoke-VersionGit {
@@ -133,7 +162,6 @@ function Update-ZeroVersion {
   $marker = "Zero-Version-PR: ${Branch}#$PullRequest"
   $remoteRef = "refs/remotes/origin/$Branch"
   $propsPath = Join-Path $Directory $script:VersionPath
-  $idePropsPath = Join-Path $Directory $script:IdeVersionPath
   $null = Get-GitText @('config', 'user.name', 'github-actions[bot]')
   $null = Get-GitText @('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
 
@@ -141,51 +169,52 @@ function Update-ZeroVersion {
     $null = Get-GitText @('fetch', 'origin', "+refs/heads/${Branch}:$remoteRef", '--tags')
     $previous = Get-GitText @('log', $remoteRef, '--format=%H', '--max-count=1', "--grep=^${marker}$")
     if ($previous) {
-      $version = Get-PropsVersion (Get-GitText @('show', "${previous}:$script:VersionPath"))
-      $ideVersion = Get-PropsVersion (Get-GitText @('show', "${previous}:$script:IdeVersionPath"))
+      $version = Get-HistoricalVersion $Directory $previous 'CompilerVersion'
+      $ideVersion = Get-HistoricalVersion $Directory $previous 'IdeVersion'
+      $debuggerVersion = Get-HistoricalVersion $Directory $previous 'DebuggerVersion'
       if ($Branch -eq 'master' -and
         (Get-GitText @('rev-parse', "refs/tags/v${version}^{commit}")) -ne $previous) {
         throw "Release tag v$version does not point to the version commit."
       }
       $null = Get-GitText @('switch', '--detach', $previous)
-      return [pscustomobject]@{ version = $version; ideVersion = $ideVersion; tag = "v$version"; commit = $previous; reused = $true }
+      return [pscustomobject]@{ version = $version; ideVersion = $ideVersion; debuggerVersion = $debuggerVersion; tag = "v$version"; commit = $previous; reused = $true }
     }
 
     $null = Get-GitText @('switch', '--detach', $remoteRef)
     $contents = [System.IO.File]::ReadAllText($propsPath)
-    $ideContents = [System.IO.File]::ReadAllText($idePropsPath)
     [string[]]$ideBaselines = @()
+    [string[]]$debuggerBaselines = @()
     [string[]]$baselines = @(
       (Get-GitText @('tag', '--list', 'v*')).Split("`n") |
         Where-Object { $_ -match '^v\d+\.\d+\.\d+\.\d+$' } |
         ForEach-Object { $_.Substring(1) }
     )
-    # Compiler tags retain their meaning; read the editor's own version at those releases.
+    # Compiler tags retain their meaning; other products use their own release metadata.
     foreach ($baseline in $baselines) {
-      $taggedIdeProps = Invoke-VersionGit -Directory $Directory -Arguments @('show', "v${baseline}:$script:IdeVersionPath") -AllowFailure
-      if ($taggedIdeProps.ExitCode -eq 0) {
-        $ideBaselines += Get-PropsVersion $taggedIdeProps.Output
-      }
+      $taggedIde = Get-HistoricalVersion $Directory "v$baseline" 'IdeVersion'
+      if ($taggedIde) { $ideBaselines += $taggedIde }
+      $taggedDebugger = Get-HistoricalVersion $Directory "v$baseline" 'DebuggerVersion'
+      if ($taggedDebugger) { $debuggerBaselines += $taggedDebugger }
     }
     # Incoming merges can restore stale version metadata from another branch.
     $lastBump = Get-GitText @('log', $remoteRef, '--first-parent', '--format=%H', '--max-count=1',
       "--grep=^Zero-Version-PR: ${Branch}#[0-9][0-9]*$")
     if ($lastBump) {
-      $baselines += Get-PropsVersion (Get-GitText @('show', "${lastBump}:$script:VersionPath"))
-      # Older version commits predate the editor version file.
-      $previousIdeProps = Invoke-VersionGit -Directory $Directory -Arguments @('show', "${lastBump}:$script:IdeVersionPath") -AllowFailure
-      if ($previousIdeProps.ExitCode -eq 0) {
-        $ideBaselines += Get-PropsVersion $previousIdeProps.Output
-      }
+      $baselines += Get-HistoricalVersion $Directory $lastBump 'CompilerVersion'
+      $previousIde = Get-HistoricalVersion $Directory $lastBump 'IdeVersion'
+      if ($previousIde) { $ideBaselines += $previousIde }
+      $previousDebugger = Get-HistoricalVersion $Directory $lastBump 'DebuggerVersion'
+      if ($previousDebugger) { $debuggerBaselines += $previousDebugger }
     }
-    $version = Get-NextVersion -Current (Get-PropsVersion $contents) -Branch $Branch -Baselines $baselines
-    $ideVersion = Get-NextVersion -Current (Get-PropsVersion $ideContents) -Branch $Branch -Baselines $ideBaselines
-    [System.IO.File]::WriteAllText($propsPath,
-      (Set-PropsVersion -Contents $contents -Version $version -Branch $Branch))
-    [System.IO.File]::WriteAllText($idePropsPath,
-      (Set-PropsVersion -Contents $ideContents -Version $ideVersion -Branch $Branch))
-    $null = Get-GitText @('add', '--', $script:VersionPath, $script:IdeVersionPath)
-    $null = Get-GitText @('commit', '-m', "chore: bump compiler to v$version and IDE to v$ideVersion", '-m', $marker)
+    $version = Get-NextVersion -Current (Get-PropsVersion $contents 'CompilerVersion') -Branch $Branch -Baselines $baselines
+    $ideVersion = Get-NextVersion -Current (Get-PropsVersion $contents 'IdeVersion') -Branch $Branch -Baselines $ideBaselines
+    $debuggerVersion = Get-NextVersion -Current (Get-PropsVersion $contents 'DebuggerVersion') -Branch $Branch -Baselines $debuggerBaselines
+    $contents = Set-PropsVersion -Contents $contents -Version $version -Branch $Branch -Property CompilerVersion
+    $contents = Set-PropsVersion -Contents $contents -Version $ideVersion -Branch $Branch -Property IdeVersion
+    $contents = Set-PropsVersion -Contents $contents -Version $debuggerVersion -Branch $Branch -Property DebuggerVersion
+    [System.IO.File]::WriteAllText($propsPath, $contents)
+    $null = Get-GitText @('add', '--', $script:VersionPath)
+    $null = Get-GitText @('commit', '-m', "chore: bump compiler to v$version, IDE to v$ideVersion and debugger to v$debuggerVersion", '-m', $marker)
     $commit = Get-GitText @('rev-parse', 'HEAD')
     $tag = "v$version"
     $refspecs = @("HEAD:refs/heads/$Branch")
@@ -196,7 +225,7 @@ function Update-ZeroVersion {
     }
     $push = Invoke-VersionGit -Directory $Directory -Arguments (@('push', '--atomic', 'origin') + $refspecs) -AllowFailure
     if ($push.ExitCode -eq 0) {
-      return [pscustomobject]@{ version = $version; ideVersion = $ideVersion; tag = $tag; commit = $commit; reused = $false }
+      return [pscustomobject]@{ version = $version; ideVersion = $ideVersion; debuggerVersion = $debuggerVersion; tag = $tag; commit = $commit; reused = $false }
     }
     if ($Branch -eq 'master') { $null = Get-GitText @('tag', '-d', $tag) }
     if ($attempt -eq 11) { throw "Unable to push version after 12 attempts: $($push.Error)" }
