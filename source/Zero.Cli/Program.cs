@@ -14,7 +14,9 @@ internal class Program
 {
   public static int Main(string[] args)
   {
+    CliBanner.Write();
     Console.WriteLine("Zero Compiler v{0}", Zero.Version);
+    Console.WriteLine();
 
     if (args.Length == 0 || Array.IndexOf(args, "-h") >= 0 || Array.IndexOf(args, "--help") >= 0)
     {
