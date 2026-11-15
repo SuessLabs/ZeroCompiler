@@ -8,7 +8,7 @@ title: ZASM Basic Examples
 [Documentation home](index.md) · [Language reference](zasm-reference.md)
 
 Save each complete program under the suggested filename. Run the commands from
-the extracted compiler folder, keeping `include` beside `zero.exe` and `zcc.exe`.
+the extracted compiler folder, keeping `include` beside the `zero` compiler executable.
 All examples target Windows x86 and use only the currently implemented forms.
 
 ## Print Text

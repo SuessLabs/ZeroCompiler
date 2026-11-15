@@ -47,7 +47,7 @@ To run the managed compiler on Linux, build with the .NET 10 SDK and use:
 
 ```sh
 dotnet build source/Zero.slnx --configuration Release
-dotnet output/Zero.Cli/Release/zcc.dll run samples/Linux/linux64-cli-01-hello.zasm
+dotnet output/Zero.Cli/Release/zero.dll run samples/Linux/linux64-cli-01-hello.zasm
 ```
 
 The Windows `build.ps1` still publishes a Windows-hosted Native AOT compiler.

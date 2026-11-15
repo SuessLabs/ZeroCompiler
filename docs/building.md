@@ -13,14 +13,13 @@ reuse verified cached downloads. Neither script installs the generated packages.
 ## Building the Native compiler
 
 Run `.\build.bat` (or `.\build.ps1`) to build the solution and publish a
-self-contained Native AOT compiler as both `publish\zcc.exe` and
-`publish\zero.exe`, with the contents of `samples` copied into `publish\samples`
+self-contained Native AOT compiler as `publish\zero.exe`, with the contents of
+`samples` copied into `publish\samples`
 and the shared `.zh` headers copied into `publish\include`.
 Headers retain their platform subfolders: `windows` contains working PE imports;
 `linux` contains draft declarations/reference files for future ELF support.
 
-Both names run the same compiler; the build copies the native executable rather
-than compiling it twice. Both executables are included in release ZIPs.
+The compiler command is `zero.exe` on Windows and `zero` on Linux/macOS.
 
 Compiling requires the .NET 10 SDK and Visual Studio's **Desktop development with C++**
 workload, including the Windows SDK. The published executable runs without an
@@ -61,7 +60,7 @@ After building the solution, run the validator separately with:
 
 The validator reports every failing file and returns a nonzero exit code on
 failure. `-SamplesDirectory`, `-OutputDirectory`, and `-CompilerPath` can override
-the defaults; the compiler path must point to the managed `zcc.dll`.
+the defaults; the compiler path must point to the managed `zero.dll`.
 
 Unit tests also discover and compile every sample automatically. Sources are
 embedded in the test assembly during build, so renamed/deleted samples do not
@@ -166,7 +165,7 @@ and replace the INI file only after writing the new contents successfully.
 
 ```ini
 [Compiler]
-Path="C:\Tools\Zero\zcc.exe"
+Path="C:\Tools\Zero\zero.exe"
 
 [Appearance]
 Theme="System"
@@ -272,7 +271,7 @@ the Windows x86 assembly sample, and run the resulting executable:
 ```powershell
 # Compile Zero Assembly (ZASM)
 .\build.bat
-.\publish\zcc.exe publish\samples\Windows\win-cli-03-console-write.zasm publish\win-cli-03-console-write.exe
+.\publish\zero.exe publish\samples\Windows\win-cli-03-console-write.zasm publish\win-cli-03-console-write.exe
 
 # Run it
 .\publish\win-cli-03-console-write.exe

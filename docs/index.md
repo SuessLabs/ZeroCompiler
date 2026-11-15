@@ -14,6 +14,7 @@ The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 [Getting started](#getting-started-with-zasm) ·
 [Language reference](zasm-reference.md) ·
 [Examples](zasm-examples.md) ·
+[Debugger](debugger/index.md) ·
 [Source code](https://github.com/SuessLabs/ZeroCompiler)
 
 ## What Zero Supports Today
@@ -23,7 +24,7 @@ The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 | Assembly input | `.zasm` source files using Intel-style operand order. |
 | Executable output | Windows x86 PE32 and static Linux x86-64 ELF64 executables. |
 | Target selection | `#TARGET linux-x64` or `--target linux-x64`; existing source defaults to `windows-x86`. |
-| Compiler commands | `zero.exe` and `zcc.exe` provide the same commands. |
+| Compiler command | `zero.exe` on Windows; `zero` on Linux/macOS. |
 | Compile and run | `run` builds a source file, executes it, and returns its exit code. |
 | Native distribution | Self-contained Native AOT compiler; no .NET runtime needed to run it. |
 | Instructions | Data movement, integer addition/subtraction, bitwise operations, comparisons, branches, calls, and returns. |
@@ -32,6 +33,7 @@ The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 | Windows libraries | `#IMPORT` declares DLL functions; call them with `call [FunctionName]`. |
 | Shared headers | `using "file.zh"`, nested includes, include-once behavior, and repeatable `-I` paths. |
 | Diagnostics | Source filename and line number, including errors inside headers. |
+| Debugger | Windows x86 source breakpoints, F5 continue, F10 Step Over, Play/Pause and a docked register viewer on Windows x64. |
 | Samples | Console output, arithmetic, string concatenation, MessageBox, and Windows controls. |
 
 The compiler's host architecture and its output architecture are separate. The
@@ -42,6 +44,10 @@ the console subsystem. Linux shared-library linking, ARM, Windows x64, macOS,
 and STM32 backends remain future work.
 
 ## Download and Install
+
+For debugger implementation details, see the [debugger guide](debugger/index.md),
+[source-map architecture](debugger/architecture.md),
+[Windows PE engine](debugger/winpe.md), and [debugger tests](debugger/testing.md).
 
 1. Open the [latest release](https://github.com/SuessLabs/ZeroCompiler/releases/latest).
 2. Under **Assets**, download `zero-v<version>-win-x64.zip`.
@@ -56,7 +62,6 @@ Keep this layout when moving or installing the compiler:
 
 ```text
 zero.exe
-zcc.exe
 include/
   windows/
     console.zh
@@ -147,8 +152,6 @@ requires the caller to remove the argument with `add esp, 4`.
 # Add header search directories in order.
 .\zero.exe run hello-zero.zasm -I "headers" -I "C:\Libraries\Zero"
 
-# zcc is another name for the same compiler.
-.\zcc.exe run hello-zero.zasm
 ```
 
 Use `-h` or `--help` for help. `--include` is an alternative to `-I`.
@@ -248,7 +251,7 @@ From the release folder, also try:
 ## Build and Contribute
 
 Clone the repository and run `.\build.bat` from its root. This builds the compiler,
-validates every ZASM sample, and publishes `zero.exe`, `zcc.exe`, `include`, and
+validates every ZASM sample, and publishes `zero.exe`, `include`, and
 `samples` into `publish`.
 
 - [Building Zero](building.md): prerequisites, AOT publishing, sample validation, and version settings.

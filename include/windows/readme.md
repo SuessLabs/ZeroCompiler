@@ -1,7 +1,7 @@
 # Windows Assembly Includes
 
 These `.zh` files ship in `include/windows`. Keep the `include` folder beside
-`zero.exe` and `zcc.exe`. Choose the headers you need, then call functions by their exported names:
+`zero.exe`. Choose the headers you need, then call functions by their exported names:
 
 ```asm
 using "windows/kernel32.zh"

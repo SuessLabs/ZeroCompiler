@@ -1,6 +1,6 @@
 ; Windows x86 console application: calculate and print two integer results.
 ; From the published folder:
-;   .\zcc.exe run samples\Windows\win-cli-02-integer-math.zasm
+;   .\zero.exe run samples\Windows\win-cli-02-integer-math.zasm
 ; Expected output:
 ;   7 + 5 = 12
 ;   6 * 7 = 42

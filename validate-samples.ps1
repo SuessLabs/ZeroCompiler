@@ -23,7 +23,7 @@ if (-not $PSBoundParameters.ContainsKey('OutputDirectory')) {
 }
 
 if (-not $PSBoundParameters.ContainsKey('CompilerPath')) {
-  $CompilerPath = Join-Path $PSScriptRoot "output/Zero.Cli/$Configuration/zcc.dll"
+  $CompilerPath = Join-Path $PSScriptRoot "output/Zero.Cli/$Configuration/zero.dll"
 }
 
 function Invoke-SampleCompiler {

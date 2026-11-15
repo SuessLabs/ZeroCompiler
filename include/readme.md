@@ -1,7 +1,7 @@
 # Zero Assembly Includes
 
 Shared headers are organized by platform. The build ships this entire tree in
-`publish/include` beside `zero.exe` and `zcc.exe`.
+`publish/include` beside the `zero` compiler executable.
 
 ```text
 include/

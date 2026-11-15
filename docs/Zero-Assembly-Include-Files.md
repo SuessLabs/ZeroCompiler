@@ -51,7 +51,7 @@ uses them for readability. Forward label references also work.
 
 1. The terminal's current working directory.
 2. Directories supplied with `-I` or `--include`, in command-line order.
-3. The `include` directory beside `zero.exe` or `zcc.exe`.
+3. The `include` directory beside `zero.exe` (or `zero` on Linux/macOS).
 4. The sibling `../include` directory when the compiler is installed in `Zero/bin`.
 
 For `using "subfolder/myfile.zh"`, the compiler checks that entire relative path
@@ -64,7 +64,7 @@ directory is not added to the search. Absolute filenames are checked directly.
 zero.exe run main.zasm -I "headers" -I "C:\Libraries\Zero"
 
 # Managed builds from the repository need the header path explicitly:
-dotnet output/Zero.Cli/Release/zcc.dll samples/Windows/win-cli-01-hello-using.zasm -I include
+dotnet output/Zero.Cli/Release/zero.dll samples/Windows/win-cli-01-hello-using.zasm -I include
 ```
 
 ## Rules
@@ -108,7 +108,6 @@ Running `build.ps1` publishes this layout, also included in release ZIPs:
 ```text
 publish/
   zero.exe
-  zcc.exe
   include/
     windows/
       console.zh

@@ -60,7 +60,7 @@ emitted byte is the program entry point.
 - [x] Platform folders: working Windows imports under `include/windows`; draft glibc headers and comment-only syscall references under `include/linux`.
 - [x] `#IMPORT dll, function[, ...]` declarations and PE import table generation.
 - [x] Plain imported function names such as `call [puts]`, with backward-compatible and DLL-qualified aliases.
-- [x] `zero.exe` and `zcc.exe`, compile-only mode, and compile-and-execute `run` mode.
+- [x] `zero.exe`, compile-only mode, and compile-and-execute `run` mode.
 - [x] Native AOT publishing with headers and samples beside the compiler.
 - [x] Build-time sample compilation, sample discovery in unit tests, and selected Windows runtime checks.
 

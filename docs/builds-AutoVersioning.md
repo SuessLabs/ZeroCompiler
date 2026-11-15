@@ -34,7 +34,7 @@ the compiler's tag number. Releases predating the IDE version file are supported
 
 On `master`, the workflow builds and tests the tagged commit, then publishes
 generated release notes and `zero-v{Major}.{Minor}.{Revision}.{Build}-win-x64.zip`.
-The ZIP contains the native `zcc.exe` and `samples` folder. A failed build/test
+The ZIP contains the native `zero.exe` and `samples` folder. A failed build/test
 leaves the version commit and tag in place but does not create the Release;
 rerun the failed workflow to retry. Reruns reuse the same PR's version and tag,
 and an existing Release's ZIP is replaced rather than creating another Release.

@@ -8,9 +8,9 @@ From the `publish` folder, compile and run a sample:
 Windows samples are in `samples/Windows`; Linux samples are in `samples/Linux`.
 
 ```powershell
-.\zcc.exe run samples\Windows\win-ui-01-msgbox.zasm
+.\zero.exe run samples\Windows\win-ui-01-msgbox.zasm
 
-.\zcc.exe run samples\Windows\win-cli-02-integer-math.zasm
+.\zero.exe run samples\Windows\win-cli-02-integer-math.zasm
 ```
 
 | Sample | Behavior |
@@ -27,13 +27,13 @@ Windows samples are in `samples/Windows`; Linux samples are in `samples/Linux`.
 | `win-ui-02-controls.zasm` | Opens a native Windows x86 window with a label, an editable `Hello Zero!` textbox, and a button that displays the current text. |
 | `win-cli-02-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
-`zcc run <source> [output.exe]` builds the source, then runs the executable in the
+`zero run <source> [output.exe]` builds the source, then runs the executable in the
 current terminal and waits for it to exit. It returns the program's exit code.
 The output defaults to the source path with an `.exe` extension, so the examples
 above create their executables inside `samples`. To choose another output path:
 
 ```powershell
-.\zcc.exe run samples\Windows\win-cli-03-console-write.zasm win-cli-03-console-write.exe
+.\zero.exe run samples\Windows\win-cli-03-console-write.zasm win-cli-03-console-write.exe
 ```
 
 Omit `run` to compile without executing. Compilation failures prevent execution,
@@ -42,7 +42,7 @@ including when an executable from an earlier successful build already exists.
 Run the string-concatenation sample with:
 
 ```powershell
-.\zcc.exe run samples\Windows\win-cli-05-string-concat.zasm
+.\zero.exe run samples\Windows\win-cli-05-string-concat.zasm
 ```
 
 It uses `strcpy` and `strcat` from Windows' system `msvcrt.dll` to build the final
@@ -81,7 +81,7 @@ second. Press **Ctrl+C** to stop. The counter is an unsigned 32-bit value
 From `publish`, run the Windows x86 PE32 sample:
 
 ```powershell
-.\zcc.exe run samples\Windows\win-cli-06-timer.zasm
+.\zero.exe run samples\Windows\win-cli-06-timer.zasm
 ```
 
 It uses an auto-reset waitable timer with an initial delay of one second and a
@@ -92,7 +92,7 @@ Windows timer signals can coalesce if the program is delayed processing output.
 Compile the Linux x86-64 ELF64 sample from `publish` on Windows:
 
 ```powershell
-.\zcc.exe samples\Linux\linux64-cli-06-timer.zasm linux64-cli-06-timer
+.\zero.exe samples\Linux\linux64-cli-06-timer.zasm linux64-cli-06-timer
 ```
 
 Copy the executable to Linux/WSL, then run:
@@ -118,7 +118,7 @@ using "windows/console.zh" ; Imports puts, printf, and exit
 ```
 
 The build ships `windows/console.zh` and `windows/windows.zh` in `publish/include` beside both
-compiler executables. Run `.\zcc.exe run samples\Windows\win-cli-01-hello-using.zasm` from `publish`
+compiler executable. Run `.\zero.exe run samples\Windows\win-cli-01-hello-using.zasm` from `publish`
 to try it. Add your own search directories with repeated `-I "headers"` options.
 See [Using included files](../docs/Zero-Assembly-Include-Files.md).
 For the full DLL-specific catalog, see [Windows API headers](../docs/windows-headers.md).
@@ -164,5 +164,5 @@ shown in `win-cli-02-console-printf-db-vars.zasm`. These names identify stored b
 provide writable variables or separate data sections.
 
 ```powershell
-.\zcc.exe run samples\Windows\win-cli-02-console-printf-db-vars.zasm
+.\zero.exe run samples\Windows\win-cli-02-console-printf-db-vars.zasm
 ```
