@@ -10,9 +10,17 @@
   <Color name="Data" foreground="#4EC9B0" />
   <Color name="Target" foreground="#D7BA7D" />
   <RuleSet ignoreCase="true">
-    <Rule color="Comment">;.*$</Rule>
-    <!-- ZASM escapes quotes by doubling them; semicolons inside strings are data. -->
-    <Rule color="String">"(?:[^"\r\n]|"")*"?|'(?:[^'\r\n]|'')*'?</Rule>
+    <Span color="Comment" multiline="true">
+      <Begin>/\*</Begin>
+      <End>\*/</End>
+    </Span>
+    <Span color="Comment" begin="(?:;|//)" />
+    <!-- Consume strings as spans so embedded comment starts cannot take precedence.
+         ZASM escapes quotes by doubling them. -->
+    <Span color="String">
+      <Begin>"(?:[^"\r\n]|"")*"?|'(?:[^'\r\n]|'')*'?</Begin>
+      <End></End>
+    </Span>
     <Rule color="Directive">(?&lt;![\w.#])\#[a-z_][a-z0-9_]*\b</Rule>
     <Keywords color="Directive"><Word>using</Word></Keywords>
     <Rule color="Label">(?&lt;![\w.])[a-z_.][a-z0-9_.]*(?=\s*:)</Rule>

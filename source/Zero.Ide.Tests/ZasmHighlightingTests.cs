@@ -15,6 +15,33 @@ namespace Zero.Ide.Tests;
 public class ZasmHighlightingTests
 {
   [TestMethod]
+  public void AllCompilerInstructionsRemainHighlighted()
+  {
+    foreach (var field in typeof(Mnemonic).GetFields(BindingFlags.Public | BindingFlags.Static))
+    {
+      if (!field.IsLiteral || field.FieldType != typeof(string))
+        continue;
+
+      var instruction = (string)field.GetRawConstantValue()!;
+      var expected = instruction is "DB" or "DW" or "DD" or "DQ" ? "Data" : "Instruction";
+      HighlightsZasmTokensInBothThemes(instruction + " eax, 1", instruction, expected);
+    }
+  }
+
+  [TestMethod]
+  public void BlockCommentHighlightingContinuesUntilClosingMarker()
+  {
+    foreach (var dark in new[] { true, false })
+    {
+      var document = new TextDocument("/* start\nmov eax, 42 ; // '\n*/ ret\nmov eax, 1");
+      using var highlighter = new DocumentHighlighter(document, ZasmHighlighting.Create(dark));
+      Assert.AreEqual("Comment", highlighter.HighlightLine(2).Sections[0].Color.Name);
+      Assert.AreEqual("Instruction", highlighter.HighlightLine(3).Sections.Last().Color.Name);
+      Assert.AreEqual("Instruction", highlighter.HighlightLine(4).Sections[0].Color.Name);
+    }
+  }
+
+  [TestMethod]
   [DataRow("#TARGET linux-x64", "#TARGET", "Directive")]
   [DataRow("#import kernel32.dll, ExitProcess", "#import", "Directive")]
   [DataRow("using \"windows/kernel32.zh\"", "using", "Directive")]
@@ -31,6 +58,12 @@ public class ZasmHighlightingTests
   [DataRow("message db 'Hello', 0", "message", "Label")]
   [DataRow("message db 'Hello', 0", "db", "Data")]
   [DataRow("; #TARGET mov eax, 42", "#TARGET", "Comment")]
+  [DataRow("// #TARGET mov eax, 42", "#TARGET", "Comment")]
+  [DataRow("/* #TARGET mov eax, 42 */ ret", "#TARGET", "Comment")]
+  [DataRow("/* comment */ ret", "ret", "Instruction")]
+  [DataRow("db 'http://example /* literal */', 0", "/*", "String")]
+  [DataRow("db \"Say \"\"// /* literal */\"\"\", 0", "/*", "String")]
+  [DataRow("// /* ignored", "/*", "Comment")]
   [DataRow("db 'Hello; #IMPORT', 0", "#IMPORT", "String")]
   [DataRow("db 'It''s; #TARGET', 0", "#TARGET", "String")]
   [DataRow("db \"Say \"\"hello; #IMPORT\"\"\", 0", "#IMPORT", "String")]
@@ -50,21 +83,12 @@ public class ZasmHighlightingTests
   }
 
   [TestMethod]
-  public void AllCompilerInstructionsRemainHighlighted()
+  [DataRow("db 'unterminated")]
+  [DataRow("// /* ignored")]
+  [DataRow("; /* ignored")]
+  public void LineCommentsAndUnterminatedStringsDoNotColorNextLine(string firstLine)
   {
-    foreach (var field in typeof(Mnemonic).GetFields(BindingFlags.Public | BindingFlags.Static))
-    {
-      if (!field.IsLiteral || field.FieldType != typeof(string)) continue;
-      var instruction = (string)field.GetRawConstantValue()!;
-      var expected = instruction is "DB" or "DW" or "DD" or "DQ" ? "Data" : "Instruction";
-      HighlightsZasmTokensInBothThemes(instruction + " eax, 1", instruction, expected);
-    }
-  }
-
-  [TestMethod]
-  public void UnterminatedStringDoesNotColorNextLine()
-  {
-    var document = new TextDocument("db 'unterminated\nmov eax, 1");
+    var document = new TextDocument(firstLine + "\nmov eax, 1");
     using var highlighter = new DocumentHighlighter(document, ZasmHighlighting.Create(true));
     Assert.AreEqual("Instruction", highlighter.HighlightLine(2).Sections[0].Color.Name);
   }

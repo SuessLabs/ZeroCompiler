@@ -23,8 +23,9 @@ support; the operand forms below describe the implemented encodings.
 - Use Intel-style destination-first order: `add eax, 5` adds 5 to EAX.
 - Mnemonics, register names, labels, and the `using` keyword are case-insensitive.
 - Keep DLL export names in their documented spelling, such as `MessageBoxA`.
-- Start comments with `;`. `//` and block comments are not implemented for ZASM.
-- A semicolon outside quotes comments out the remainder of the line; it does not separate instructions.
+- Start line comments with `;` or `//`. Outside quotes, either marker comments out the remainder of the line; it does not separate instructions.
+- Use `/* ... */` for block comments, including across multiple lines or between tokens. Block comments do not nest and must close in the same source file.
+- Comment markers inside single- or double-quoted strings are literal data.
 
 ```asm
   mov eax, 7       ; EAX now contains 7.
