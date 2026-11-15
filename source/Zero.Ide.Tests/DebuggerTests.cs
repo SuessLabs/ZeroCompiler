@@ -85,6 +85,7 @@ public class DebuggerTests
     var session = new Mock<IDebugSession>();
     var shell = new MainWindowViewModel(new EditorViewModel(), new Mock<IEditorDialogService>().Object, debugSession: session.Object);
 
+    Assert.IsNotNull(shell.Layout.HiddenDockables);
     Assert.Contains(shell.Debugger, shell.Layout.HiddenDockables);
 
     var originalDock = (IToolDock)shell.Debugger.OriginalOwner!;

@@ -59,6 +59,13 @@ Check both docked and floating editor windows; they have separate key-binding
 routes. Verify that comments/data show unbound breakpoint outlines and do not
 acquire software breakpoints.
 
+While paused, move **Debugger — Locals** to the left, into the center document
+tabs, and into a floating window. Verify the register tree remains populated,
+switch between code and debugger tabs, then step again. Stop and restart the
+session: the debugger should hide and restore at its last position. Headless IDE
+tests exercise these rendered docking transitions in Light and Dark themes and
+verify that editor and debugger controls are never recycled across view types.
+
 ## Extending the debugger
 
 Add platform engines behind `IDebugSession`. Keep Avalonia references in the IDE,

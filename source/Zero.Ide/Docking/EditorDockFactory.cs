@@ -69,6 +69,15 @@ public sealed class EditorDockFactory : Factory
       base.CloseDockable(dockable);
   }
 
+  public void CloseFloatingWindows()
+  {
+    if (!_applicationClosing)
+      return;
+
+    foreach (var window in _owner.Layout.Windows?.ToArray() ?? [])
+      window.Exit();
+  }
+
   public override void CloseLeftDockables(IDockable dockable)
   {
     if (dockable.Owner is IDock dock && dock.VisibleDockables is { } visible)
@@ -191,7 +200,19 @@ public sealed class EditorDockFactory : Factory
     }
     else if (!visible && !hidden)
     {
+      var owner = debugger.Owner as IDock;
       HideDockable(debugger);
+
+      if (owner is not null && ReferenceEquals(owner.ActiveDockable, debugger))
+      {
+        owner.ActiveDockable = owner.VisibleDockables?.FirstOrDefault(item => item is not ISplitter);
+        if (owner.ActiveDockable is { } active)
+          SetActiveDockable(active);
+      }
+
+      if (root is not null && ReferenceEquals(root.FocusedDockable, debugger) && owner is not null)
+        SetFocusedDockable(owner, owner.ActiveDockable);
+
       // Keep the layout and floating bounds so the next session restores the user's placement.
       if (root?.Window?.Host is HostWindow host &&
           !Descendants(root).OfType<ITool>().Any() &&
