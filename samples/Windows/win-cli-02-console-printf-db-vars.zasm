@@ -1,6 +1,6 @@
 ; Windows x86 console application: print a named DB string.
 ; From the published folder:
-;   .\zcc.exe run samples\hello-db-vars.zasm
+;   .\zero.exe run samples\Windows\win-cli-02-console-printf-db-vars.zasm
 ; Expected output: Hello, World!
 
 #IMPORT msvcrt.dll, printf, exit

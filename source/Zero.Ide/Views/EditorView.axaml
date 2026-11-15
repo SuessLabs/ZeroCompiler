@@ -7,6 +7,7 @@
   <edit:TextEditor x:Name="SourceEditor"
                    Padding="12"
                    Document="{Binding Document}"
+                   IsReadOnly="{Binding IsDebugReadOnly}"
                    FontFamily="Cascadia Code, Consolas, Menlo, monospace"
                    FontSize="14"
                    HorizontalScrollBarVisibility="Auto"

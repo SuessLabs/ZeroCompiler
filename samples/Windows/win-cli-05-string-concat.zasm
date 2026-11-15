@@ -1,6 +1,6 @@
 ; Windows x86 console application: print two strings, then concatenate them.
 ; From the published folder:
-;   .\zcc.exe run samples\hello-concat.zasm
+;   .\zero.exe run samples\Windows\win-cli-05-string-concat.zasm
 ; Expected output:
 ;   Hello
 ;   Zero Assembly!

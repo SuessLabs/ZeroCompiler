@@ -50,7 +50,7 @@ Installers and their `SHA256SUMS` appear directly in `publish/`, alongside the
 portable compiler output. Staged payloads remain under `output/installers/<runtime>/`;
 `staging.json` there records their paths and versions. Both directories are ignored
 by Git. The installer checksum file covers installer packages, not the portable
-compiler executables. Standalone packaging can override `-Destination`.
+compiler executable. Standalone packaging can override `-Destination`.
 
 `publish.ps1` defaults to the host runtime and forwards `-Configuration`, `-Runtime`,
 `-OptimizationPreference`, `-CompilerVersion` (alias `-Version`), and `-IdeVersion`.

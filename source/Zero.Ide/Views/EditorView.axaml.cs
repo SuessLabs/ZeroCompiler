@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using AvaloniaEdit;
 using Zero.Ide.Adapters;
+using Zero.Ide.Controls;
 using Zero.Ide.Highlighting;
 using Zero.Ide.Models;
 using Zero.Ide.Themes;
@@ -18,10 +19,18 @@ public partial class EditorView : UserControl
 {
   private AvaloniaEditActions? _editorActions;
   private EditorViewModel? _viewModel;
+  private readonly DebugMargin _debugMargin;
 
   public EditorView()
   {
     InitializeComponent();
+    _debugMargin = new DebugMargin(() => _viewModel);
+    Editor.TextArea.LeftMargins.Insert(0, _debugMargin);
+    Editor.TextArea.TextView.BackgroundRenderers.Add(new ExecutionLineRenderer(() => _viewModel));
+    Editor.TextArea.Caret.PositionChanged += (_, _) =>
+    {
+      if (_viewModel is not null) _viewModel.CaretLine = Editor.TextArea.Caret.Line;
+    };
     Editor.Options.CutCopyWholeLine = false;
     Editor.Options.HighlightCurrentLine = true;
 
@@ -79,6 +88,19 @@ public partial class EditorView : UserControl
 
   private void OnDocumentChanged(object? sender, PropertyChangedEventArgs e)
   {
+    if (e.PropertyName is nameof(EditorViewModel.Breakpoints) or nameof(EditorViewModel.ExecutionLine))
+    {
+      _debugMargin.InvalidateVisual();
+      Editor.TextArea.TextView.InvalidateLayer(AvaloniaEdit.Rendering.KnownLayer.Background);
+      if (e.PropertyName == nameof(EditorViewModel.ExecutionLine) && _viewModel?.ExecutionLine is > 0 and var line && line <= Editor.Document.LineCount)
+      {
+        Editor.CaretOffset = Editor.Document.GetLineByNumber(line).Offset;
+        Editor.ScrollToLine(line);
+        if (TopLevel.GetTopLevel(this) is Window window) window.Activate();
+        Editor.TextArea.Focus();
+      }
+    }
+
     if (e.PropertyName == nameof(EditorViewModel.Settings))
       ApplySettings();
 

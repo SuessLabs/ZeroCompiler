@@ -18,8 +18,6 @@ internal sealed class X64Encoder : IInstructionEncoder
   private readonly record struct MemoryOperand(int Base, string? Target, long Displacement);
   private static readonly Dictionary<string, CpuRegister> Registers = CreateRegisters();
 
-  public int GetSize(AsmLine line) => EncodeLine(line, null, 0).Length;
-
   public byte[] Encode(AssemblyProgram program, IReadOnlyDictionary<string, ulong> addresses, ulong codeAddress)
   {
     var bytes = new List<byte>(program.CodeSize);
@@ -33,6 +31,8 @@ internal sealed class X64Encoder : IInstructionEncoder
 
     return bytes.ToArray();
   }
+
+  public int GetSize(AsmLine line) => EncodeLine(line, null, 0).Length;
 
   private static Dictionary<string, CpuRegister> CreateRegisters()
   {
@@ -57,15 +57,17 @@ internal sealed class X64Encoder : IInstructionEncoder
     var ops = line.Operands;
     switch (line.Mnemonic)
     {
-      case "NOP":
+      case Mnemonic.NOP:
         Count(0);
         bytes.Add(0x90);
         break;
-      case "SYSCALL":
+
+      case Mnemonic.SYSCALL:
         Count(0);
         bytes.AddRange([0x0F, 0x05]);
         break;
-      case "RET":
+
+      case Mnemonic.RET:
         if (ops.Count == 0)
           bytes.Add(0xC3);
         else
@@ -79,7 +81,8 @@ internal sealed class X64Encoder : IInstructionEncoder
         }
 
         break;
-      case "INT":
+
+      case Mnemonic.INT:
         Count(1);
         ulong interrupt = IntegerLiteral.Parse(ops[0], line.LineNumber);
         if (interrupt > byte.MaxValue)
@@ -87,7 +90,8 @@ internal sealed class X64Encoder : IInstructionEncoder
         bytes.Add(0xCD);
         Immediate(interrupt, 1);
         break;
-      case "MOV":
+
+      case Mnemonic.MOV:
       {
         Count(2);
         if (Registers.TryGetValue(ops[0], out var destination))
@@ -117,7 +121,7 @@ internal sealed class X64Encoder : IInstructionEncoder
           throw Error("MOV expects r32/r64, register/immediate/[memory], or [memory], r32/r64");
         break;
       }
-      case "LEA":
+      case Mnemonic.LEA:
       {
         Count(2);
         var destination = Register(ops[0]);
@@ -126,8 +130,8 @@ internal sealed class X64Encoder : IInstructionEncoder
         Memory(0x8D, destination.Number, destination.Width, ops[1]);
         break;
       }
-      case "PUSH":
-      case "POP":
+      case Mnemonic.PUSH:
+      case Mnemonic.POP:
       {
         Count(1);
         if (Registers.TryGetValue(ops[0], out var register))
@@ -136,9 +140,9 @@ internal sealed class X64Encoder : IInstructionEncoder
             throw Error("PUSH/POP require a 64-bit register in this target");
 
           Rex(32, 0, register.Number);
-          bytes.Add((byte)((line.Mnemonic == "PUSH" ? 0x50 : 0x58) + (register.Number & 7)));
+          bytes.Add((byte)((line.Mnemonic == Mnemonic.PUSH ? 0x50 : 0x58) + (register.Number & 7)));
         }
-        else if (line.Mnemonic == "PUSH" && !IsMemory(ops[0]))
+        else if (line.Mnemonic == Mnemonic.PUSH && !IsMemory(ops[0]))
         {
           ulong value = Value(ops[0]);
           Check32(value, true);
@@ -149,13 +153,13 @@ internal sealed class X64Encoder : IInstructionEncoder
           throw Error("PUSH expects r64 or signed imm32; POP expects r64");
         break;
       }
-      case "ADD":
-      case "SUB":
-      case "CMP":
-      case "AND":
-      case "OR":
-      case "XOR":
-      case "TEST":
+      case Mnemonic.ADD:
+      case Mnemonic.SUB:
+      case Mnemonic.CMP:
+      case Mnemonic.AND:
+      case Mnemonic.OR:
+      case Mnemonic.XOR:
+      case Mnemonic.TEST:
       {
         Count(2);
         var destination = Register(ops[0]);
@@ -165,8 +169,13 @@ internal sealed class X64Encoder : IInstructionEncoder
           Rex(destination.Width, source.Number, destination.Number);
           bytes.Add(line.Mnemonic switch
           {
-            "ADD" => 0x01, "SUB" => 0x29, "CMP" => 0x39, "AND" => 0x21,
-            "OR" => 0x09, "XOR" => 0x31, _ => 0x85,
+            Mnemonic.ADD => 0x01,
+            Mnemonic.SUB => 0x29,
+            Mnemonic.CMP => 0x39,
+            Mnemonic.AND => 0x21,
+            Mnemonic.OR => 0x09,
+            Mnemonic.XOR => 0x31,
+            _ => 0x85,
           });
           ModRm(3, source.Number, destination.Number);
         }
@@ -176,53 +185,59 @@ internal sealed class X64Encoder : IInstructionEncoder
           Check32(value, destination.Width == 64);
           int extension = line.Mnemonic switch
           {
-            "ADD" => 0, "OR" => 1, "AND" => 4, "SUB" => 5, "XOR" => 6, "CMP" => 7, _ => 0,
+            Mnemonic.ADD => 0,
+            Mnemonic.OR => 1,
+            Mnemonic.AND => 4,
+            Mnemonic.SUB => 5,
+            Mnemonic.XOR => 6,
+            Mnemonic.CMP => 7,
+            _ => 0,
           };
           Rex(destination.Width, 0, destination.Number);
-          bytes.Add(line.Mnemonic == "TEST" ? (byte)0xF7 : (byte)0x81);
+          bytes.Add(line.Mnemonic == Mnemonic.TEST ? (byte)0xF7 : (byte)0x81);
           ModRm(3, extension, destination.Number);
           Immediate(value, 4);
         }
 
         break;
       }
-      case "CALL":
-      case "JMP":
-      case "JZ":
-      case "JNZ":
-      case "JZ8":
-      case "JNZ8":
+      case Mnemonic.CALL:
+      case Mnemonic.JMP:
+      case Mnemonic.JZ:
+      case Mnemonic.JNZ:
+      case Mnemonic.JZ8:
+      case Mnemonic.JNZ8:
       {
         Count(1);
-        if (line.Mnemonic is "CALL" or "JMP" && Registers.TryGetValue(ops[0], out var register))
+        if (line.Mnemonic is Mnemonic.CALL or Mnemonic.JMP && Registers.TryGetValue(ops[0], out var register))
         {
           if (register.Width != 64)
             throw Error("Indirect calls/jumps require a 64-bit register");
           Rex(32, 0, register.Number);
           bytes.Add(0xFF);
-          ModRm(3, line.Mnemonic == "CALL" ? 2 : 4, register.Number);
+          ModRm(3, line.Mnemonic == Mnemonic.CALL ? 2 : 4, register.Number);
         }
-        else if (line.Mnemonic is "CALL" or "JMP" && IsMemory(ops[0]))
-          Memory(0xFF, line.Mnemonic == "CALL" ? 2 : 4, 32, ops[0]);
+        else if (line.Mnemonic is Mnemonic.CALL or Mnemonic.JMP && IsMemory(ops[0]))
+          Memory(0xFF, line.Mnemonic == Mnemonic.CALL ? 2 : 4, 32, ops[0]);
         else
         {
-          bool shortJump = line.Mnemonic is "JZ8" or "JNZ8";
+          bool shortJump = line.Mnemonic is Mnemonic.JZ8 or Mnemonic.JNZ8;
           long distance = symbols is null ? 0 : Relative(Symbol(ops[0]));
           if (shortJump)
           {
             if (distance < sbyte.MinValue || distance > sbyte.MaxValue)
               throw Error("Short jump out of range");
-            bytes.Add(line.Mnemonic == "JZ8" ? (byte)0x74 : (byte)0x75);
+            bytes.Add(line.Mnemonic == Mnemonic.JZ8 ? (byte)0x74 : (byte)0x75);
             Immediate(unchecked((ulong)distance), 1);
           }
           else
           {
             if (distance < int.MinValue || distance > int.MaxValue)
               throw Error("Relative branch out of range");
-            if (line.Mnemonic is "JZ" or "JNZ")
-              bytes.AddRange([0x0F, line.Mnemonic == "JZ" ? (byte)0x84 : (byte)0x85]);
+            if (line.Mnemonic is Mnemonic.JZ or Mnemonic.JNZ)
+              bytes.AddRange([0x0F, line.Mnemonic == Mnemonic.JZ ? (byte)0x84 : (byte)0x85]);
             else
-              bytes.Add(line.Mnemonic == "CALL" ? (byte)0xE8 : (byte)0xE9);
+              bytes.Add(line.Mnemonic == Mnemonic.CALL ? (byte)0xE8 : (byte)0xE9);
             Immediate(unchecked((ulong)distance), 4);
           }
         }

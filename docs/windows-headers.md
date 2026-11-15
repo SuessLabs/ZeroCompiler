@@ -75,7 +75,7 @@ all Windows headers. Existing examples continue to use it unchanged.
 Run the shipped sample from the published directory:
 
 ```powershell
-.\zero.exe run samples\hello-windows-headers.zasm
+.\zero.exe run samples\Windows\win-ui-03-init-common-ctrls.zasm
 ```
 
 It loads `windows/console.zh`, `windows/kernel32.zh`, and `windows/comctl32.zh`, initializes common controls,

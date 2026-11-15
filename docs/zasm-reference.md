@@ -312,7 +312,7 @@ zero <source> [output] [--target <target>] [-I <directory>]...
 zero run <source> [output] [--target <target>] [-I <directory>]...
 ```
 
-`zcc` accepts the same arguments. Options can appear before or after the positional
+Options can appear before or after the positional
 filenames, after `run` if present. `-I` and `--include` each take a separate directory
 argument. `-h` and `--help` display help. The output defaults to the source path with
 an `.exe` extension for Windows and no extension for Linux. `--target windows-x86`

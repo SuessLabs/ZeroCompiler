@@ -1,6 +1,6 @@
 ; Windows x86 application: display a MessageBox containing "Hello Zero!".
 ; From the published folder:
-;   .\zero.exe run samples\hello-msgbox.zasm
+;   .\zero.exe run samples\Windows\win-ui-01-msgbox.zasm
 
 #IMPORT user32.dll, MessageBoxA
 #IMPORT kernel32.dll, ExitProcess

@@ -110,6 +110,7 @@ public sealed class EditorDockFactory : Factory
     _main = new ProportionalDock
     {
       Id = "Workspace",
+      IsCollapsable = false,
       Orientation = Orientation.Horizontal,
       VisibleDockables = CreateList<IDockable>(_explorerDock, new ProportionalDockSplitter(), _documents),
     };
@@ -117,9 +118,27 @@ public sealed class EditorDockFactory : Factory
     var root = CreateRootDock();
     root.Id = "Root";
     root.IsCollapsable = false;
-    root.VisibleDockables = CreateList<IDockable>(_main);
-    root.DefaultDockable = _main;
-    root.ActiveDockable = _main;
+
+    var debuggerDock = new ToolDock
+    {
+      Id = "DebuggerDock",
+      Alignment = Alignment.Bottom,
+      Proportion = 0.24,
+      ActiveDockable = _owner.Debugger,
+      VisibleDockables = CreateList<IDockable>(_owner.Debugger),
+    };
+
+    var vertical = new ProportionalDock
+    {
+      Id = "WorkspaceAndDebugger",
+      IsCollapsable = false,
+      Orientation = Orientation.Vertical,
+      VisibleDockables = CreateList<IDockable>(_main, new ProportionalDockSplitter(), debuggerDock),
+    };
+
+    root.VisibleDockables = CreateList<IDockable>(vertical);
+    root.DefaultDockable = vertical;
+    root.ActiveDockable = vertical;
     return root;
   }
 
@@ -235,7 +254,10 @@ public sealed class EditorDockFactory : Factory
     window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.SaveAs, Command = _owner.CmdSaveAs });
     window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.SaveAll, Command = _owner.CmdSaveAll });
     window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.CloseDocument, Command = _owner.CmdCloseDocument });
-    window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.BuildAndRun, Command = _owner.CmdBuildAndRun });
+    window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.BuildAndRun, Command = _owner.CmdDebugContinue });
+    window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.StepOver, Command = _owner.CmdDebugStepOver });
+    window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.ToggleBreakpoint, Command = _owner.CmdToggleBreakpoint });
+    window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.StopDebugging, Command = _owner.CmdDebugStop });
     window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.Build, Command = _owner.CmdBuild });
     window.KeyBindings.Add(new KeyBinding { Gesture = EditorKeyGestures.Rebuild, Command = _owner.CmdRebuild });
 

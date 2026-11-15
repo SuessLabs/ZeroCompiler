@@ -1,7 +1,7 @@
 ; Linux x86-64 ELF64: increment and print a uint32_t every second, without libc.
 ; A uint32_t is 32 bits; QWORD means 64 bits. R12D holds the counter.
-; Compile: ./zcc samples/elf-x64-timer.zasm elf-x64-timer
-; Run on Linux/WSL: chmod +x elf-x64-timer && ./elf-x64-timer
+; Compile: ./zero samples/Linux/linux64-cli-06-timer.zasm linux64-cli-06-timer
+; Run on Linux/WSL: chmod +x linux64-cli-06-timer && ./linux64-cli-06-timer
 ; Prints 1, 2, 3, ... until Ctrl+C. The counter wraps after 4294967295.
 #TARGET linux-x64
 

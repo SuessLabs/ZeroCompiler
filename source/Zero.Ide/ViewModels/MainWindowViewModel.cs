@@ -11,13 +11,14 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Dock.Model.Controls;
 using Prism.Commands;
+using Zero.Dbg;
 using Zero.Ide.Docking;
 using Zero.Ide.Models;
 using Zero.Ide.Services;
 
 namespace Zero.Ide.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase
 {
   private readonly ICompilerService? _compilerService;
   private readonly IEditorDialogService _dialogs;
@@ -36,7 +37,8 @@ public class MainWindowViewModel : ViewModelBase
   private int _untitledCount = 1;
 
   public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null,
-    ICompilerService? compilerService = null, IProgramRunner? programRunner = null, IUpdateService? updates = null)
+    ICompilerService? compilerService = null, IProgramRunner? programRunner = null, IUpdateService? updates = null,
+    IDebugSession? debugSession = null)
   {
     _dialogs = dialogs;
     _settings = settings;
@@ -79,12 +81,14 @@ public class MainWindowViewModel : ViewModelBase
     CmdClean = CreateCommand(CleanAsync, () => HasActiveDocument && _compilerService is not null).ObservesProperty(() => HasActiveDocument);
     CmdBuildOutput = CreateCommand(() => _dialogs.ShowMessageAsync("Build output", BuildOutput),
       () => !string.IsNullOrEmpty(BuildOutput)).ObservesProperty(() => BuildOutput);
+    InitializeDebugger(debugSession);
 
     SolutionExplorer = new SolutionExplorerViewModel(CmdOpenFolder, OpenWorkspaceFileAsync);
 
     // Initial active document
     var initial = new EditorDocument(editor);
     initial.PropertyChanged += OnDocumentChanged;
+    editor.PropertyChanged += OnEditorDebugPropertyChanged;
     Documents.Add(initial);
     _activeDocument = initial;
 
@@ -208,6 +212,7 @@ public class MainWindowViewModel : ViewModelBase
 
     try
     {
+      if (_debugSession is not null) await _debugSession.StopAsync();
       var canClose = await ConfirmSaveAsync();
       if (canClose)
         DockFactory.ApproveApplicationClose();
@@ -229,7 +234,7 @@ public class MainWindowViewModel : ViewModelBase
 
   public async Task<bool> CloseDocumentsAsync(IReadOnlyList<EditorDocument> documents)
   {
-    if (IsBusy)
+    if (IsBusy || IsDebugging)
       return false;
 
     IsBusy = true;
@@ -239,8 +244,7 @@ public class MainWindowViewModel : ViewModelBase
       // Confirm the whole group first, so Cancel keeps a floating group intact.
       foreach (var document in documents)
       {
-        if (Documents.Contains(document) &&
-            !await ConfirmSaveAsync(document))
+        if (Documents.Contains(document) && !await ConfirmSaveAsync(document))
           return false;
       }
 
@@ -265,7 +269,7 @@ public class MainWindowViewModel : ViewModelBase
 
   public async Task OpenWorkspaceFileAsync(string path)
   {
-    if (IsBusy)
+    if (IsBusy || IsDebugging)
       return;
 
     IsBusy = true;
@@ -301,11 +305,12 @@ public class MainWindowViewModel : ViewModelBase
   private void AddDocument(EditorDocument document)
   {
     document.PropertyChanged += OnDocumentChanged;
+    document.Editor.PropertyChanged += OnEditorDebugPropertyChanged;
     Documents.Add(document);
     DockFactory.AddDocument(document);
   }
 
-  private async Task BuildAsync(bool cleanFirst, bool runAfterBuild = false)
+  private async Task BuildAsync(bool cleanFirst, bool runAfterBuild = false, bool debugAfterBuild = false)
   {
     try
     {
@@ -328,10 +333,11 @@ public class MainWindowViewModel : ViewModelBase
         throw new InvalidOperationException($"Only {SourceFileExtensions.Assembly} source files can be built.");
 
       BuildState = EditorBuildState.Building;
-      Status = $"Building {editor.FileName} ({BuildConfiguration})";
+      var configuration = debugAfterBuild ? BuildConstants.DebugConfiguration : BuildConfiguration;
+      Status = $"Building {editor.FileName} ({configuration})";
       BuildOutput = Status;
 
-      var result = await _compilerService!.BuildAsync(editor.Settings.CompilerPath, sourcePath, BuildConfiguration, cleanFirst);
+      var result = await _compilerService!.BuildAsync(editor.Settings.CompilerPath, sourcePath, configuration, cleanFirst);
 
       BuildOutput = result.Output + Environment.NewLine + $"Compiler exit code: {result.ExitCode}";
 
@@ -345,6 +351,10 @@ public class MainWindowViewModel : ViewModelBase
 
       BuildState = EditorBuildState.Idle;
       Status = $"Build succeeded: {result.OutputPath}";
+
+      if (debugAfterBuild)
+        await LaunchDebuggerAsync(result.OutputPath, sourcePath);
+
       if (runAfterBuild)
       {
         try
@@ -466,7 +476,7 @@ public class MainWindowViewModel : ViewModelBase
   private DelegateCommand CreateCommand(Func<Task> action, Func<bool>? canExecute = null) =>
       new DelegateCommand(async () =>
     {
-      if (IsBusy || canExecute?.Invoke() == false)
+      if (IsBusy || IsDebugging || canExecute?.Invoke() == false)
         return;
 
       IsBusy = true;
@@ -484,7 +494,8 @@ public class MainWindowViewModel : ViewModelBase
       {
         IsBusy = false;
       }
-    }, () => !IsBusy && canExecute?.Invoke() != false).ObservesProperty(() => IsBusy);
+    }, () => !IsBusy && !IsDebugging && canExecute?.Invoke() != false)
+      .ObservesProperty(() => IsBusy).ObservesProperty(() => IsDebugging);
 
   private void NotifyActiveDocumentChanged()
   {
@@ -553,6 +564,7 @@ public class MainWindowViewModel : ViewModelBase
   private void RemoveDocument(EditorDocument document)
   {
     document.PropertyChanged -= OnDocumentChanged;
+    document.Editor.PropertyChanged -= OnEditorDebugPropertyChanged;
     DockFactory.RemoveDocument(document);
     Documents.Remove(document);
     if (ReferenceEquals(_activeDocument, document))

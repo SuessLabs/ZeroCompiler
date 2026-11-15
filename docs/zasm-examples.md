@@ -8,7 +8,7 @@ title: ZASM Basic Examples
 [Documentation home](index.md) · [Language reference](zasm-reference.md)
 
 Save each complete program under the suggested filename. Run the commands from
-the extracted compiler folder, keeping `include` beside `zero.exe` and `zcc.exe`.
+the extracted compiler folder, keeping `include` beside the `zero` compiler executable.
 All examples target Windows x86 and use only the currently implemented forms.
 
 ## Print Text
@@ -79,7 +79,7 @@ Output:
 The addition happens in EAX. `printf` formats the calculated value as decimal
 text; it does not evaluate the expression in the string. If you change the numbers,
 update the descriptive text too. The shipped
-[arithmetic sample](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/v002-integer-math.zasm)
+[arithmetic sample](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/Windows/win-cli-02-integer-math.zasm)
 also multiplies using repeated addition because `MUL` is not implemented yet.
 
 ## Show a Windows MessageBox

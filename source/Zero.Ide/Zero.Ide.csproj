@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -17,6 +17,7 @@
     <AvaloniaResource Include="Assets\**" />
     <EmbeddedResource Include="Highlighting\Zasm.xshd" LogicalName="Zero.Ide.Highlighting.Zasm.xshd" />
     <ProjectReference Include="..\Zero\Zero.csproj" />
+    <ProjectReference Include="../Zero.Dbg.WinPe/Zero.Dbg.WinPe.csproj" />
     <InternalsVisibleTo Include="Zero.Ide.Tests" />
   </ItemGroup>
 

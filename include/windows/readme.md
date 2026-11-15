@@ -1,7 +1,7 @@
 # Windows Assembly Includes
 
 These `.zh` files ship in `include/windows`. Keep the `include` folder beside
-`zero.exe` and `zcc.exe`. Choose the headers you need, then call functions by their exported names:
+`zero.exe`. Choose the headers you need, then call functions by their exported names:
 
 ```asm
 using "windows/kernel32.zh"
@@ -67,7 +67,7 @@ Winsock 2 is the preferred choice for new code; see
 From the published folder:
 
 ```powershell
-.\zero.exe run samples\hello-windows-headers.zasm
+.\zero.exe run samples\Windows\win-ui-03-init-common-ctrls.zasm
 ```
 
 It initializes common controls and prints the process ID without opening a window.

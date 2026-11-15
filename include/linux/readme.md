@@ -66,6 +66,6 @@ numbers on another. See [syscall conventions](https://man7.org/linux/man-pages/m
 Windows tests only check that the draft declarations load and are well formed;
 they do not validate Linux exports, linking, or runtime behavior. The build ships
 the drafts for reference. Windows samples use Windows headers; the runnable
-`hello-linux64-cli.zasm` sample uses direct Linux syscalls without libc.
+`linux64-cli-01-hello.zasm` sample uses direct Linux syscalls without libc.
 
 [Platform catalog](../readme.md) · [Linux documentation](../../docs/linux-headers.md)

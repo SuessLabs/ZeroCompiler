@@ -37,7 +37,7 @@ public static class ZasmHighlighting
 
       var word = (string)field.GetRawConstantValue()!;
 
-      if (word is "DB" or "DW" or "DD" or "DQ" || !words.Add(word))
+      if (word is Mnemonic.DB or Mnemonic.DW or Mnemonic.DD or Mnemonic.DQ || !words.Add(word))
         continue;
 
       instructions.Add(new XElement(ns + "Word", word));

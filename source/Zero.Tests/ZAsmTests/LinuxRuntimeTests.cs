@@ -15,7 +15,7 @@ public sealed class LinuxRuntimeTests
   public void HelloSampleExecutesOnLinuxX64()
   {
     RequireLinuxX64();
-    var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "samples/hello-linux64-cli.zasm"));
+    var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "samples/Linux/linux64-cli-01-hello.zasm"));
     Run(source, 0, "Hello Zero from Linux x86-64!\n");
   }
 

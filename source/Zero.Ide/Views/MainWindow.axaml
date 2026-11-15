@@ -33,7 +33,10 @@
     <KeyBinding Command="{Binding CmdSaveAs}" Gesture="{x:Static shortcuts:EditorKeyGestures.SaveAs}" />
     <KeyBinding Command="{Binding CmdSaveAll}" Gesture="{x:Static shortcuts:EditorKeyGestures.SaveAll}" />
     <KeyBinding Command="{Binding CmdCloseDocument}" Gesture="{x:Static shortcuts:EditorKeyGestures.CloseDocument}" />
-    <KeyBinding Command="{Binding CmdBuildAndRun}" Gesture="{x:Static shortcuts:EditorKeyGestures.BuildAndRun}" />
+    <KeyBinding Command="{Binding CmdDebugContinue}" Gesture="{x:Static shortcuts:EditorKeyGestures.BuildAndRun}" />
+    <KeyBinding Command="{Binding CmdDebugStepOver}" Gesture="{x:Static shortcuts:EditorKeyGestures.StepOver}" />
+    <KeyBinding Command="{Binding CmdToggleBreakpoint}" Gesture="{x:Static shortcuts:EditorKeyGestures.ToggleBreakpoint}" />
+    <KeyBinding Command="{Binding CmdDebugStop}" Gesture="{x:Static shortcuts:EditorKeyGestures.StopDebugging}" />
     <KeyBinding Command="{Binding CmdBuild}" Gesture="{x:Static shortcuts:EditorKeyGestures.Build}" />
     <KeyBinding Command="{Binding CmdRebuild}" Gesture="{x:Static shortcuts:EditorKeyGestures.Rebuild}" />
   </Window.KeyBindings>
@@ -92,9 +95,15 @@
       </MenuItem>
 
       <MenuItem Header="_Build">
-        <MenuItem Command="{Binding CmdBuildAndRun}"
-                  Header="Build and _Execute"
+        <MenuItem Command="{Binding CmdDebugContinue}"
+                  Header="Start / _Continue Debugging"
                   InputGesture="F5" />
+        <MenuItem Command="{Binding CmdDebugPlayPause}" Header="Play / Pause Debugging" />
+        <MenuItem Command="{Binding CmdDebugStepOver}" Header="Step _Over" InputGesture="F10" />
+        <MenuItem Command="{Binding CmdToggleBreakpoint}" Header="Toggle Breakpoint" InputGesture="F9" />
+        <MenuItem Command="{Binding CmdDebugStop}" Header="Stop Debugging" InputGesture="Shift+F5" />
+        <MenuItem Command="{Binding CmdBuildAndRun}" Header="Run Without Debugging" />
+        <Separator />
         <MenuItem Command="{Binding CmdBuild}"
                   Header="_Build"
                   InputGesture="Ctrl+B"
@@ -186,11 +195,17 @@
 
           <Separator Classes="toolbar-divider" />
 
-          <Button AutomationProperties.Name="Build and Execute"
+          <Button AutomationProperties.Name="{Binding DebugPlayLabel}"
                   Classes="toolbar-icon play"
-                  Command="{Binding CmdBuildAndRun}"
-                  ToolTip.Tip="Build and Execute (F5)">
-            <Path Data="{StaticResource IconPlay}" />
+                  Command="{Binding CmdDebugPlayPause}"
+                  ToolTip.Tip="{Binding DebugPlayLabel}">
+            <Path Data="{Binding DebugPlayIcon}" />
+          </Button>
+          <Button Classes="toolbar-icon" Command="{Binding CmdDebugStepOver}" ToolTip.Tip="Step Over (F10)" AutomationProperties.Name="Step Over">
+            <Path Data="M4,4 C16,0 22,5 17,11 M13,8 L17,12 21,8 M5,20 L21,20" />
+          </Button>
+          <Button Classes="toolbar-icon" Command="{Binding CmdDebugStop}" ToolTip.Tip="Stop Debugging (Shift+F5)" AutomationProperties.Name="Stop Debugging">
+            <Path Data="M5,5 L19,5 19,19 5,19 Z" />
           </Button>
 
           <ComboBox Width="104"

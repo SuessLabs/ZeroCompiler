@@ -95,7 +95,7 @@ New-Item -ItemType Directory $destination -Force | Out-Null
 if ($CliPublishDirectory)
 {
   $rawCli = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($CliPublishDirectory)
-  $cliName = if ($windows) { 'zcc.exe' } else { 'zcc' }
+  $cliName = if ($windows) { 'zero.exe' } else { 'zero' }
   if (!(Test-Path -LiteralPath (Join-Path $rawCli $cliName) -PathType Leaf)) { throw "Published CLI not found in $rawCli. Run build.ps1 first." }
 }
 else
@@ -107,7 +107,7 @@ else
 New-Item -ItemType Directory -Path "$cli/bin", "$cli/docs", "$ide/ide" -Force | Out-Null
 
 $extension = if ($windows) { '.exe' } else { '' }
-Copy-Item -LiteralPath "$rawCli/zcc$extension" -Destination "$cli/bin/zero$extension"
+Copy-Item -LiteralPath "$rawCli/zero$extension" -Destination "$cli/bin/zero$extension"
 
 foreach ($folder in @('include', 'samples'))
 {

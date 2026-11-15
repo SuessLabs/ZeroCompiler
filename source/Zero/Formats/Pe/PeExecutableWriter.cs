@@ -21,7 +21,7 @@ internal sealed class PeExecutableWriter : IExecutableWriter
     }
 
     _plan = _writer.PlanLayout(program.CodeSize, program.Imports);
-    var layout = new ExecutableLayout((ulong)_plan.ImageBase + _plan.TextRva);
+    var layout = new ExecutableLayout((ulong)_plan.ImageBase + _plan.TextRva) { ImageBase = _plan.ImageBase };
     foreach (var symbol in _plan.ExternSymbolMap)
       layout.Symbols.Add(symbol.Key, symbol.Value);
     return layout;

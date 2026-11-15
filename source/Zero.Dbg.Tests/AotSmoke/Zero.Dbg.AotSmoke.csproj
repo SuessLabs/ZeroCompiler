@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <BaseOutputPath>../../../output/Zero.Dbg.AotSmoke/</BaseOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Zero/Zero.csproj" />
+    <ProjectReference Include="../../Zero.Dbg.WinPe/Zero.Dbg.WinPe.csproj" />
+  </ItemGroup>
+</Project>

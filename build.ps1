@@ -21,9 +21,11 @@ $ErrorActionPreference = 'Stop'
 
 $solution = Join-Path $PSScriptRoot 'source/Zero.slnx'
 $versionArguments = @()
+
 if ($PSBoundParameters.ContainsKey('CompilerVersion')) {
   $versionArguments += "-p:CompilerVersion=$CompilerVersion"
 }
+
 if ($PSBoundParameters.ContainsKey('IdeVersion')) {
   $versionArguments += "-p:IdeVersion=$IdeVersion"
 }
@@ -44,13 +46,10 @@ if ($LASTEXITCODE -ne 0) {
 $cliProject = Join-Path $PSScriptRoot 'source/Zero.Cli/Zero.Cli.csproj'
 $publishDirectory = Join-Path $PSScriptRoot 'publish'
 dotnet publish $cliProject --configuration $Configuration --runtime $Runtime --self-contained true --output $publishDirectory --disable-build-servers --maxcpucount:1 "-p:OptimizationPreference=$OptimizationPreference" @versionArguments
+
 if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }
-
-# Publish a second command name for the same standalone Native AOT executable.
-$extension = if ($Runtime.StartsWith('win-')) { '.exe' } else { '' }
-Copy-Item -LiteralPath (Join-Path $publishDirectory "zcc$extension") -Destination (Join-Path $publishDirectory "zero$extension") -Force
 
 # Copy directory
 $samplesDirectory = Join-Path $PSScriptRoot 'samples'
@@ -58,13 +57,16 @@ $publishedSamplesDirectory = Join-Path $publishDirectory 'samples'
 New-Item -ItemType Directory -Path $publishedSamplesDirectory -Force | Out-Null
 Get-ChildItem -LiteralPath $samplesDirectory | Copy-Item -Destination $publishedSamplesDirectory -Recurse -Force
 
-# Ship standard headers beside both compiler command names.
+# Ship standard headers beside the compiler.
 $includeDirectory = Join-Path $PSScriptRoot 'include'
 $publishedIncludeDirectory = Join-Path $publishDirectory 'include'
+
 New-Item -ItemType Directory -Path $publishedIncludeDirectory -Force | Out-Null
+
 # Remove only the former flat copies of shipped Windows headers during migration.
 Get-ChildItem -LiteralPath (Join-Path $includeDirectory 'windows') -Filter '*.zh' -File | ForEach-Object {
   $legacyHeader = Join-Path $publishedIncludeDirectory $_.Name
+
   if (Test-Path -LiteralPath $legacyHeader -PathType Leaf) {
     Remove-Item -LiteralPath $legacyHeader -Force
   }

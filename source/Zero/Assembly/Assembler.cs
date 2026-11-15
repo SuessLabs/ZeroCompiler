@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Zero.Compilation;
+using Zero.Dbg;
 using Zero.Exceptions;
 using Zero.Formats;
 using Zero.Formats.Elf;
@@ -16,6 +17,10 @@ namespace Zero.Assembly;
 /// <summary>Coordinates shared parsing, target encoding, and executable writing.</summary>
 public class Assembler(CompilationTarget? requestedTarget = null)
 {
+  public DebugMap DebugMap { get; private set; } = new();
+
+  public bool EmitDebugInformation { get; init; }
+
   public IReadOnlyList<ImportRequest> Imports { get; private set; } = [];
 
   public CompilationTarget Target { get; private set; } = CompilationTarget.WindowsX86;
@@ -23,6 +28,7 @@ public class Assembler(CompilationTarget? requestedTarget = null)
   public byte[]? Assemble(string[] source)
   {
     Imports = [];
+    DebugMap = new DebugMap();
     source = AssemblySyntax.StripComments(source);
     Target = AssemblyParser.ResolveTarget(source, requestedTarget);
 
@@ -56,6 +62,27 @@ public class Assembler(CompilationTarget? requestedTarget = null)
     }
 
     var code = encoder.Encode(program, layout.Symbols, layout.CodeAddress);
+    if (EmitDebugInformation)
+    {
+      DebugMap.Target = Target.ToString();
+      DebugMap.PreferredImageBase = layout.ImageBase;
+      DebugMap.EntryRva = checked((uint)(layout.CodeAddress - layout.ImageBase));
+
+      foreach (var line in program.Lines)
+      {
+        if (line.Mnemonic is Mnemonic.DB or Mnemonic.DW or Mnemonic.DD or Mnemonic.DQ)
+          continue;
+
+        DebugMap.Instructions.Add(new DebugInstruction
+        {
+          Line = line.LineNumber,
+          Rva = checked((uint)(layout.CodeAddress - layout.ImageBase + (ulong)line.Offset)),
+          Size = line.Size,
+          IsCall = line.Mnemonic == Mnemonic.CALL,
+        });
+      }
+    }
+
     return writer.Write(code, layout);
   }
 
@@ -67,7 +94,27 @@ public class Assembler(CompilationTarget? requestedTarget = null)
 
     try
     {
-      return Assemble(text);
+      var bytes = Assemble(text);
+      if (!EmitDebugInformation)
+        return bytes;
+
+      var files = new HashSet<string>(System.OperatingSystem.IsWindows() ? System.StringComparer.OrdinalIgnoreCase : System.StringComparer.Ordinal);
+
+      foreach (var line in source)
+      {
+        var path = System.IO.Path.GetFullPath(line.FilePath);
+        if (files.Add(path))
+          DebugMap.Sources.Add(new DebugSource { FilePath = path, Hash = DebugMap.HashFile(path) });
+      }
+
+      foreach (var instruction in DebugMap.Instructions)
+      {
+        var line = source[instruction.Line - 1];
+        instruction.FilePath = System.IO.Path.GetFullPath(line.FilePath);
+        instruction.Line = line.LineNumber;
+      }
+
+      return bytes;
     }
     catch (AssemblerException ex) when (ex.LineNumber is > 0 && ex.LineNumber <= source.Count)
     {
