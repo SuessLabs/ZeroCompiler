@@ -29,8 +29,8 @@ constraints; consult that target's operand rules before porting masks.
 Shifts, rotates, `NOT`, and `BT`/`BTS`/`BTR` are not implemented. These concepts
 can be added when the encoders support them. For now use AND/OR/XOR/TEST.
 
-**Exercise:** From zero, set bits 0 and 3, clear bit 0, and predict EAX before
-inspecting it in the debugger.
+> **Exercise:** From zero, set bits 0 and 3, clear bit 0, and predict EAX before
+> inspecting it in the debugger.
 
 ---
 

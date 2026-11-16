@@ -7,7 +7,7 @@ title: "Basic Variables"
 
 Section 2 — Basics · Chapter 2.5
 
-[Previous](zasm-02-04-boolean-algebra.md) · [Contents](index.md) · [Next](zasm-03-01-calling-external-library-functions.md)
+[Previous](zasm-02-04-boolean-algebra.md) · [Contents](index.md) · [Next](zasm-03-01-importing-and-calling-external-library.md)
 
 A variable is storage with an agreed meaning and lifetime. Registers provide
 temporary storage. Named data declarations provide initial bytes, but current
@@ -30,9 +30,11 @@ storage. Linux x64 supports register-to-memory stores, but its inline data is
 still read-only. An instruction cannot override memory permissions.
 
 Calls can overwrite temporary registers. Follow the calling convention and
-preserve values needed afterward. **Exercise:** Explain why a pointer to
-released stack storage cannot serve as a lasting variable.
+preserve values needed afterward.
+
+> **Exercise:** Explain why a pointer to
+> released stack storage cannot serve as a lasting variable.
 
 ---
 
-[Previous](zasm-02-04-boolean-algebra.md) · [Contents](index.md) · [Next](zasm-03-01-calling-external-library-functions.md)
+[Previous](zasm-02-04-boolean-algebra.md) · [Contents](index.md) · [Next](zasm-03-01-importing-and-calling-external-library.md)

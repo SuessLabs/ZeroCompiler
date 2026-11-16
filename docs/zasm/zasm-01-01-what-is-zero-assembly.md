@@ -30,7 +30,7 @@ language uses `.zsrc` and remains under redesign. Future features are labeled
 where they arise.
 
 > **Checkpoint:** Explain the difference between source text, a compiler, and an
-executable. The [language reference](ZASM-Reference.md) supplies exact operand rules.
+> executable. The [language reference](ZASM-Reference.md) supplies exact operand rules.
 
 ---
 

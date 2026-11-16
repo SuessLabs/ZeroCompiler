@@ -32,7 +32,7 @@ if that bit were clear. Supply the branch target in your complete program.
 
 Use hexadecimal masks: binary literal syntax is not currently supported.
 
-**Exercise:** Work out `0x0F AND 0x05` on paper, then verify it in EAX.
+> **Exercise:** Work out `0x0F AND 0x05` on paper, then verify it in EAX.
 
 ---
 

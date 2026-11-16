@@ -32,8 +32,8 @@ If a header is missing, check the compiler location and installed `include`
 layout. Save modified headers before debugging. Source editors are read-only
 during a debug session.
 
-**Checkpoint:** Locate your source file, compiler executable, and generated
-executable. Each has a different role.
+> **Checkpoint:** Locate your source file, compiler executable, and generated
+> executable. Each has a different role.
 
 ---
 

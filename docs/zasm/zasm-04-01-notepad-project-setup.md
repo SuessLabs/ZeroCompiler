@@ -29,8 +29,9 @@ Alternatively, from a terminal in the new source folder:
 ```
 
 Use the next chapters in order and save a working copy after each milestone.
-**Checkpoint:** Get the original sample working before changing registration,
-the callback, or the message loop.
+
+> **Checkpoint:** Get the original sample working before changing registration,
+> the callback, or the message loop.
 
 ---
 

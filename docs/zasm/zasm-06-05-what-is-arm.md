@@ -24,8 +24,8 @@ and memory-layout decisions beyond those of an OS application.
 This chapter reserves a place for ARM while the working paths remain Windows
 x86 and Linux x64. See [future formats and targets](../designs/Future-Formats-and-Targets.md).
 
-**Exercise:** Separate the algorithm in a hello program from its CPU-dependent
-and OS-dependent operations. Those boundaries define much of the porting work.
+> **Exercise:** Separate the algorithm in a hello program from its CPU-dependent
+> and OS-dependent operations. Those boundaries define much of the porting work.
 
 ---
 

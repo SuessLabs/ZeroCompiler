@@ -32,7 +32,7 @@ by the compiler. Use unique labels for distinct locations.
 Use `JZ` and `JNZ` normally. `JZ8` and `JNZ8` require a short displacement in
 range. `JE`, `JNE`, and greater/less-than branches are not implemented.
 
-**Exercise:** Start the loop at 5. Step through and watch ECX and EIP.
+> **Exercise:** Start the loop at 5. Step through and watch ECX and EIP.
 
 ---
 

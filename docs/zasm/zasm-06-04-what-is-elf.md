@@ -26,8 +26,9 @@ program would need an ARM encoder and platform conventions. Linux shared-library
 linking and ARM backends remain future work.
 
 See [Linux x64 and ELF64](../linux64.md) for implemented layout and syscall examples.
-**Checkpoint:** Explain why renaming `app.exe` to `app` cannot convert a Windows
-program into a Linux program.
+
+> **Checkpoint:** Explain why renaming `app.exe` to `app` cannot convert a Windows
+> program into a Linux program.
 
 ---
 

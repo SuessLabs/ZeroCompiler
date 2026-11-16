@@ -31,8 +31,8 @@ code page; `W` APIs require UTF-16. ASCII is a common starting point; arbitrary
 UTF-8 is not automatically compatible with either API family. Choose an encoding
 and convert deliberately for a larger editor.
 
-**Exercise:** Count bytes for two ASCII strings, a space, and an ending zero.
-Compare the [ASCII appendix](zasm-07-02-ascii-character-set.md).
+> **Exercise:** Count bytes for two ASCII strings, a space, and an ending zero.
+> Compare the [ASCII appendix](zasm-07-02-ascii-character-set.md).
 
 ---
 

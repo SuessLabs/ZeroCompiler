@@ -31,8 +31,8 @@ encoding after the editing milestone. These are extensions to implement and
 test: menu entries alone do not complete them. A production editor also needs
 a deliberate large-file policy.
 
-**Checkpoint:** Record which milestones your copy implements. Keep a known
-working copy until each new behavior passes its checks.
+> **Checkpoint:** Record which milestones your copy implements. Keep a known
+> working copy until each new behavior passes its checks.
 
 ---
 

@@ -12,6 +12,8 @@ Appendices
 This compact **Windows x86** table summarizes operations used in the book.
 It does not enumerate every addressing restriction.
 
+For a full list of Mnemonics, reference [ZASM-Mnemonics](ZASM-Mnemonics.md) documentation.
+
 | Mnemonic | Purpose | Typical supported form |
 | --- | --- | --- |
 | `MOV` | Load a value | `mov eax, 42`; `mov eax, [value]` |

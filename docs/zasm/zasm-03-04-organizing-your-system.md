@@ -36,8 +36,8 @@ control flow, even though import declarations emit no instructions.
 See [include-file details](ZASM-Include-Files.md). Multi-file linking, namespaces,
 and a project manifest are future work.
 
-**Exercise:** Move only the hello program's import declarations into a local
-header and verify that the program behaves the same way.
+> **Exercise:** Move only the hello program's import declarations into a local
+> header and verify that the program behaves the same way.
 
 ---
 

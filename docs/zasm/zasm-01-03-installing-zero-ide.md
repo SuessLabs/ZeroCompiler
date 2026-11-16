@@ -35,7 +35,8 @@ beside `zero.exe`. If a release has no IDE installer, build the IDE using the
 [build instructions](../building.md); do not expect the compiler ZIP to contain it.
 
 See the [installer guide](../../installer/README.md) for packaging and other hosts.
-**Checkpoint:** Confirm the selected compiler displays `--help` in a terminal.
+
+> **Checkpoint:** Confirm the selected compiler displays `--help` in a terminal.
 
 ---
 

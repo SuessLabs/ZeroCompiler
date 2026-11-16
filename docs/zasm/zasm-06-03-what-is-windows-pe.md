@@ -27,7 +27,8 @@ future work. Windows x64 PE32+ and DLL output are also future targets.
 
 See the [Windows debugger engine](../debugger/winpe.md) and
 [future target design](../designs/Future-Formats-and-Targets.md).
-**Checkpoint:** Distinguish executable format, CPU architecture, and subsystem.
+
+> **Checkpoint:** Distinguish executable format, CPU architecture, and subsystem.
 
 ---
 

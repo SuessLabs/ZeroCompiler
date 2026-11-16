@@ -40,7 +40,8 @@ and other boundaries explicitly.
 
 `MUL`, `IMUL`, `DIV`, `IDIV`, `INC`, and `DEC` are not implemented. Check the
 [mnemonic inventory](ZASM-Mnemonics.md) before adapting another assembler's code.
-**Exercise:** Print the result using the earlier `printf` pattern.
+
+> **Exercise:** Print the result using the earlier `printf` pattern.
 
 ---
 

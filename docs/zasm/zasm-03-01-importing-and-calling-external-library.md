@@ -21,6 +21,23 @@ call [ExitProcess]
 This is a complete minimal program. Brackets mean an indirect call through the
 import slot populated by the Windows loader. Preserve export spelling.
 
+To import multiple functions from the same DLL, list their export names after
+the DLL name, separated by commas. This complete program imports both `Sleep`
+and `ExitProcess` from `kernel32.dll`, waits one second, and then exits:
+
+```asm
+#IMPORT kernel32.dll, Sleep, ExitProcess
+
+push 1000          ; Sleep: wait for 1,000 milliseconds.
+call [Sleep]
+
+push 0             ; ExitProcess: exit with status 0.
+call [ExitProcess]
+```
+
+Each function has its own import slot and is called by name in brackets. Both
+functions use stdcall on Windows x86, so they remove their own arguments.
+
 | Convention | Argument order | Argument cleanup | Examples |
 | --- | --- | --- | --- |
 | cdecl | Push right to left | Caller | `puts`, `printf`, `strcpy` |
@@ -35,8 +52,8 @@ An import declaration does not validate argument types, capacity, or callbacks.
 Read the API contract before adding a call. Linux's current backend uses system
 calls rather than imported Windows DLLs.
 
-**Exercise:** Find caller cleanup in the hello program and callee cleanup in the
-[MessageBox sample](../../samples/Windows/win-ui-01-msgbox.zasm).
+> **Exercise:** Find caller cleanup in the hello program and callee cleanup in the
+> [MessageBox sample](../../samples/Windows/win-ui-01-msgbox.zasm).
 
 ---
 

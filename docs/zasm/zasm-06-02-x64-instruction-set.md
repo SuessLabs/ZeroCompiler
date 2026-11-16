@@ -32,7 +32,8 @@ additional indirect-call forms. This does not make the entire AMD64 set
 available. Inline data remains read-only even when store instructions encode.
 
 See [Linux x64 support](../linux64.md) for examples and operand restrictions.
-**Exercise:** Compare this exit with Windows x86 `push 0` / `call [ExitProcess]`.
+
+> **Exercise:** Compare this exit with Windows x86 `push 0` / `call [ExitProcess]`.
 
 ---
 

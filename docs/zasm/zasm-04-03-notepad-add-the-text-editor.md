@@ -17,18 +17,20 @@ the Show message button for a quick readback test.
 
 ```asm
   ; Multiline EDIT control, ID 102, at (20, 46), size 620 x 300.
-  push 0
-  push esi
-  push 102
-  push ebx
-  push 300
-  push 620
-  push 46
-  push 20
-  push 0x50B110C4
-  push initial_text
-  push edit_class
-  push 0
+  ; CreateWindowExA arguments are pushed right to left (last parameter first).
+  push 0              ; lpParam:      No application-defined creation data.
+  push esi            ; hInstance:    This application's instance handle.
+  push 102            ; hMenu:        Control ID 102 for this child window.
+  push ebx            ; hWndParent:   Handle of the main application window.
+  push 300            ; nHeight:      Editor height in pixels.
+  push 620            ; nWidth:       Editor width in pixels.
+  push 46             ; Y:            Top position in the parent's client area, in pixels.
+  push 20             ; X:            Left position in the parent's client area, in pixels.
+  push 0x50B110C4     ; dwStyle:      Child, visible, border, tab stop, scroll bars,
+                      ;               multiline, automatic scrolling, and Enter-key input.
+  push initial_text   ; lpWindowName: Address of the initial zero-terminated text.
+  push edit_class     ; lpClassName:  Address of the zero-terminated "EDIT" class name.
+  push 0              ; dwExStyle:    No extended window styles.
   call [CreateWindowExA]
   test eax, eax
   jz failed
@@ -46,7 +48,7 @@ the Show message button for a quick readback test.
 This milestone provides a basic editor with readback. Persistence comes next.
 The current APIs are ANSI; start with ASCII test input.
 
-**Checkpoint:** Confirm Enter inserts a line break and closing still exits.
+> **Checkpoint:** Confirm Enter inserts a line break and closing still exits.
 
 ---
 

@@ -36,8 +36,8 @@ and numbers when passing arguments.
 Inline data is in the read-only code section. `value: dd 42` does not make a
 writable variable. Use stack or allocated storage for values that change.
 
-**Exercise:** Change the initial value and predict the output. Compare the
-[complete output sample](../../samples/Windows/win-cli-02-console-printf-db-vars.zasm).
+> **Exercise:** Change the initial value and predict the output. Compare the
+> [complete output sample](../../samples/Windows/win-cli-02-console-printf-db-vars.zasm).
 
 ---
 

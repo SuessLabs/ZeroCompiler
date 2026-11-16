@@ -38,8 +38,8 @@ A plain `ret` leaves arguments for the caller. `ret 16` also discards sixteen
 argument bytes, as required by the four-argument stdcall window callback. Match
 the caller's and callee's cleanup conventions.
 
-**Exercise:** Make `add_two` preserve EBX if you change it to use that register.
-Balance pushes and pops on every return path.
+> **Exercise:** Make `add_two` preserve EBX if you change it to use that register.
+> Balance pushes and pops on every return path.
 
 ---
 

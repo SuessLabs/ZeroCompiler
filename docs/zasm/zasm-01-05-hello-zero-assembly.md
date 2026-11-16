@@ -7,7 +7,7 @@ title: "Hello, Zero Assembly"
 
 Section 1 — Intro · Chapter 1.5
 
-[Previous](zasm-01-04-using-zero-ide-my-first-project.md) · [Contents](index.md) · [Next](zasm-02-01-moving-numbers.md)
+[Previous](zasm-01-04-using-zero-ide-my-first-project.md) · [Contents](index.md) · [Next](zasm-01-06-keywords-and-directives.md)
 
 Save this complete Windows x86 program as `hello.zasm`:
 
@@ -47,8 +47,9 @@ remove four argument bytes with `add esp, 4`. `exit(0)` ends the process.
 
 Later snippets are **fragments** unless called complete programs. Insert them
 into a complete program before termination; never execute inline data.
-**Exercise:** Change the greeting and run it again.
+
+> **Exercise:** Change the greeting and run it again.
 
 ---
 
-[Previous](zasm-01-04-using-zero-ide-my-first-project.md) · [Contents](index.md) · [Next](zasm-02-01-moving-numbers.md)
+[Previous](zasm-01-04-using-zero-ide-my-first-project.md) · [Contents](index.md) · [Next](zasm-01-06-keywords-and-directives.md)

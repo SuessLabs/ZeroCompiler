@@ -3,7 +3,7 @@ layout: default
 title: Zero Assembly Programmers Guide
 ---
 
-# Zero Assembly Programmers Guide
+# Zero Assembly Programmer's Guide
 
 [Documentation library](../index.md) · [Start reading](zasm-01-01-what-is-zero-assembly.md)
 
@@ -38,6 +38,7 @@ numbers and lowercase, hyphenated titles. For example,
 3. [Installing Zero.IDE](zasm-01-03-installing-zero-ide.md)
 4. [Using Zero.IDE — My First Project](zasm-01-04-using-zero-ide-my-first-project.md)
 5. [Hello, Zero Assembly](zasm-01-05-hello-zero-assembly.md)
+6. [Zero Assembly Keywords and Directives](zasm-01-06-keywords-and-directives.md)
 
 ### Section 2 — Basics
 
@@ -49,7 +50,7 @@ numbers and lowercase, hyphenated titles. For example,
 
 ### Section 3 — Level-Up Learning
 
-1. [Calling External Library Functions](zasm-03-01-calling-external-library-functions.md)
+1. [Calling External Library Functions](zasm-03-01-importing-and-calling-external-library.md)
 2. [Creating Structs](zasm-03-02-creating-structs.md)
 3. [Working with Strings](zasm-03-03-working-with-strings.md)
 4. [Organizing Your System](zasm-03-04-organizing-your-system.md)

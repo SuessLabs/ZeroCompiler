@@ -25,8 +25,8 @@ The compiler cannot infer all of these contracts for you.
 Keep three questions beside each example: What value changes? Where is it
 stored? Who owns the storage? They become useful when stepping through calls.
 
-**Exercise:** Identify an operation in a familiar application that needs
-arithmetic, one that needs a branch, and one that asks the OS for a service.
+> **Exercise:** Identify an operation in a familiar application that needs
+> arithmetic, one that needs a branch, and one that asks the OS for a service.
 
 ---
 

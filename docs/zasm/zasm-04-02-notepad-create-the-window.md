@@ -28,8 +28,8 @@ The callback forwards unhandled messages to `DefWindowProcA`. Its EBP-based
 frame exposes `hwnd` at +8, message at +12, `wParam` at +16, and `lParam` at +20.
 Keep `pop ebp` and `ret 16` matched on every callback exit.
 
-**Checkpoint:** A visible window needs both a responsive message loop and a
-working destruction path.
+> **Checkpoint:** A visible window needs both a responsive message loop and a
+> working destruction path.
 
 ---
 

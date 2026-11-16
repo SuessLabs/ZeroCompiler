@@ -43,8 +43,8 @@ Retain the current document if reading fails. Do not mark it saved after a
 failed or partial write. Then add New/Open/Save commands, dialogs, encoding
 conversion, and an unsaved-changes prompt as separate tested features.
 
-**Checkpoint:** Define ownership, capacity, failure handling, and cleanup for
-every pointer and handle before implementing these calls.
+> **Checkpoint:** Define ownership, capacity, failure handling, and cleanup for
+> every pointer and handle before implementing these calls.
 
 ---
 
