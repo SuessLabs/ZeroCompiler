@@ -5,11 +5,11 @@ title: ZASM Language Reference
 
 # ZASM Language Reference
 
-[Documentation home](index.md) · [Complete examples](zasm-examples.md) ·
-[Include files](Zero-Assembly-Include-Files.md)
+[Documentation home](../index.md) · [Complete examples](ZASM-Examples.md) ·
+[Include files](ZASM-Include-Files.md) · [Mnemonic support](ZASM-Mnemonics.md)
 
 This reference covers Windows x86 operand forms. For the Linux x86-64 target,
-see [Linux x86-64 and ELF64](linux64.md), including its 64-bit encodings and syscalls.
+see [Linux x86-64 and ELF64](../linux64.md), including its 64-bit encodings and syscalls.
 Shared source syntax, labels, comments, and includes also apply to Linux.
 An instruction name
 appearing in a source-code constant or an older design document does not establish
@@ -158,7 +158,7 @@ done:
 
 This is a fragment: add program termination in a complete application. ZASM has
 no high-level `if` statement or loop statement yet; use labels and branches.
-See [the arithmetic example](zasm-examples.md#add-two-integers) for a complete program.
+See [the arithmetic example](ZASM-Examples.md#add-two-integers) for a complete program.
 
 ## Assembler Directives
 
@@ -266,7 +266,7 @@ For x86 Win32 APIs such as `MessageBoxA`, the callee removes its arguments:
 ```
 
 These snippets require the referenced labels and imports. See the
-[complete examples](zasm-examples.md). Library calls can overwrite EAX, ECX, and
+[complete examples](ZASM-Examples.md). Library calls can overwrite EAX, ECX, and
 EDX. Preserve any values you need across calls, and preserve EBX, ESI, EDI, and EBP
 when implementing a procedure or callback whose ABI requires it.
 
@@ -296,14 +296,14 @@ requesting source location and searched paths.
 
 DLL-specific headers also cover Kernel32, User32, GDI32, ComCtl32, ComDlg32,
 Shell32, Winsock, registry/security, COM, Automation, path helpers, multimedia,
-HTTP, and file versions. See [Windows API headers](windows-headers.md) for the catalog,
+HTTP, and file versions. See [Windows API headers](../windows-headers.md) for the catalog,
 architecture naming, string encodings, and initialization requirements.
 
 The repository keeps these files in root `include`; publishing copies them to
-`publish/include`. Read the [include guide](Zero-Assembly-Include-Files.md) for more details.
+`publish/include`. Read the [include guide](ZASM-Include-Files.md) for more details.
 Use the `windows/` prefix for working Windows headers. Separate
-[Linux libc drafts](linux-headers.md) under `linux/` prepare future shared-library
-interfaces. Static syscall-only ELF64 applications work today; see the [Linux guide](linux64.md).
+[Linux libc drafts](../linux-headers.md) under `linux/` prepare future shared-library
+interfaces. Static syscall-only ELF64 applications work today; see the [Linux guide](../linux64.md).
 
 ## Command Line and Errors
 
@@ -350,6 +350,6 @@ The following require future implementation:
 - Higher-level Zero compilation, ELF shared-library linking/PIE, ARM/ARM64, Windows x64, macOS, and STM32 backends.
 
 **Coming Soon:** expand this reference as each feature gains working syntax and
-examples. The [ZASM feature roadmap](zasm-coming-soon.md) tracks implemented
-features and outstanding work. The [documentation roadmap](index.md#coming-soon)
+examples. The [ZASM feature roadmap](ZASM-Coming-Soon.md) tracks implemented
+features and outstanding work. The [documentation roadmap](../index.md#coming-soon)
 collects broader topics to fill in.

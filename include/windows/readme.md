@@ -78,6 +78,6 @@ and in combination. On Windows they also check function spellings against the
 installed x86 DLL export tables, without loading or invoking those DLL functions.
 This checks the local Windows installation, not availability on every Windows version.
 
-See [include syntax and search order](../../docs/Zero-Assembly-Include-Files.md) and
-the [language reference](../../docs/zasm-reference.md). Add your own headers here or
+See [include syntax and search order](../../docs/zasm/ZASM-Include-Files.md) and
+the [language reference](../../docs/zasm/ZASM-Reference.md). Add your own headers here or
 pass extra search directories with `-I "my headers"`.

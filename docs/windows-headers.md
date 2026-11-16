@@ -5,8 +5,8 @@ title: Windows API Headers
 
 # Windows API Headers
 
-[Documentation home](index.md) · [Include syntax](Zero-Assembly-Include-Files.md) ·
-[Language reference](zasm-reference.md)
+[Documentation home](index.md) · [Include syntax](zasm/ZASM-Include-Files.md) ·
+[Language reference](zasm/ZASM-Reference.md)
 
 ZASM ships curated `.zh` headers for common Windows DLLs. They contain `#IMPORT`
 declarations, so your program can share library imports instead of repeating them.
@@ -133,4 +133,4 @@ export tables without calling any of those APIs.
 - Manifest/resource support for common-controls version 6 visual styles.
 
 These headers supply imports today; they do not implement the language features
-listed above. Track those separately in the [ZASM roadmap](zasm-coming-soon.md).
+listed above. Track those separately in the [ZASM roadmap](zasm/ZASM-Coming-Soon.md).

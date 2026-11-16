@@ -120,7 +120,7 @@ using "windows/console.zh" ; Imports puts, printf, and exit
 The build ships `windows/console.zh` and `windows/windows.zh` in `publish/include` beside both
 compiler executable. Run `.\zero.exe run samples\Windows\win-cli-01-hello-using.zasm` from `publish`
 to try it. Add your own search directories with repeated `-I "headers"` options.
-See [Using included files](../docs/Zero-Assembly-Include-Files.md).
+See [Using included files](../docs/zasm/ZASM-Include-Files.md).
 For the full DLL-specific catalog, see [Windows API headers](../docs/windows-headers.md).
 
 Import Address Table lookup references imported functions and can be called by their names in brackets:

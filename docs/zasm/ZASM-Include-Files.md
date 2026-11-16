@@ -1,4 +1,12 @@
+---
+layout: default
+title: ZASM Include Files
+---
+
 # Zero Assembly (ZASM) - Using Included Files
+
+[Documentation home](../index.md) · [Assembly overview](ZASM-Intro.md) ·
+[Language reference](ZASM-Reference.md) · [Mnemonic support](ZASM-Mnemonics.md)
 
 Use `using` to share imports, data, and procedures between ZASM files.
 The compiler expands each header at the directive's position before assembly.
@@ -91,13 +99,13 @@ error. Errors inside headers report the header's filename and original line numb
 Additional DLL-specific headers cover core OS services, windows, GDI drawing,
 common controls and dialogs, the shell, sockets, registry/security, COM,
 Automation, path helpers, multimedia, HTTP, and file version resources.
-See the [Windows API header guide](windows-headers.md) for the full catalog.
+See the [Windows API header guide](../windows-headers.md) for the full catalog.
 
 Windows headers now live under `include/windows`; use paths such as
 `using "windows/console.zh"`. Root-level compatibility copies are not shipped.
 Draft Linux libc headers live separately under `include/linux` and require future
-shared-library linking. Static syscall-only [Linux ELF64 output](linux64.md) is
-supported. See [Linux headers](linux-headers.md) for the drafts' status.
+shared-library linking. Static syscall-only [Linux ELF64 output](../linux64.md) is
+supported. See [Linux headers](../linux-headers.md) for the drafts' status.
 
 The headers target the compiler's current Windows x86 output. `puts` and `printf`
 use cdecl, so remove their arguments from the stack after calls. Windows API

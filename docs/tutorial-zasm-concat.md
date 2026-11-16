@@ -1,5 +1,8 @@
 # Joining strings in Zero Assembly
 
+[Documentation home](index.md) · [Language reference](zasm/ZASM-Reference.md) ·
+[Mnemonic support](zasm/ZASM-Mnemonics.md)
+
 [win-cli-05-string-concat.zasm](../samples/Windows/win-cli-05-string-concat.zasm) prints two pieces of text, then
 joins them with a space. Joining strings is called **concatenation**.
 

@@ -49,7 +49,7 @@ The build fails if any sample fails. Generated sample executables go to
 compiled without launching them, so MessageBox samples require no interaction.
 The validator supplies the repository's `include` directory to the managed
 compiler with `-I`. Tests copy the shared headers beside their compiler output.
-See [Using included files](Zero-Assembly-Include-Files.md) for syntax and search order.
+See [Using included files](zasm/ZASM-Include-Files.md) for syntax and search order.
 
 After building the solution, run the validator separately with:
 
