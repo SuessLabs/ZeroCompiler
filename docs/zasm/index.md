@@ -20,8 +20,9 @@ compiler layout.
 
 Current compiler limits appear beside the affected lessons. Structure declarations,
 full instruction-set coverage, and advanced Notepad features are not implied by
-a chapter title. The Notepad project starts with a working sample, builds a
-multiline editor, then provides a workshop for persistence and later features.
+a chapter title. The Notepad project provides complete source at each stage,
+ending with a resizable editor with Open, Save, Save As, Close, and
+unsaved-change handling.
 
 Sections are consecutive in reading order: Notepad is Section 4, Compiler and
 Debugging is Section 5, and Architecture is Section 6. Section 7 holds the two
@@ -60,10 +61,10 @@ numbers and lowercase, hyphenated titles. For example,
 
 ### Section 4 — Creating a Notepad Project
 
-1. [Notepad Project — Set Up the Workspace](zasm-04-01-notepad-project-setup.md)
+1. [Notepad Project — Overview and Setup](zasm-04-01-notepad-project-setup.md)
 2. [Notepad Project — Create the Window](zasm-04-02-notepad-create-the-window.md)
 3. [Notepad Project — Add the Text Editor](zasm-04-03-notepad-add-the-text-editor.md)
-4. [Notepad Project — Open and Save Files](zasm-04-04-notepad-open-and-save-files.md)
+4. [Notepad Project — Open, Save, Save As, and Close](zasm-04-04-notepad-open-and-save-files.md)
 5. [Notepad Project — Test and Extend](zasm-04-05-notepad-testing-and-next-steps.md)
 
 ### Section 5 — Compiler and Debugging

@@ -25,7 +25,7 @@ define data, share headers, call Windows DLL functions, or use Linux syscalls.
 ## Documentation Library
 
 Start with the chapter-based [Zero Assembly Programmers Guide](zasm/index.md).
-It includes a first program, fundamentals, functions, a Notepad project workshop,
+It includes a first program, fundamentals, functions, a complete Notepad project,
 compiler/debugger usage, architecture, and mnemonic/ASCII appendices.
 
 | Book | Status |
