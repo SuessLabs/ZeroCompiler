@@ -9,6 +9,9 @@ using Zero.Compilation;
 namespace Zero.Tests.ZAsmTests;
 
 [TestClass]
+// Parallel fork/exec can briefly inherit another test's open executable writer (ETXTBSY).
+// Serialize these compile-then-execute fixtures, including against other test classes.
+[DoNotParallelize]
 public sealed class LinuxRuntimeTests
 {
   [TestMethod]

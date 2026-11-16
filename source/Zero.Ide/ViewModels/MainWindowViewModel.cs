@@ -12,6 +12,7 @@ using Dock.Model.Controls;
 using Prism.Commands;
 using Zero.Dbg;
 using Zero.Ide.Docking;
+using Zero.Ide.Events;
 using Zero.Ide.Models;
 using Zero.Ide.Services;
 
@@ -22,6 +23,7 @@ public partial class MainWindowViewModel : ViewModelBase
   private readonly ICompilerService? _compilerService;
   private readonly IEditorDialogService _dialogs;
   private readonly EditorViewModel _emptyEditor = new();
+  private readonly IIdeEventService? _events;
   private readonly EditorExecutionCoordinator? _executionCoordinator;
   private readonly IProgramRunner? _programRunner;
   private readonly ISettingsService? _settings;
@@ -38,12 +40,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
   public MainWindowViewModel(EditorViewModel editor, IEditorDialogService dialogs, ISettingsService? settings = null,
     ICompilerService? compilerService = null, IProgramRunner? programRunner = null, IUpdateService? updates = null,
-    IDebugSession? debugSession = null, EditorExecutionCoordinator? executionCoordinator = null)
+    IDebugSession? debugSession = null, EditorExecutionCoordinator? executionCoordinator = null, IIdeEventService? events = null)
   {
     _dialogs = dialogs;
     _settings = settings;
     _compilerService = compilerService;
-    _executionCoordinator = executionCoordinator ?? (compilerService is null ? null : new EditorExecutionCoordinator(compilerService, programRunner));
+    _events = events;
+    _executionCoordinator = executionCoordinator ?? (compilerService is null ? null : new EditorExecutionCoordinator(compilerService, programRunner, events));
     _programRunner = programRunner;
     _updates = updates;
     settings?.SettingsChanged += (_, _) => NotifyThemeChanged();
@@ -319,7 +322,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
       var editor = document.Editor;
       var configuration = debugAfterBuild ? BuildConstants.DebugConfiguration : BuildConfiguration;
-      var mode = debugAfterBuild ? EditorExecutionMode.Debug : runAfterBuild ? EditorExecutionMode.Run : EditorExecutionMode.Build;
+      var mode = debugAfterBuild ? BuildExecutionMode.Debug : runAfterBuild ? BuildExecutionMode.Run : BuildExecutionMode.Build;
 
       var request = new EditorExecutionRequest(
         editor.Settings.CompilerPath,
@@ -337,25 +340,25 @@ public partial class MainWindowViewModel : ViewModelBase
 
       var outcome = await _executionCoordinator!.ExecuteAsync(request, update =>
       {
-        if (update.Stage == EditorExecutionStage.Build)
+        if (update.Stage == BuildExecutionStage.Build)
         {
           BuildState = EditorBuildState.Building;
           BuildOutput = Status = $"Building {editor.FileName} ({configuration})";
         }
-        else if (update.Stage == EditorExecutionStage.Built)
+        else if (update.Stage == BuildExecutionStage.Built)
         {
           BuildState = EditorBuildState.Idle;
           BuildOutput = update.Compilation!.Output + Environment.NewLine + $"Compiler exit code: {update.Compilation.ExitCode}";
           Status = $"Build succeeded: {update.Compilation.OutputPath}";
         }
-        else if (update.Stage == EditorExecutionStage.Completed && mode == EditorExecutionMode.Run)
+        else if (update.Stage == BuildExecutionStage.Completed && mode == BuildExecutionMode.Run)
         {
           Status = $"Started {update.Compilation!.OutputPath}";
           BuildOutput += Environment.NewLine + Status;
         }
       });
 
-      if (outcome.Stage == EditorExecutionStage.Failed)
+      if (outcome.Stage == BuildExecutionStage.Failed)
       {
         if (outcome.Error is { } error)
         {
@@ -369,7 +372,7 @@ public partial class MainWindowViewModel : ViewModelBase
           await _dialogs.ShowMessageAsync("Build failure", BuildOutput);
         }
       }
-      else if (outcome.Stage == EditorExecutionStage.RunFailed)
+      else if (outcome.Stage == BuildExecutionStage.RunFailed)
       {
         BuildState = EditorBuildState.RunFailed;
         Status = "Run failed";
@@ -564,6 +567,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     SolutionExplorer.LoadFolder(path);
     DockFactory.ShowExplorer();
+    _events?.Publish(new WorkspaceOpenedEvent(Path.GetFullPath(path)));
   }
 
   private void RemoveDocument(EditorDocument document)
