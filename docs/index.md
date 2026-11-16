@@ -8,7 +8,11 @@ title: Zero Compiler
 Zero is a compiler project for the Zero programming language and **Zero Assembly
 (ZASM)**. ZASM is the working assembly language today: write x86 instructions,
 define data, share headers, call Windows DLL functions, or use Linux syscalls.
-The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
+
+![](images/zero-logo.png)
+
+> Higher-level Zero language (`.zsrc`) is under redesign.\
+> See, [Coming Soon](#coming-soon).
 
 [Download Zero](https://github.com/SuessLabs/ZeroCompiler/releases/latest) ·
 [Getting started](#getting-started-with-zasm) ·
@@ -17,6 +21,32 @@ The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 [Examples](zasm/ZASM-Examples.md) ·
 [Debugger](debugger/index.md) ·
 [Source code](https://github.com/SuessLabs/ZeroCompiler)
+
+## About
+
+The Zero programming language and compiler project (_AKA: Null Compiler_). **Zero** is a simple, fast, and efficient programming language for the x86-64 architecture.
+
+The compiler generates Windows x86 PE32 console executables (including programs
+that create Windows GUI controls) and static Linux x86-64 ELF64 executables using
+syscalls. Shared-library ELF linking, DLL output, additional architectures, macOS,
+and STM32 remain future work. See [Linux x86-64 support](docs/linux64.md).
+
+## Zero Language Suite
+
+* **Zero** - _Zero Assembly and command line compiler tooling (Zero.Cli)_
+* **Zero.Ide** - _Integrated Development Environment with debugger support_
+* **Zero.Dbg** - _Debugger_
+
+![ZIDE](images/Zero.IDE-Sample-1.png)
+
+### File Types
+
+| Ext | File Type |
+|-|-|
+| `.zasm` | Zero assembly source file |
+| `.zh`   | Zero (_assembly_) header file |
+| `.zsrc` | Zero language source file (_coming soon_) |
+| `.zero`, `.zproj` | Zero project/workspace file (_coming soon_) |
 
 ## What Zero Supports Today
 
