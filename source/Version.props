@@ -1,9 +1,9 @@
 <Project>
   <!-- Edit these three versions here. CI can override each property independently. -->
   <PropertyGroup>
-    <CompilerVersion Condition="'$(CompilerVersion)' == ''">0.2.1.4</CompilerVersion>
-    <IdeVersion Condition="'$(IdeVersion)' == ''">0.2.1.4</IdeVersion>
-    <DebuggerVersion Condition="'$(DebuggerVersion)' == ''">0.2.1.4</DebuggerVersion>
+    <CompilerVersion Condition="'$(CompilerVersion)' == ''">0.2.1.5</CompilerVersion>
+    <IdeVersion Condition="'$(IdeVersion)' == ''">0.2.1.5</IdeVersion>
+    <DebuggerVersion Condition="'$(DebuggerVersion)' == ''">0.2.1.5</DebuggerVersion>
   </PropertyGroup>
 
   <!-- Tests and debugger backends follow their product's version. -->
