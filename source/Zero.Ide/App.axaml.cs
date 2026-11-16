@@ -2,6 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Prism.DryIoc;
 using Prism.Ioc;
@@ -25,11 +26,21 @@ public partial class App : PrismApplication
     base.Initialize();
   }
 
+  /// <summary>Registers event-service cleanup on desktop application exit and completes Prism framework initialization.</summary>
+  public override void OnFrameworkInitializationCompleted()
+  {
+    if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+      desktop.Exit += (_, _) => Container.Resolve<IIdeEventService>().Dispose();
+
+    base.OnFrameworkInitializationCompleted();
+  }
+
   protected override AvaloniaObject CreateShell() => Container.Resolve<MainWindow>();
 
   protected override void RegisterTypes(IContainerRegistry containerRegistry)
   {
     // Services
+    containerRegistry.RegisterSingleton<IIdeEventService, IdeEventService>();
     containerRegistry.RegisterSingleton<IEditorDialogService, EditorDialogService>();
     containerRegistry.RegisterSingleton<ICompilerService, CompilerService>();
     containerRegistry.RegisterSingleton<IProgramRunner, ProgramRunner>();

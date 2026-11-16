@@ -19,10 +19,10 @@ namespace Zero.Ide.Tests;
 public class EditorExecutionCoordinatorTests
 {
   [TestMethod]
-  [DataRow(EditorExecutionMode.Build)]
-  [DataRow(EditorExecutionMode.Run)]
-  [DataRow(EditorExecutionMode.Debug)]
-  public void DiagramExportUsesModeSpecificRegisteredTransitions(EditorExecutionMode mode)
+  [DataRow(BuildExecutionMode.Build)]
+  [DataRow(BuildExecutionMode.Run)]
+  [DataRow(BuildExecutionMode.Debug)]
+  public void DiagramExportUsesModeSpecificRegisteredTransitions(BuildExecutionMode mode)
   {
     var dot = EditorExecutionCoordinator.ExportStateDiagram(mode);
     Assert.Contains("1. ValidateCompilerState", dot);
@@ -30,7 +30,7 @@ public class EditorExecutionCoordinatorTests
     Assert.Contains("\"Save\" -> \"Canceled\"", dot);
     Assert.Contains("\"Build\" -> \"Failed\"", dot);
     Assert.DoesNotContain("\"Built\" [", dot); // Built is a notification, not a registered state.
-    if (mode == EditorExecutionMode.Build)
+    if (mode == BuildExecutionMode.Build)
     {
       Assert.Contains("\"Build\" -> \"Completed\"", dot);
       Assert.DoesNotContain("LaunchState", dot);
@@ -38,10 +38,10 @@ public class EditorExecutionCoordinatorTests
     else
     {
       Assert.Contains("\"Build\" -> \"Launch\"", dot);
-      Assert.Contains(mode == EditorExecutionMode.Run ? "\"Launch\" -> \"RunFailed\"" : "\"Launch\" -> \"Failed\"", dot);
+      Assert.Contains(mode == BuildExecutionMode.Run ? "\"Launch\" -> \"RunFailed\"" : "\"Launch\" -> \"Failed\"", dot);
     }
 
-    if (mode != EditorExecutionMode.Run) Assert.DoesNotContain("RunFailedState", dot);
+    if (mode != BuildExecutionMode.Run) Assert.DoesNotContain("RunFailedState", dot);
   }
 
   private static string SourcePath => Path.Combine(Path.GetTempPath(), "program" + SourceFileExtensions.Assembly);
@@ -51,16 +51,16 @@ public class EditorExecutionCoordinatorTests
   {
     var compiler = new Mock<ICompilerService>(MockBehavior.Strict);
     var runner = new Mock<IProgramRunner>(MockBehavior.Strict);
-    var stages = new List<EditorExecutionStage>();
+    var stages = new List<BuildExecutionStage>();
 
     var result = await new EditorExecutionCoordinator(compiler.Object, runner.Object).ExecuteAsync(
-      Request(EditorExecutionMode.Run) with
+      Request(BuildExecutionMode.Run) with
       {
         SaveSourceAsync = () => Task.FromResult<string?>(null)
       }, update => stages.Add(update.Stage));
 
-    Assert.AreEqual(EditorExecutionStage.Canceled, result.Stage);
-    Assert.AreSequenceEqual(new[] { EditorExecutionStage.ValidateCompiler, EditorExecutionStage.Save, EditorExecutionStage.Canceled }, stages);
+    Assert.AreEqual(BuildExecutionStage.Canceled, result.Stage);
+    Assert.AreSequenceEqual(new[] { BuildExecutionStage.ValidateCompiler, BuildExecutionStage.Save, BuildExecutionStage.Canceled }, stages);
 
     compiler.VerifyNoOtherCalls();
     runner.VerifyNoOtherCalls();
@@ -78,14 +78,14 @@ public class EditorExecutionCoordinatorTests
       .Callback(() => entered.SetResult()).Returns(finished.Task);
 
     var coordinator = new EditorExecutionCoordinator(compiler.Object);
-    var first = coordinator.ExecuteAsync(Request(EditorExecutionMode.Build), _ => { });
+    var first = coordinator.ExecuteAsync(Request(BuildExecutionMode.Build), _ => { });
 
     await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
     try
     {
       await Assert.ThrowsExactlyAsync<InvalidOperationException>(
-        () => coordinator.ExecuteAsync(Request(EditorExecutionMode.Build), _ => { }));
+        () => coordinator.ExecuteAsync(Request(BuildExecutionMode.Build), _ => { }));
     }
     finally
     {
@@ -118,7 +118,7 @@ public class EditorExecutionCoordinatorTests
         .ThrowsAsync(new IOException("Unable to start"));
 
     var runner = new Mock<IProgramRunner>(MockBehavior.Strict);
-    var request = Request(EditorExecutionMode.Run);
+    var request = Request(BuildExecutionMode.Run);
 
     if (failure == "missing-compiler")
       request = request with { CompilerPath = "" };
@@ -130,7 +130,7 @@ public class EditorExecutionCoordinatorTests
       request = request with { SaveSourceAsync = () => throw new IOException("Disk full") };
 
     var result = await new EditorExecutionCoordinator(compiler.Object, runner.Object).ExecuteAsync(request, _ => { });
-    Assert.AreEqual(EditorExecutionStage.Failed, result.Stage);
+    Assert.AreEqual(BuildExecutionStage.Failed, result.Stage);
 
     if (failure == "compiler-error")
       Assert.AreSame(compilation, result.Compilation);
@@ -144,9 +144,9 @@ public class EditorExecutionCoordinatorTests
   }
 
   [TestMethod]
-  [DataRow(EditorExecutionMode.Run, EditorExecutionStage.RunFailed)]
-  [DataRow(EditorExecutionMode.Debug, EditorExecutionStage.Failed)]
-  public async Task LaunchFailuresPreserveCompilerOutputAndPermitRetryAsync(EditorExecutionMode mode, EditorExecutionStage expected)
+  [DataRow(BuildExecutionMode.Run, BuildExecutionStage.RunFailed)]
+  [DataRow(BuildExecutionMode.Debug, BuildExecutionStage.Failed)]
+  public async Task LaunchFailuresPreserveCompilerOutputAndPermitRetryAsync(BuildExecutionMode mode, BuildExecutionStage expected)
   {
     var compiler = new Mock<ICompilerService>();
 
@@ -163,18 +163,18 @@ public class EditorExecutionCoordinatorTests
     Assert.AreEqual(expected, result.Stage);
     Assert.AreEqual("compiled successfully", result.Compilation!.Output);
     Assert.IsNotNull(result.Error);
-    Assert.AreEqual(EditorExecutionStage.Completed, (await coordinator.ExecuteAsync(Request(EditorExecutionMode.Build), _ => { })).Stage);
+    Assert.AreEqual(BuildExecutionStage.Completed, (await coordinator.ExecuteAsync(Request(BuildExecutionMode.Build), _ => { })).Stage);
   }
 
   [TestMethod]
-  [DataRow(EditorExecutionMode.Build)]
-  [DataRow(EditorExecutionMode.Run)]
-  [DataRow(EditorExecutionMode.Debug)]
-  public async Task SuccessfulWorkflowSavesBuildsThenUsesOnlyRequestedLauncherAsync(EditorExecutionMode mode)
+  [DataRow(BuildExecutionMode.Build)]
+  [DataRow(BuildExecutionMode.Run)]
+  [DataRow(BuildExecutionMode.Debug)]
+  public async Task SuccessfulWorkflowSavesBuildsThenUsesOnlyRequestedLauncherAsync(BuildExecutionMode mode)
   {
     var calls = new List<string>();
     var compiler = new Mock<ICompilerService>();
-    var configuration = mode == EditorExecutionMode.Debug ? BuildConstants.DebugConfiguration : BuildConstants.ReleaseConfiguration;
+    var configuration = mode == BuildExecutionMode.Debug ? BuildConstants.DebugConfiguration : BuildConstants.ReleaseConfiguration;
 
     compiler
       .Setup(c => c.BuildAsync("compiler", SourcePath, configuration, true))
@@ -206,14 +206,14 @@ public class EditorExecutionCoordinatorTests
     var updates = new List<EditorExecutionUpdate>();
     var result = await new EditorExecutionCoordinator(compiler.Object, runner.Object).ExecuteAsync(request, updates.Add);
 
-    Assert.AreEqual(EditorExecutionStage.Completed, result.Stage);
+    Assert.AreEqual(BuildExecutionStage.Completed, result.Stage);
     Assert.AreSequenceEqual(
-      mode == EditorExecutionMode.Build
+      mode == BuildExecutionMode.Build
       ? new[] { "save", "compile" }
-      : new[] { "save", "compile", mode == EditorExecutionMode.Run ? "run" : "debug" }, calls);
+      : new[] { "save", "compile", mode == BuildExecutionMode.Run ? "run" : "debug" }, calls);
 
-    Assert.AreEqual(EditorExecutionStage.ValidateCompiler, updates[0].Stage);
-    Assert.IsGreaterThan(updates.FindIndex(update => update.Stage == EditorExecutionStage.Build), updates.FindIndex(update => update.Stage == EditorExecutionStage.Built));
+    Assert.AreEqual(BuildExecutionStage.ValidateCompiler, updates[0].Stage);
+    Assert.IsGreaterThan(updates.FindIndex(update => update.Stage == BuildExecutionStage.Build), updates.FindIndex(update => update.Stage == BuildExecutionStage.Built));
   }
 
   [TestMethod]
@@ -233,7 +233,7 @@ public class EditorExecutionCoordinatorTests
         });
 
       var coordinator = new EditorExecutionCoordinator(compiler.Object);
-      var result = await coordinator.ExecuteAsync(Request(EditorExecutionMode.Debug) with
+      var result = await coordinator.ExecuteAsync(Request(BuildExecutionMode.Debug) with
       {
         SaveSourceAsync = async () =>
         {
@@ -252,14 +252,14 @@ public class EditorExecutionCoordinatorTests
         updates.Add(update);
       });
 
-      Assert.AreEqual(EditorExecutionStage.Completed, result.Stage);
-      Assert.Contains(update => update.Stage == EditorExecutionStage.Launch, updates);
+      Assert.AreEqual(BuildExecutionStage.Completed, result.Stage);
+      Assert.Contains(update => update.Stage == BuildExecutionStage.Launch, updates);
 
       return 0;
     }, CancellationToken.None);
   }
 
-  private static EditorExecutionRequest Request(EditorExecutionMode mode) =>
+  private static EditorExecutionRequest Request(BuildExecutionMode mode) =>
     new(
       "compiler",
       BuildConstants.DebugConfiguration,

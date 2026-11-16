@@ -43,6 +43,55 @@ separate `IDebugSession` owns execution, pause, step, and stop state.
 `Built` is a progress notification emitted inside `CompileState`, not a separate
 registered state, so it does not appear as a node.
 
+## Event notifications
+
+The singleton `IIdeEventService` uses Lite.EventIPC for local notifications.
+It publishes these immutable records from `Zero.Ide.Events`:
+
+| Event | Published when |
+| --- | --- |
+| `ExecutionStateChangedEvent` | A workflow stage is entered, including the `Built` progress notification and terminal outcomes. |
+| `BuildStartedEvent` | Validation and saving succeeded and the compiler is about to run. |
+| `BuildCompletedEvent` | A compiler attempt finishes, fails, or throws, before launching the output. |
+| `WorkspaceOpenedEvent` | A folder is selected and its explorer root is initialized; children load lazily. |
+| `DebugStoppedEvent` | Debugging pauses at entry, a breakpoint, a step, or an exception; includes a copied register snapshot. |
+| `DebugSessionEndedEvent` | A debug session exits or faults. |
+
+All events include a UTC `Timestamp`. Execution and build notifications share an
+`ExecutionId`, source path, mode, and configuration. A canceled save or validation
+failure has a terminal state notification but no compiler-attempt events.
+`BuildCompletedEvent.Succeeded` describes compilation; a later launch can still
+fail. Native debugger notifications come from `IDebugSession`, which owns the
+running/paused lifecycle after the build workflow finishes.
+
+Inject `IIdeEventService` into subscribers and retain the subscription token:
+
+```csharp
+IDisposable subscription = events.Subscribe<BuildCompletedEvent>(notification =>
+{
+  Dispatcher.UIThread.Post(() =>
+    Status = notification.Succeeded ? "Build succeeded" : "Build failed");
+});
+
+// When the subscriber is closed or unloaded:
+subscription.Dispose();
+```
+
+Handlers run in the background and must marshal UI work onto Avalonia's
+dispatcher. An overload accepts `Func<TEvent, Task>` for asynchronous handlers;
+use that overload instead of `async void`. Exceptions are traced and isolated.
+Delivery is ordered within each subscription, with no ordering guarantee across
+event types or subscriptions. Use `ExecutionId` to correlate build notifications.
+
+These are best-effort observational signals. Each subscription has a bounded
+256-event queue that drops its oldest pending item when full. A blocked or slow
+subscriber therefore cannot stall the UI, state machine, or another subscriber,
+and pending events cannot consume unbounded memory. Disposing a token detaches
+it and stops queued delivery; an already executing handler may finish afterward.
+Application shutdown disposes the hub without waiting for handlers. Use direct
+service calls for commands or operations that require guaranteed completion.
+This registers local delivery only; no named-pipe or network endpoint is opened.
+
 ## Regenerating
 
 From the repository root, export all three DOT files without executing the

@@ -11,6 +11,7 @@ using Avalonia.Platform.Storage;
 using Prism.Commands;
 using Zero.Dbg;
 using Zero.Dbg.WinPe;
+using Zero.Ide.Events;
 
 namespace Zero.Ide.ViewModels;
 
@@ -219,6 +220,12 @@ public partial class MainWindowViewModel
       document.Editor.IsDebugReadOnly = IsDebugging;
       document.Editor.ExecutionLine = 0;
     }
+
+    if (snapshot.State == DebugState.Paused)
+      _events?.Publish(new DebugStoppedEvent(snapshot.ThreadId, snapshot.InstructionPointer, snapshot.Reason,
+        snapshot.Location?.FilePath, snapshot.Location?.Line, new List<RegisterValue>(snapshot.Registers ?? []).AsReadOnly()));
+    else if (snapshot.State is DebugState.Exited or DebugState.Faulted)
+      _events?.Publish(new DebugSessionEndedEvent(snapshot.State, snapshot.Reason, snapshot.ExitCode));
 
     if (snapshot.State != DebugState.Paused || snapshot.Location is not { } location)
       return;
