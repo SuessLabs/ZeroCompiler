@@ -1,11 +1,18 @@
+---
+layout: default
+title: Zero Assembly Overview
+---
+
 # Zero Assembly Overview
 
-[Documentation home](index.md) · [Full language reference](zasm-reference.md) ·
-[Basic examples](zasm-examples.md)
+[Documentation home](../index.md) · [Full language reference](ZASM-Reference.md) ·
+[Basic examples](ZASM-Examples.md) · [Mnemonic support](ZASM-Mnemonics.md)
 
-ZASM currently produces Windows x86 PE32 executables. This page summarizes common
-encodings; the [instruction reference](zasm-reference.md#instruction-reference)
-lists every implemented mnemonic and its operand forms.
+ZASM produces Windows x86 PE32 and static Linux x64 ELF64 executables. This page
+summarizes selected Windows x86 encodings; the
+[instruction reference](ZASM-Reference.md#instruction-reference) describes their
+operand forms. See [mnemonic support](ZASM-Mnemonics.md) for both output backends;
+Windows PE x64 output is not implemented.
 
 ## Selected x86 Encodings
 
@@ -37,7 +44,7 @@ lists every implemented mnemonic and its operand forms.
 
 This is a selected encoding table; `AND`, `OR`, `XOR`, and `TEST` are also
 implemented. The current assembler uses **EAX, EBX, ECX, EDX, ESI, EDI, EBP, ESP**.
-See [registers](zasm-reference.md#registers) for their roles.
+See [registers](ZASM-Reference.md#registers) for their roles.
 
 ## Data and Other Directives
 
@@ -57,11 +64,12 @@ parse string, floating-point, or symbol initializers.
 
 Data is emitted into the read-only code section. The first emitted byte is the
 entry point; use a jump to skip inline data at the beginning of a program.
-See [directives](zasm-reference.md#assembler-directives),
-[labels](zasm-reference.md#labels), and [headers](Zero-Assembly-Include-Files.md).
+See [directives](ZASM-Reference.md#assembler-directives),
+[labels](ZASM-Reference.md#labels), and [headers](ZASM-Include-Files.md).
 
 ## Coming Soon
 
-**Coming Soon:** `DQ`, more instruction widths, writable sections, constants,
-macros, and additional targets. These are not currently supported syntax.
-See the [documentation roadmap](index.md#coming-soon).
+**Coming Soon for Windows x86:** `DQ`, more instruction widths, writable sections,
+constants, macros, and additional targets. Linux x64 already supports numeric
+`DQ` and essential 64-bit instruction forms.
+See the [documentation roadmap](../index.md#coming-soon).

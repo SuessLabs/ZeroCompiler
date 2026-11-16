@@ -71,4 +71,4 @@ The build ships both platform directories. Windows samples use
 `using "windows/..."`; `linux64-cli-01-hello.zasm` uses direct syscalls and no libc
 header. For fuller notes, see the
 [Linux header README](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/linux/readme.md)
-and [ZASM roadmap](zasm-coming-soon.md).
+and [ZASM roadmap](zasm/ZASM-Coming-Soon.md).

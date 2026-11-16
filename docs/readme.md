@@ -2,8 +2,8 @@
 
 > **Background and design notes:** the examples below include proposed syntax
 > that is not implemented. For working ZASM syntax, start with the
-> [documentation home](index.md), [language reference](zasm-reference.md), and
-> [basic examples](zasm-examples.md). Higher-level `.zsrc` compilation is Coming Soon.
+> [documentation home](index.md), [language reference](zasm/ZASM-Reference.md), and
+> [basic examples](zasm/ZASM-Examples.md). Higher-level `.zsrc` compilation is Coming Soon.
 
 Welcome to the Zero Compiler
 

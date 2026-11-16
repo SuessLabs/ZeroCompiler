@@ -59,5 +59,5 @@ Keep Linux, Windows, future macOS, and STM32 platform interfaces separate. Add
 `macos` and `stm32` folders when their first headers are ready. Shared platform-neutral
 headers can get their own folder when an actual common interface exists.
 
-See [include syntax](../docs/Zero-Assembly-Include-Files.md) and the
-[ZASM reference](../docs/zasm-reference.md).
+See [include syntax](../docs/zasm/ZASM-Include-Files.md) and the
+[ZASM reference](../docs/zasm/ZASM-Reference.md).

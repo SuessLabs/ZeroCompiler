@@ -6,7 +6,7 @@ title: Linux x86-64 and ELF64
 # Linux x86-64 and ELF64
 
 [Documentation home](index.md) · [Linux header drafts](linux-headers.md) ·
-[ZASM reference](zasm-reference.md)
+[ZASM reference](zasm/ZASM-Reference.md) · [Mnemonic support](zasm/ZASM-Mnemonics.md#linux-elf-x64)
 
 Zero can generate static Linux x86-64 ELF64 executables from Windows or Linux.
 This first backend uses Linux syscalls directly: no libc, dynamic interpreter,

@@ -12,8 +12,9 @@ The higher-level Zero language is under design; see [Coming Soon](#coming-soon).
 
 [Download Zero](https://github.com/SuessLabs/ZeroCompiler/releases/latest) ·
 [Getting started](#getting-started-with-zasm) ·
-[Language reference](zasm-reference.md) ·
-[Examples](zasm-examples.md) ·
+[Language reference](zasm/ZASM-Reference.md) ·
+[Mnemonic support](zasm/ZASM-Mnemonics.md) ·
+[Examples](zasm/ZASM-Examples.md) ·
 [Debugger](debugger/index.md) ·
 [Source code](https://github.com/SuessLabs/ZeroCompiler)
 
@@ -156,7 +157,7 @@ requires the caller to remove the argument with `add esp, 4`.
 
 Use `-h` or `--help` for help. `--include` is an alternative to `-I`.
 A compilation failure prevents `run` from executing an older output file.
-See the [reference for command options and error codes](zasm-reference.md#command-line-and-errors).
+See the [reference for command options and error codes](zasm/ZASM-Reference.md#command-line-and-errors).
 
 ## ZASM Language at a Glance
 
@@ -166,6 +167,9 @@ and labels are case-insensitive. Preserve the spelling of DLL export names.
 Semicolons start comments outside quoted strings; they are not required terminators.
 
 ### Mnemonics
+
+See the [mnemonic support inventory](zasm/ZASM-Mnemonics.md) for categories,
+supported operand forms, and missing instructions across Windows PE and Linux ELF.
 
 | Group | Supported mnemonics | Example |
 | --- | --- | --- |
@@ -180,7 +184,7 @@ Semicolons start comments outside quoted strings; they are not required terminat
 
 The table above summarizes Windows x86. See [Linux x64 instruction forms](linux64.md#essential-amd64-instructions)
 for 64-bit registers, memory stores, indirect calls, and `SYSCALL`.
-Only the operand forms listed in the [instruction reference](zasm-reference.md#instruction-reference)
+Only the operand forms listed in the [instruction reference](zasm/ZASM-Reference.md#instruction-reference)
 are supported. For example, `mov eax, 42` and `mov eax, [value]` work;
 register-to-register `MOV` and memory stores are Coming Soon.
 
@@ -197,7 +201,7 @@ register-to-register `MOV` and memory stores are Coming Soon.
 
 The current instruction forms use the 32-bit registers **EAX, EBX, ECX, EDX,
 ESI, EDI, EBP, and ESP**. Other widths and SIMD registers are future work.
-See [register roles and memory addressing](zasm-reference.md#registers).
+See [register roles and memory addressing](zasm/ZASM-Reference.md#registers).
 
 ### Directives, Labels, and Statements
 
@@ -218,15 +222,15 @@ The first emitted byte is the entry point; the name `start` has no special meani
 
 Include search order is the current working directory, then each `-I` directory,
 then `include` beside the compiler. Nested headers use the same search order.
-See [Using included files](Zero-Assembly-Include-Files.md) for nested headers,
+See [Using included files](zasm/ZASM-Include-Files.md) for nested headers,
 cycle detection, source locations, and library integration.
 
-Read the [full ZASM reference](zasm-reference.md) for strings, labels, instruction
+Read the [full ZASM reference](zasm/ZASM-Reference.md) for strings, labels, instruction
 forms, imports, calling conventions, and current limitations.
 
 ## Examples and Tutorials
 
-Start with the [complete basic examples](zasm-examples.md): console text, integer
+Start with the [complete basic examples](zasm/ZASM-Examples.md): console text, integer
 addition with formatted output, and a Windows MessageBox. Each includes a command
 and expected behavior.
 
@@ -246,7 +250,7 @@ From the release folder, also try:
 - [Linux x86-64 and ELF64](linux64.md): compile and run a syscall-based Linux console application.
 - [Linux header drafts](linux-headers.md): future glibc interfaces and architecture-specific syscall references.
 - [Header catalog](https://github.com/SuessLabs/ZeroCompiler/blob/master/include/readme.md): all shipped `.zh` files and calling rules.
-- [Assembly overview and opcodes](Zero-Assembly-Intro.md): a compact companion to the language reference.
+- [Assembly overview and opcodes](zasm/ZASM-Intro.md): a compact companion to the language reference.
 
 ## Build and Contribute
 
@@ -259,14 +263,14 @@ validates every ZASM sample, and publishes `zero.exe`, `include`, and
 - [Project background and original language ideas](readme.md): history and proposed higher-level syntax.
 - [Future formats and architectures](designs/Future-Formats-and-Targets.md): shared parsing with separate target backends.
 - [ZSRC console proof of concept](designs/ZSRC-v0.3-POC-Console.md): a future high-level language example.
-- [Assembly syntax sandbox](Zero-Assembly-PoC-Sandbox.md): experimental proposals, including directives that are not implemented.
+- [Assembly syntax sandbox](zasm/ZASM-vNext-Sandbox.md): experimental proposals, including directives that are not implemented.
 
 The reference describes the current compiler. Historical examples and design
 proposals are labeled separately so they can evolve without implying support today.
 
 ## Coming Soon
 
-See the [ZASM feature roadmap](zasm-coming-soon.md) for implemented assembly
+See the [ZASM feature roadmap](zasm/ZASM-Coming-Soon.md) for implemented assembly
 features, proposed key features, and nice-to-have improvements.
 
 These are documentation placeholders and development ideas, with no promised release date.
@@ -286,5 +290,5 @@ They are not current compiler capabilities.
 | More tutorials | **Coming Soon:** loops, reusable procedures, stack frames, and a step-by-step controls application. |
 
 Contributors can replace these placeholders with tested syntax and examples as
-features become available. See the [reference's limitations](zasm-reference.md#current-limitations)
+features become available. See the [reference's limitations](zasm/ZASM-Reference.md#current-limitations)
 before adapting assembly from another assembler.

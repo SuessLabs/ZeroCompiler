@@ -24,9 +24,10 @@
         <p class="site-description">{{ site.description | escape }}</p>
         <nav class="site-nav" aria-label="Documentation">
           <a href="{{ '/' | relative_url }}"{% if page.url == '/' or page.url == '/index.html' %} aria-current="page"{% endif %}>Overview</a>
-          <a href="{{ '/zasm-reference.html' | relative_url }}"{% if page.url == '/zasm-reference.html' %} aria-current="page"{% endif %}>Language reference</a>
-          <a href="{{ '/zasm-examples.html' | relative_url }}"{% if page.url == '/zasm-examples.html' %} aria-current="page"{% endif %}>Examples</a>
-          <a href="{{ '/zasm-coming-soon.html' | relative_url }}"{% if page.url == '/zasm-coming-soon.html' %} aria-current="page"{% endif %}>Roadmap</a>
+          <a href="{{ '/zasm/ZASM-Reference.html' | relative_url }}"{% if page.url == '/zasm/ZASM-Reference.html' %} aria-current="page"{% endif %}>Language reference</a>
+          <a href="{{ '/zasm/ZASM-Mnemonics.html' | relative_url }}"{% if page.url == '/zasm/ZASM-Mnemonics.html' %} aria-current="page"{% endif %}>Mnemonics</a>
+          <a href="{{ '/zasm/ZASM-Examples.html' | relative_url }}"{% if page.url == '/zasm/ZASM-Examples.html' %} aria-current="page"{% endif %}>Examples</a>
+          <a href="{{ '/zasm/ZASM-Coming-Soon.html' | relative_url }}"{% if page.url == '/zasm/ZASM-Coming-Soon.html' %} aria-current="page"{% endif %}>Roadmap</a>
           <a href="{{ '/building.html' | relative_url }}"{% if page.url == '/building.html' %} aria-current="page"{% endif %}>Build from source</a>
         </nav>
       </header>

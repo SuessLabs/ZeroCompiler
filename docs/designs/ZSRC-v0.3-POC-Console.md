@@ -2,7 +2,7 @@
 
 > **Coming Soon: higher-level Zero.** This page explores proposed `.zsrc`, `.zero`
 > syntax; it is not a runnable example for the current compiler.
-> See the [documentation home](../index.md) and [working ZASM examples](../zasm-examples.md).
+> See the [documentation home](../index.md) and [working ZASM examples](../zasm/ZASM-Examples.md).
 
 In the next generation of Zero, we are re-aligning with the original design specifications and proof-of-concept.
 

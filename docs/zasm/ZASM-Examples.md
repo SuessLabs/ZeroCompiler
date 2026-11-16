@@ -5,7 +5,8 @@ title: ZASM Basic Examples
 
 # ZASM Basic Examples
 
-[Documentation home](index.md) · [Language reference](zasm-reference.md)
+[Documentation home](../index.md) · [Language reference](ZASM-Reference.md) ·
+[Mnemonic support](ZASM-Mnemonics.md)
 
 Save each complete program under the suggested filename. Run the commands from
 the extracted compiler folder, keeping `include` beside the `zero` compiler executable.
@@ -115,10 +116,10 @@ console subsystem; this example does not select a separate GUI subsystem.
 
 ## Next Steps
 
-- [Include guide](Zero-Assembly-Include-Files.md): put shared source in `.zh` files and use custom `-I` paths.
-- [String concatenation tutorial](tutorial-zasm-concat.md): print separate strings, then join them with a space.
+- [Include guide](ZASM-Include-Files.md): put shared source in `.zh` files and use custom `-I` paths.
+- [String concatenation tutorial](../tutorial-zasm-concat.md): print separate strings, then join them with a space.
 - [Sample guide](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/readme.md): explore the full sample collection, including editable Windows controls.
-- [Instruction reference](zasm-reference.md#instruction-reference): choose supported operand forms.
+- [Instruction reference](ZASM-Reference.md#instruction-reference): choose supported operand forms.
 
 ## Coming Soon
 

@@ -5,8 +5,8 @@ title: ZASM Feature Roadmap
 
 # ZASM Feature Roadmap
 
-[Documentation home](index.md) · [Language reference](zasm-reference.md) ·
-[Basic examples](zasm-examples.md)
+[Documentation home](../index.md) · [Language reference](ZASM-Reference.md) ·
+[Basic examples](ZASM-Examples.md) · [Mnemonic support](ZASM-Mnemonics.md)
 
 This page tracks what Zero Assembly can do today and the features to consider
 next. **Implemented** describes working capabilities. **What's Next** lists
@@ -16,13 +16,13 @@ commitments; their syntax and implementation order still need to be decided.
 
 ## Implemented
 
-Support applies to the operand forms in the [language reference](zasm-reference.md),
+Support applies to the operand forms in the [language reference](ZASM-Reference.md),
 not every form offered by other x86 assemblers. A mnemonic or register constant
 in the compiler source does not by itself mean its instruction encoding works.
 
 ### Instructions and Registers
 
-- [x] [Linux x86-64 ELF64 backend](linux64.md): static executables, essential 32/64-bit AMD64 encodings, extended registers, RIP-relative addresses, stores, and `SYSCALL`.
+- [x] [Linux x86-64 ELF64 backend](../linux64.md): static executables, essential 32/64-bit AMD64 encodings, extended registers, RIP-relative addresses, stores, and `SYSCALL`.
 - [x] Shared parser with separate architecture encoders and PE/ELF writers; explicit target selection and host compatibility checks.
 
 - [x] Windows x86 (32-bit) instruction encoding and PE32 executable output.
@@ -56,7 +56,7 @@ emitted byte is the program entry point.
 - [x] Include search order: working directory, ordered `-I`/`--include` paths, then `include` beside the compiler.
 - [x] Include-cycle diagnostics, searched-path errors, and original filename/line reporting for included source.
 - [x] Shipped `windows/console.zh` and `windows/windows.zh` headers.
-- [x] [DLL-specific Windows API headers](windows-headers.md) for controls/dialogs, drawing, core OS services, shell, sockets, security, COM, HTTP, and other utilities.
+- [x] [DLL-specific Windows API headers](../windows-headers.md) for controls/dialogs, drawing, core OS services, shell, sockets, security, COM, HTTP, and other utilities.
 - [x] Platform folders: working Windows imports under `include/windows`; draft glibc headers and comment-only syscall references under `include/linux`.
 - [x] `#IMPORT dll, function[, ...]` declarations and PE import table generation.
 - [x] Plain imported function names such as `call [puts]`, with backward-compatible and DLL-qualified aliases.
@@ -64,8 +64,8 @@ emitted byte is the program entry point.
 - [x] Native AOT publishing with headers and samples beside the compiler.
 - [x] Build-time sample compilation, sample discovery in unit tests, and selected Windows runtime checks.
 
-See the [include guide](Zero-Assembly-Include-Files.md),
-[build guide](building.md), and [sample guide](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/readme.md).
+See the [include guide](ZASM-Include-Files.md),
+[build guide](../building.md), and [sample guide](https://github.com/SuessLabs/ZeroCompiler/blob/master/samples/readme.md).
 
 ## What's Next
 
@@ -145,7 +145,7 @@ These ideas can follow the core assembler work or be developed independently.
 
 ### More Targets and Executable Formats
 
-[Linux libc drafts](linux-headers.md) are available for planning. Static syscall-only
+[Linux libc drafts](../linux-headers.md) are available for planning. Static syscall-only
 Linux ELF64 output is implemented; shared-library linking remains future work.
 
 - [ ] **Windows x64:** PE32+ output and the Windows x64 ABI; essential AMD64 encoding exists for Linux x64.
@@ -154,17 +154,17 @@ Linux ELF64 output is implemented; shared-library linking remains future work.
 - [ ] **Additional platforms:** define supported architecture, format, and ABI combinations before exposing target options.
 
 Changing the compiler's own host runtime does not change its generated target.
-See [Future formats and architectures](designs/Future-Formats-and-Targets.md)
+See [Future formats and architectures](../designs/Future-Formats-and-Targets.md)
 for the shared-parser design direction.
 
 ## Updating This Roadmap
 
 When a feature is ready, move it into Implemented, describe its supported forms
-in the [reference](zasm-reference.md), and link a working example. A feature can
+in the [reference](ZASM-Reference.md), and link a working example. A feature can
 be partially implemented: state which forms work and leave the remaining forms
 unchecked. Proposed names such as constants, section directives, and procedure
 helpers need a syntax decision; this page does not establish their spelling.
 
 Higher-level Zero (`.zsrc`) has its own language-design work and is outside this
-assembly checklist. The [homepage's Coming Soon section](index.md#coming-soon)
+assembly checklist. The [homepage's Coming Soon section](../index.md#coming-soon)
 also tracks broader language and documentation topics.
