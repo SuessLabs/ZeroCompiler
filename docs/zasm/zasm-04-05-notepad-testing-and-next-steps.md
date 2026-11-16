@@ -12,11 +12,11 @@ Section 4 — Creating a Notepad Project · Chapter 4.5
 ## Build the Finished Source
 
 Use the full listing from Chapter 4.4 or the standalone
-[finished source](../../samples/Windows/win-ui-10-notepad.zasm).
+[finished source](../../samples/Windows/notepad/notepad-03-complete.zasm).
 From the repository root, compile to an explicit path:
 
 ```powershell
-.\publish\zero.exe samples\Windows\win-ui-10-notepad.zasm output\notepad.exe
+.\publish\zero.exe samples\Windows\notepad\notepad-03-complete.zasm output\notepad.exe
 .\output\notepad.exe
 ```
 
@@ -25,15 +25,22 @@ No NuGet packages, headers, images, or resource files are required by the sample
 
 ## Run the Automated Source and File Checks
 
-With Python 3 and the native compiler available on Windows, run from the
-repository root:
+With the .NET 10 SDK and the native compiler available on Windows, run from
+the repository root:
 
 ```powershell
-python samples/Windows/notepad/verify.py
+dotnet run --file samples/Windows/notepad/verify.cs
 ```
 
-Pass `--compiler "C:\Path\To\zero.exe"` to select another compiler. The check
-compares each chapter's full listing with its standalone sample, compiles all
+This is a [single-file C# application](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps),
+with no project file or package dependencies. To select another compiler, pass
+its path after the argument separator:
+
+```powershell
+dotnet run --file samples/Windows/notepad/verify.cs -- --compiler "C:\Path\To\zero.exe"
+```
+
+The check compares each chapter's full listing with its standalone sample, compiles all
 three stages, and exercises the finished file routines against a hidden multiline
 edit control. It verifies text bytes, empty files, size limits, rejection of zero
 bytes, failed-write dirty state, and balanced stacks. Fixtures and executables

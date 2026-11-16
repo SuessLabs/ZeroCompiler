@@ -25,7 +25,7 @@ Windows samples are in `samples/Windows`; Linux samples are in `samples/Linux`.
 | `win-cli-06-timer.zasm` | Windows PE32 console timer: prints an incrementing unsigned 32-bit counter every second using a periodic waitable timer. |
 | `linux64-cli-06-timer.zasm` | Linux ELF64 console timer: prints an incrementing unsigned 32-bit counter every second using `timerfd` syscalls, without libc. |
 | `win-ui-02-controls.zasm` | Opens a native Windows x86 window with a label, an editable `Hello Zero!` textbox, and a button that displays the current text. |
-| [win-ui-10-notepad.zasm](Windows/win-ui-10-notepad.zasm) | Complete resizable text editor with Open, Save, Save As, Close, native file dialogs, and unsaved-change prompts. See [the Section 4 tutorial](../docs/zasm/zasm-04-01-notepad-project-setup.md) for all three standalone stages. |
+| [notepad-03-complete.zasm](Windows/notepad/notepad-03-complete.zasm) | Complete resizable text editor with Open, Save, Save As, Close, native file dialogs, and unsaved-change prompts. See [the Section 4 tutorial](../docs/zasm/zasm-04-01-notepad-project-setup.md) for all three standalone stages. |
 | `win-cli-02-integer-math.zasm` | Calculates `7 + 5` and `6 * 7`, then prints the computed results. |
 
 `zero run <source> [output.exe]` builds the source, then runs the executable in the

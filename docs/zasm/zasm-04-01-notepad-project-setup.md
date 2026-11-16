@@ -29,7 +29,7 @@ by hand.
 | --- | --- | --- |
 | 4.2 | Titled 800×600 window, message handler, three top buttons | [notepad-01-window.zasm](../../samples/Windows/notepad/notepad-01-window.zasm) |
 | 4.3 | Multiline editor and resize handling | [notepad-02-editor.zasm](../../samples/Windows/notepad/notepad-02-editor.zasm) |
-| 4.4 | Open, Save, Save As, Close, and unsaved-change handling | [win-ui-10-notepad.zasm](../../samples/Windows/win-ui-10-notepad.zasm) |
+| 4.4 | Open, Save, Save As, Close, and unsaved-change handling | [notepad-03-complete.zasm](../../samples/Windows/notepad/notepad-03-complete.zasm) |
 | 4.5 | Build, round-trip tests, boundaries, and further work | Use the completed source above |
 
 The first two stages show an informational message when a file button is clicked;

@@ -12,7 +12,7 @@ Section 4 — Creating a Notepad Project · Chapter 4.4
 ## The Finished Application
 
 Replace `notepad.zasm` with the **entire listing below**. It is also provided as
-[win-ui-10-notepad.zasm](../../samples/Windows/win-ui-10-notepad.zasm).
+[notepad-03-complete.zasm](../../samples/Windows/notepad/notepad-03-complete.zasm).
 This listing includes window creation, all four buttons, resizing, dialogs,
 file routines, error reporting, and shutdown. No additional project files are
 required.
@@ -124,6 +124,7 @@ start:
   push 66080
   push 0x40              ; GPTR: fixed, zero-initialized allocation.
   call [GlobalAlloc]
+
   test eax, eax
   jz failed
   push eax
@@ -151,6 +152,7 @@ start:
   lea eax, [esp]
   push eax
   call [RegisterClassA]
+
   add esp, 40
   test eax, eax
   jz failed
@@ -169,6 +171,7 @@ start:
   push window_class      ; lpClassName: registered class name.
   push 0                 ; dwExStyle: no extended styles.
   call [CreateWindowExA]
+
   test eax, eax
   jz failed
   push eax
@@ -184,14 +187,17 @@ start:
   push open_text
   push 101
   call add_button
+
   push 104
   push save_text
   push 102
   call add_button
+
   push 200
   push save_as_text
   push 103
   call add_button
+
 push 296
 push close_text
 push 104
@@ -303,6 +309,7 @@ window_proc:
   push 0xFFFFFFEB        ; GWL_USERDATA.
   push ebx
   call [GetWindowLongA]
+
   push eax
   pop esi
   test esi, esi          ; Early creation messages arrive before state is set.
@@ -312,10 +319,13 @@ window_proc:
   jz window_destroyed
   cmp eax, 0x111         ; WM_COMMAND.
   jz window_command
+
 cmp eax, 5             ; WM_SIZE.
 jz window_size
+
 cmp eax, 0x10          ; WM_CLOSE from title-bar X or our Close button.
 jz window_close
+
 default_message:
   mov eax, [ebp + 20]
   push eax
@@ -326,13 +336,16 @@ default_message:
   push ebx
   call [DefWindowProcA]
   jmp callback_done
+
 window_destroyed:
   push 0
   call [PostQuitMessage]
   jmp callback_handled
+
 window_size:
   call layout_editor
   jmp callback_handled
+
 window_command:
   mov eax, [ebp + 16]
 cmp eax, 0x030000C9    ; EN_CHANGE (0x300), editor ID 201 (0xC9).
@@ -346,20 +359,25 @@ cmp eax, 0x030000C9    ; EN_CHANGE (0x300), editor ID 201 (0xC9).
   cmp eax, 104
   jz button_close
   jmp default_message
+
 document_changed:
   mov eax, 1
   lea edx, [esi + 4]
   call store_dword
   jmp callback_handled
+
 button_open:
   call open_document
   jmp callback_handled
+
 button_save:
   call save_document
   jmp callback_handled
+
 button_save_as:
   call save_as_document
   jmp callback_handled
+
 button_close:
   push 0
   push 0
@@ -367,6 +385,7 @@ button_close:
   push ebx
   call [SendMessageA]
   jmp callback_handled
+
 window_close:
   call confirm_discard
   test eax, eax
@@ -374,8 +393,10 @@ window_close:
   push ebx
   call [DestroyWindow]   ; WM_DESTROY posts WM_QUIT for the message loop.
   jmp callback_handled
+
 callback_handled:
   xor eax, eax
+
 callback_done:
   pop edi
   pop esi
@@ -383,6 +404,7 @@ callback_done:
   pop ebp
   ret 16                 ; stdcall: discard four window-procedure arguments.
 ; EBX = parent, ESI = state. Query the client area on every resize.
+
 layout_editor:
   mov eax, [esi]
   test eax, eax
@@ -392,6 +414,7 @@ layout_editor:
   push eax
   push ebx
   call [GetClientRect]
+
   test eax, eax
   jz layout_release
   mov ecx, [esp + 8]     ; Client width (left is zero).
@@ -409,6 +432,7 @@ layout_move:
   mov eax, [esi]
   push eax               ; hWnd: multiline editor.
   call [MoveWindow]
+
 layout_release:
   add esp, 16
 layout_done:
@@ -442,6 +466,7 @@ save_document:
   lea eax, [esi + 8]
   push eax
   call [strlen]
+
   add esp, 4
   test eax, eax
   jz save_as_document
@@ -450,6 +475,7 @@ save_document:
   lea eax, [esi + 268]
   push eax
   call [strcpy]          ; pending_path = current_path (both 260-byte buffers).
+
   add esp, 8
   jmp write_pending
 save_as_document:
@@ -469,6 +495,7 @@ choose_path:
   lea eax, [esi + 268]
   push eax
   call [strcpy]
+
   add esp, 8
   mov ecx, 0x81808       ; EXPLORER | FILEMUSTEXIST | PATHMUSTEXIST | NOCHANGEDIR.
   test edi, edi
@@ -504,15 +531,19 @@ dialog_structure:
   test edi, edi
   jnz dialog_save
   call [GetOpenFileNameA]
+
   jmp dialog_finished
+
 dialog_save:
   call [GetSaveFileNameA]
+
 dialog_finished:
   add esp, 88
   pop edi
   test eax, eax
   jnz operation_ok
   call [CommDlgExtendedError]
+
   test eax, eax          ; Zero means the user canceled, not an API failure.
   jz operation_cancel
   mov eax, dialog_error
@@ -533,11 +564,13 @@ open_document:
   lea eax, [esi + 528]
   push eax
   call [memset]          ; Ensure a zero terminator after any accepted read.
+
   add esp, 12
   push read_mode
   lea eax, [esi + 268]
   push eax
   call [fopen]
+
   add esp, 8
   test eax, eax
   jz open_error
@@ -549,15 +582,18 @@ open_document:
   lea eax, [esi + 528]
   push eax
   call [fread]
+
   add esp, 16
   push eax               ; Save actual byte count across ferror/fclose.
   push edi
   call [ferror]
+
   add esp, 4
   test eax, eax
   jnz open_close_error
   push edi
   call [fclose]
+
   add esp, 4
   pop edx                ; Restore count and balance the stack even on failure.
   test eax, eax
@@ -568,6 +604,7 @@ open_document:
   lea eax, [esi + 528]
   push eax
   call [strlen]
+
   add esp, 4
   pop edx
   cmp eax, edx
@@ -577,6 +614,7 @@ open_document:
   mov eax, [esi]
   push eax
   call [SetWindowTextA]
+
   test eax, eax
   jz open_error
   call commit_path
@@ -635,10 +673,13 @@ write_pending:
   pop edi
   mov eax, 1
   ret
+
 write_close_error:
   push edi
   call [fclose]
+
   add esp, 4
+
 write_error_count:
   add esp, 4             ; Drop saved length; retain dirty flag and current path.
   pop edi
@@ -655,6 +696,7 @@ commit_path:
   xor eax, eax
   lea edx, [esi + 4]
   call store_dword       ; Mark clean only after successful loading/saving.
+
   lea eax, [esi + 8]
   push eax
   push ebx
