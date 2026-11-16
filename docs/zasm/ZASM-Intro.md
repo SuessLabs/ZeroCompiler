@@ -5,6 +5,8 @@ title: Zero Assembly Overview
 
 # Zero Assembly Overview
 
+For a chapter-based learning path, read the [Zero Assembly Programmers Guide](index.md).
+
 [Documentation home](../index.md) · [Full language reference](ZASM-Reference.md) ·
 [Basic examples](ZASM-Examples.md) · [Mnemonic support](ZASM-Mnemonics.md)
 

@@ -1,0 +1,337 @@
+---
+layout: default
+title: "Notepad Project — Add the Text Editor"
+---
+
+# Notepad Project — Add the Text Editor
+
+Section 4 — Creating a Notepad Project · Chapter 4.3
+
+[Previous](zasm-04-02-notepad-create-the-window.md) · [Contents](index.md) · [Next](zasm-04-04-notepad-open-and-save-files.md)
+
+## Create the Multiline Textbox
+
+Replace your file with the complete listing below, also available as
+[notepad-02-editor.zasm](../../samples/Windows/notepad/notepad-02-editor.zasm).
+This stage retains all three buttons and adds an `EDIT` control with ID 201.
+Its style enables multiline input, Enter-key line breaks, scrolling, and a border.
+All twelve `CreateWindowExA` parameters are commented in the source.
+
+## Stretch the Editor with the Window
+
+The editor fills the **entire client width** and all client height below the
+44-pixel button strip. It cannot cover the toolbar without hiding the buttons.
+`WM_SIZE` calls `layout_editor`, which obtains the client rectangle using
+`GetClientRect`, subtracts 44 from its height, and passes the result to `MoveWindow`.
+It clamps negative heights to zero when the window becomes very small.
+
+The initial 1×1 control size is temporary: startup calls `layout_editor` before
+showing the window. Later resize messages repeat the same calculation. The
+editor handle lives at offset 0 of the writable state block. `EM_SETLIMITTEXT`
+sets the input limit to 65,535 bytes, matching the finished program's file bound.
+This message limits typing/pasting; Chapter 4.4 separately bounds file reads.
+See Microsoft's [edit-control overview](https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls)
+for the control's text and buffer behavior.
+
+## Complete Source: Resizable Multiline Editor
+
+
+```asm
+; Zero Notepad: Windows x86. Compile this file with zero.exe.
+; Numeric constants below are Win32 values; no macros or writable sections needed.
+#TARGET windows-x86
+#IMPORT kernel32.dll, GetModuleHandleA, GlobalAlloc, GlobalFree, ExitProcess
+#IMPORT user32.dll, LoadCursorA, RegisterClassA, CreateWindowExA, ShowWindow, UpdateWindow
+#IMPORT user32.dll, GetMessageA, TranslateMessage, DispatchMessageA, DefWindowProcA, PostQuitMessage
+#IMPORT user32.dll, GetWindowLongA, SetWindowLongA, SendMessageA, MessageBoxA
+#IMPORT user32.dll, GetClientRect, MoveWindow, GetWindowTextA, GetWindowTextLengthA, SetWindowTextA, DestroyWindow
+#IMPORT msvcrt.dll, memcpy
+jmp start
+
+window_class db 'ZeroNotepadClass', 0
+window_title db 'Zero Notepad', 0
+button_class db 'BUTTON', 0
+edit_class db 'EDIT', 0
+empty_text db 0
+open_text db 'Open', 0
+save_text db 'Save', 0
+save_as_text db 'Save As', 0
+close_text db 'Close', 0
+stage_text db 'The file buttons are connected in Chapter 4.4.', 0
+start:
+  ; Zero-initialized, writable state: +0 editor HWND, +4 dirty flag,
+  ; +8 current path[260], +268 dialog path[260], +528 text buffer[65537].
+  push 66080
+  push 0x40              ; GPTR: fixed, zero-initialized allocation.
+  call [GlobalAlloc]
+  test eax, eax
+  jz failed
+  push eax
+  pop esi                ; ESI = state for the lifetime of the application.
+
+  push 0
+  call [GetModuleHandleA]
+  push eax
+  pop edi                ; EDI = application instance.
+  push 32512             ; IDC_ARROW.
+  push 0
+  call [LoadCursorA]
+
+  ; WNDCLASSA: 40 bytes, constructed last field first.
+  push window_class      ; lpszClassName.
+  push 0                 ; lpszMenuName.
+  push 16                ; hbrBackground = COLOR_BTNFACE + 1.
+  push eax               ; hCursor.
+  push 0                 ; hIcon.
+  push edi               ; hInstance.
+  push 0                 ; cbWndExtra.
+  push 0                 ; cbClsExtra.
+  push window_proc       ; lpfnWndProc.
+  push 3                 ; style: redraw on horizontal/vertical changes.
+  lea eax, [esp]
+  push eax
+  call [RegisterClassA]
+  add esp, 40
+  test eax, eax
+  jz failed
+
+  ; CreateWindowExA parameters, last to first.
+  push 0                 ; lpParam: no creation data.
+  push edi               ; hInstance: application instance.
+  push 0                 ; hMenu: no menu bar.
+  push 0                 ; hWndParent: top-level window.
+  push 600               ; nHeight: outer height, including frame/title.
+  push 800               ; nWidth: outer width in pixels.
+  push 0x80000000        ; Y: CW_USEDEFAULT.
+  push 0x80000000        ; X: CW_USEDEFAULT.
+  push 0x02CF0000        ; dwStyle: WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN.
+  push window_title      ; lpWindowName: zero-terminated title.
+  push window_class      ; lpClassName: registered class name.
+  push 0                 ; dwExStyle: no extended styles.
+  call [CreateWindowExA]
+  test eax, eax
+  jz failed
+  push eax
+  pop ebx                ; EBX = main window HWND.
+
+  push esi               ; New window user-data value: state pointer.
+  push 0xFFFFFFEB        ; GWL_USERDATA = -21.
+  push ebx
+  call [SetWindowLongA]
+
+  ; add_button(id, text, x): arguments pushed right to left.
+  push 8
+  push open_text
+  push 101
+  call add_button
+  push 104
+  push save_text
+  push 102
+  call add_button
+  push 200
+  push save_as_text
+  push 103
+  call add_button
+; Multiline editing area. WM_SIZE supplies its final dimensions.
+push 0                 ; lpParam: no creation data.
+push edi               ; hInstance: application instance.
+push 201               ; hMenu: child control ID 201.
+push ebx               ; hWndParent: main window.
+push 1                 ; nHeight: temporary; layout_editor resizes it.
+push 1                 ; nWidth: temporary; layout_editor resizes it.
+push 44                ; Y: below the 44-pixel button strip.
+push 0                 ; X: align with the client area's left edge.
+push 0x50B110C4        ; dwStyle: child/visible/border/tab stop,
+                       ; scroll bars, multiline, auto scroll, want Return.
+push empty_text        ; lpWindowName: initially empty document.
+push edit_class        ; lpClassName: built-in EDIT class.
+push 0x200             ; dwExStyle: WS_EX_CLIENTEDGE.
+call [CreateWindowExA]
+test eax, eax
+jz failed
+lea edx, [esi]
+call store_dword       ; state.editor = returned HWND.
+
+push 0                 ; lParam: unused.
+push 65535             ; wParam: maximum typed/pasted text bytes.
+push 0xC5              ; EM_SETLIMITTEXT.
+mov eax, [esi]
+push eax
+call [SendMessageA]
+call layout_editor
+push 1
+  push ebx
+  call [ShowWindow]
+  push ebx
+  call [UpdateWindow]
+  sub esp, 32             ; Writable x86 MSG storage.
+  lea edi, [esp]
+message_loop:
+  push 0
+  push 0
+  push 0
+  push edi
+  call [GetMessageA]
+  test eax, eax
+  jz finished
+  cmp eax, 0xFFFFFFFF     ; GetMessageA returns -1 on failure.
+  jz failed
+  push edi
+  call [TranslateMessage]
+  push edi
+  call [DispatchMessageA]
+  jmp message_loop
+finished:
+  add esp, 32
+  push esi
+  call [GlobalFree]
+  push 0
+  call [ExitProcess]
+failed:
+  push 1
+  call [ExitProcess]      ; Process teardown releases startup allocations.
+
+; EBX = parent, EDI = instance. Callee removes our three arguments.
+add_button:
+  push ebp
+  lea ebp, [esp]
+  push 0                 ; lpParam: no creation data.
+  push edi               ; hInstance: application instance.
+  mov eax, [ebp + 8]
+  push eax               ; hMenu: child button ID.
+  push ebx               ; hWndParent: main window.
+  push 28                ; nHeight: button height.
+  push 88                ; nWidth: button width.
+  push 8                 ; Y: top padding.
+  mov eax, [ebp + 16]
+  push eax               ; X: horizontal position supplied by caller.
+  push 0x50010000        ; dwStyle: child, visible, tab stop, push button.
+  mov eax, [ebp + 12]
+  push eax               ; lpWindowName: button caption.
+  push button_class      ; lpClassName: built-in BUTTON class.
+  push 0                 ; dwExStyle: no extended styles.
+  call [CreateWindowExA]
+  test eax, eax
+  jz failed
+  pop ebp
+  ret 12
+
+; Windows x86 lacks MOV memory stores in ZASM. Copy four bytes via memcpy.
+; Input: EDX = destination, EAX = value. Preserves EBX/ESI/EDI/EBP.
+store_dword:
+  push eax
+  lea ecx, [esp]
+  push 4
+  push ecx
+  push edx
+  call [memcpy]
+  add esp, 12            ; cdecl: remove memcpy's arguments.
+  add esp, 4             ; Remove the temporary value.
+  ret
+
+window_proc:
+  push ebp
+  lea ebp, [esp]         ; +8 hwnd, +12 message, +16 wParam, +20 lParam.
+  push ebx
+  push esi
+  push edi               ; Preserve the Win32 callback's nonvolatile registers.
+  mov ebx, [ebp + 8]
+  push 0xFFFFFFEB        ; GWL_USERDATA.
+  push ebx
+  call [GetWindowLongA]
+  push eax
+  pop esi
+  test esi, esi          ; Early creation messages arrive before state is set.
+  jz default_message
+  mov eax, [ebp + 12]
+  cmp eax, 2             ; WM_DESTROY.
+  jz window_destroyed
+  cmp eax, 0x111         ; WM_COMMAND.
+  jz window_command
+cmp eax, 5             ; WM_SIZE.
+jz window_size
+default_message:
+  mov eax, [ebp + 20]
+  push eax
+  mov eax, [ebp + 16]
+  push eax
+  mov eax, [ebp + 12]
+  push eax
+  push ebx
+  call [DefWindowProcA]
+  jmp callback_done
+window_destroyed:
+  push 0
+  call [PostQuitMessage]
+  jmp callback_handled
+window_size:
+  call layout_editor
+  jmp callback_handled
+window_command:
+  mov eax, [ebp + 16]
+cmp eax, 101
+  jz stage_notice
+  cmp eax, 102
+  jz stage_notice
+  cmp eax, 103
+  jnz default_message
+stage_notice:
+  push 0x40
+  push window_title
+  push stage_text
+  push ebx
+  call [MessageBoxA]
+callback_handled:
+  xor eax, eax
+callback_done:
+  pop edi
+  pop esi
+  pop ebx
+  pop ebp
+  ret 16                 ; stdcall: discard four window-procedure arguments.
+; EBX = parent, ESI = state. Query the client area on every resize.
+layout_editor:
+  mov eax, [esi]
+  test eax, eax
+  jz layout_done         ; No editor yet during early startup messages.
+  sub esp, 16            ; RECT { left, top, right, bottom }.
+  lea eax, [esp]
+  push eax
+  push ebx
+  call [GetClientRect]
+  test eax, eax
+  jz layout_release
+  mov ecx, [esp + 8]     ; Client width (left is zero).
+  mov edx, [esp + 12]    ; Client height (top is zero).
+  sub edx, 44            ; Leave room for buttons.
+  test edx, 0x80000000   ; Clamp a negative editor height to zero.
+  jz layout_move
+  xor edx, edx
+layout_move:
+  push 1                 ; bRepaint.
+  push edx               ; nHeight: remaining client height.
+  push ecx               ; nWidth: entire client width.
+  push 44                ; Y: immediately below the toolbar.
+  push 0                 ; X: left edge.
+  mov eax, [esi]
+  push eax               ; hWnd: multiline editor.
+  call [MoveWindow]
+layout_release:
+  add esp, 16
+layout_done:
+  ret
+```
+
+## Try the Editor
+
+Type several lines, press Enter, select text, and use copy/paste. Drag the window
+edges or maximize it: the textbox should follow the client area while the buttons
+stay at the top. At this stage, the file buttons still display their temporary
+notice. Saving and loading are implemented in the next complete listing.
+
+> **Checkpoint:** Verify multiline entry and resizing in both directions. The
+> textbox must occupy the remaining client area without covering the buttons.
+
+---
+
+[Previous](zasm-04-02-notepad-create-the-window.md) · [Contents](index.md) · [Next](zasm-04-04-notepad-open-and-save-files.md)

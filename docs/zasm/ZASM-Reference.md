@@ -5,6 +5,8 @@ title: ZASM Language Reference
 
 # ZASM Language Reference
 
+For a chapter-based learning path, read the [Zero Assembly Programmers Guide](index.md).
+
 [Documentation home](../index.md) · [Complete examples](ZASM-Examples.md) ·
 [Include files](ZASM-Include-Files.md) · [Mnemonic support](ZASM-Mnemonics.md)
 
