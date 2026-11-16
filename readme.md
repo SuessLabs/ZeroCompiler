@@ -9,6 +9,12 @@ that create Windows GUI controls) and static Linux x86-64 ELF64 executables usin
 syscalls. Shared-library ELF linking, DLL output, additional architectures, macOS,
 and STM32 remain future work. See [Linux x86-64 support](docs/linux64.md).
 
+## Documentation
+
+Read the [Zero Assembly Programmers Guide](docs/zasm/index.md), or browse the
+[documentation library](docs/index.md#documentation-library) for companion book
+placeholders for Zero/Zero.CLI, Zero.IDE, and Zero.DBG.
+
 ## Zero Language Suite
 
 * **Zero** - _Zero Assembly and command line compiler tooling (Zero.Cli)_

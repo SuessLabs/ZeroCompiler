@@ -5,6 +5,8 @@ title: ZASM Basic Examples
 
 # ZASM Basic Examples
 
+For a chapter-based learning path, read the [Zero Assembly Programmers Guide](index.md).
+
 [Documentation home](../index.md) · [Language reference](ZASM-Reference.md) ·
 [Mnemonic support](ZASM-Mnemonics.md)
 

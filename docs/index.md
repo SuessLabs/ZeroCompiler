@@ -22,6 +22,19 @@ define data, share headers, call Windows DLL functions, or use Linux syscalls.
 [Debugger](debugger/index.md) ·
 [Source code](https://github.com/SuessLabs/ZeroCompiler)
 
+## Documentation Library
+
+Start with the chapter-based [Zero Assembly Programmers Guide](zasm/index.md).
+It includes a first program, fundamentals, functions, a Notepad project workshop,
+compiler/debugger usage, architecture, and mnemonic/ASCII appendices.
+
+| Book | Status |
+| --- | --- |
+| [Zero Assembly Programmers Guide](zasm/index.md) | Main learning guide |
+| [Zero and Zero.CLI Guide](zero/index.md) | Companion book placeholder |
+| [Zero.IDE User Guide](ide/index.md) | Companion book placeholder |
+| [Zero.DBG User Guide](dbg/index.md) | Companion book placeholder; existing debugger docs retained |
+
 ## About
 
 The Zero programming language and compiler project (_AKA: Null Compiler_). **Zero** is a simple, fast, and efficient programming language for the x86-64 architecture.
@@ -29,7 +42,7 @@ The Zero programming language and compiler project (_AKA: Null Compiler_). **Zer
 The compiler generates Windows x86 PE32 console executables (including programs
 that create Windows GUI controls) and static Linux x86-64 ELF64 executables using
 syscalls. Shared-library ELF linking, DLL output, additional architectures, macOS,
-and STM32 remain future work. See [Linux x86-64 support](docs/linux64.md).
+and STM32 remain future work. See [Linux x86-64 support](linux64.md).
 
 ## Zero Language Suite
 
